@@ -80,6 +80,7 @@ export const layer = HttpApiBuilder.group(
       function* (options: {
         readonly omitIdleSubagents: boolean;
         readonly omitOlderSettled: boolean;
+        readonly separateBotThreads: boolean;
       }) {
         const { snapshot } = yield* loadSubscriberShellSnapshot({
           sql,
@@ -169,6 +170,7 @@ export const layer = HttpApiBuilder.group(
           return yield* loadShellSnapshot({
             omitIdleSubagents: args.query.omitIdleSubagents === "1",
             omitOlderSettled: args.query.omitOlderSettled === "1",
+            separateBotThreads: args.query.separateBotThreads === "1",
           }).pipe(
             traceLocalHandlerWork,
             Effect.catch((cause) =>

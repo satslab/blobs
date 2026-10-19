@@ -835,6 +835,7 @@ describe("environment shell synchronization", () => {
           shellThreadFamilies: true,
           shellOlderSettled: true,
           environment: { serverVersion: "1.0.0", databaseMigration: 70 },
+          shellBotThreads: true,
         } as never),
       };
       const activeSession = yield* SubscriptionRef.make(Option.some(familySession));
@@ -880,9 +881,10 @@ describe("environment shell synchronization", () => {
         afterSequence: 1,
         omitIdleSubagents: true,
         omitOlderSettled: true,
+        separateBotThreads: true,
       });
       expect(yield* Ref.get(loadOptions)).toEqual([
-        { omitIdleSubagents: true, omitOlderSettled: true },
+        { omitIdleSubagents: true, omitOlderSettled: true, separateBotThreads: true },
       ]);
       const loaded = Option.getOrThrow(yield* stateWhere((state) => state.generation > 0));
       expect(loaded.removedAt.size).toBe(0);
