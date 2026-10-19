@@ -1,3 +1,4 @@
+import { buildBotSystemPrompt } from "@t3tools/provider-core/server/botInstructions";
 import type {
   Event as OpenCodeEvent,
   Message as OpenCodeMessage,
@@ -953,6 +954,13 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
             : {}),
           environment: options.environment,
         });
+        if (input.runtimePolicy.botChat !== undefined && connection.external) {
+          return yield* new ProviderAdapter.ProviderAdapterOpenSessionError({
+            driver: OPENCODE_PROVIDER,
+            providerSessionId: input.providerSessionId,
+            cause: "Bots require a local OpenCode server for its turn-scoped MCP tools.",
+          });
+        }
         const client = runtime.createOpenCodeSdkClient({
           baseUrl: connection.url,
           directory: cwd,
@@ -2964,12 +2972,13 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
           return {
             ...(agent === undefined ? {} : { agent }),
             ...(variant === undefined ? {} : { variant }),
-            system: [
-              orchestrationSystemPrompt,
-              buildRuntimeInstructions({ harness: "OpenCode", model: turn.modelSelection.model }),
-            ]
-              .filter(Boolean)
-              .join("\n\n"),
+            system: turn.runtimePolicy.botChat === undefined
+              ? [orchestrationSystemPrompt, buildRuntimeInstructions({ harness: "OpenCode", model: turn.modelSelection.model })].filter(Boolean).join("\n\n")
+              : buildBotSystemPrompt({
+                  botPrompt: turn.runtimePolicy.botChat.systemPrompt,
+                  runtime: { harness: "OpenCode", model: turn.modelSelection.model, reasoningEffort: variant },
+                  mcpSession,
+                }),
           };
         };
 

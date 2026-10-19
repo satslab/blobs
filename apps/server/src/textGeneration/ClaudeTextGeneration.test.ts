@@ -67,6 +67,7 @@ function withFakeClaudeEnv<A, E, R>(
     configDirMustBe?: string;
     cwdMustNotBe?: string;
     claudeConfig?: Partial<ClaudeSettings>;
+    managedMcp?: boolean;
   },
   effectFn: (textGeneration: TextGeneration.TextGeneration["Service"]) => Effect.Effect<A, E, R>,
 ) {
@@ -78,6 +79,7 @@ function withFakeClaudeEnv<A, E, R>(
     const hostEnv = yield* HostProcess.Environment;
     const fakeClaudeEnv: Record<string, string | undefined> = {
       T3_FAKE_CLAUDE_OUTPUT: input.output,
+      T3_FAKE_CLAUDE_MANAGED_MCP: input.managedMcp ? "1" : "0",
       T3_FAKE_CLAUDE_REJECTS_NO_SESSION_PERSISTENCE: input.rejectsNoSessionPersistence
         ? "1"
         : undefined,
@@ -110,6 +112,61 @@ function withFakeClaudeEnv<A, E, R>(
 }
 
 it.layer(layerClaudeTextGenerationTest)("ClaudeTextGeneration", (it) => {
+  it.effect("compacts memory with an empty tool set and no native MCP", () =>
+    withFakeClaudeEnv(
+      {
+        output: JSON.stringify({ type: "result", result: "Retained context" }),
+        argsMustContain: "--safe-mode --setting-sources user",
+        argsMustNotContain: "--json-schema",
+      },
+      (generation) =>
+        Effect.gen(function* () {
+          if (!generation.generateMemorySummary)
+            return yield* Effect.die("Missing summary operation");
+          const result = yield* generation.generateMemorySummary({
+            cwd: process.cwd(),
+            instructions: "Summarize",
+            context: "Context",
+            task: "Compact",
+            modelSelection: { instanceId: ProviderInstanceId.make("claude"), model: "sonnet" },
+          });
+          expect(result).toBe("Retained context");
+        }),
+    ),
+  );
+
+  it.effect("continues compaction with its no-tools prompt when Claude has managed MCP", () =>
+    Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      yield* withFakeClaudeEnv(
+        {
+          output: JSON.stringify({ type: "result", result: "Retained context" }),
+          managedMcp: true,
+          argsMustNotContain: "--strict-mcp-config",
+          stdinMustContain: "Call no tools.",
+        },
+        (generation) =>
+          Effect.gen(function* () {
+            if (!generation.generateMemorySummary)
+              return yield* Effect.die("Missing summary operation");
+            const result = yield* generation.generateMemorySummary({
+              cwd: process.cwd(),
+              instructions: "Summarize. Call no tools.",
+              context: "Context",
+              task: "Compact",
+              modelSelection: { instanceId: ProviderInstanceId.make("claude"), model: "sonnet" },
+            });
+            expect(result).toBe("Retained context");
+          }),
+      ).pipe(
+        Effect.provideService(FileSystem.FileSystem, {
+          ...fs,
+          exists: (path) =>
+            path.endsWith("managed-mcp.json") ? Effect.succeed(true) : fs.exists(path),
+        }),
+      );
+    }),
+  );
   it.effect(
     "keeps canonical built-in capabilities when a custom model collides with its alias",
     () =>

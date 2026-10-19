@@ -56,6 +56,16 @@ export const ProviderAdapterV2RuntimePolicy = Schema.Struct({
    * it; adapters use it to refuse native mode choices a user makes beside T3 Code's own.
    */
   maxRuntimeMode: Schema.optional(RuntimeMode),
+  reasoningEffort: Schema.optional(Schema.String),
+  botChat: Schema.optional(
+    Schema.Struct({
+      systemPrompt: Schema.String,
+      runId: RunId,
+      // Lets the provider load its own global and workspace instructions and skills.
+      loadResources: Schema.Boolean,
+    }),
+  ),
+  memoryContext: Schema.optional(Schema.Struct({ threadId: ThreadId, runId: RunId })),
 });
 export type ProviderAdapterV2RuntimePolicy = typeof ProviderAdapterV2RuntimePolicy.Type;
 

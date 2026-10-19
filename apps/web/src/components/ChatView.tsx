@@ -3,6 +3,8 @@ import { workspaceAreaProps } from "../lib/workspaceFocus";
 import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
 import { resolveNewThreadModelSelection } from "@t3tools/shared/usageLimits";
 import { queuedRunEditBlockedReason } from "@t3tools/client-runtime/queued-run-edit";
+import { BotRightPanel } from "./bots/BotRightPanel";
+import { useBotThreadContext } from "../state/bots";
 import { ScrollToEndButton, WorkspaceFileDropOverlay } from "./chat/TimelineOverlays";
 import { usePasteToFocusComposer } from "./chat/usePasteToFocusComposer";
 import { configuredHostedAppUrl } from "../hostedPairing";
@@ -92,6 +94,7 @@ import {
   getUserQueuedThreadRuns,
   threadSupportsProviderHandoff,
 } from "@t3tools/client-runtime/state/thread-workflows";
+import { threadRuntimeIsActive } from "@t3tools/client-runtime/state/models";
 import { resolvePendingHandoff } from "@t3tools/client-runtime/handoff";
 import { HandoffRow } from "./chat/V2LifecycleRow";
 import {
@@ -809,7 +812,8 @@ export default function ChatView(props: ChatViewProps) {
     serverProjection === null ? null : deriveProviderSubagentStatus(serverProjection);
   const isProviderSubagent =
     serverThread !== null && isProviderNativeSubagentThread(serverThread.source);
-  const supportsProviderSwitchingViaHandoff = threadSupportsProviderHandoff(serverProjection);
+  const supportsProviderSwitchingViaHandoff =
+    serverThread?.botId !== undefined || threadSupportsProviderHandoff(serverProjection);
   const activeLatestRun = isServerThread ? serverLatestRun : (activeThread?.latestRun ?? null);
   const activeActivityRun = isServerThread ? serverActivityRun : (activeThread?.latestRun ?? null);
   const activeRuntime = isServerThread ? serverRuntime : (activeThread?.runtime ?? null);
@@ -1067,6 +1071,8 @@ export default function ChatView(props: ChatViewProps) {
   const canReuseTerminal = activeThreadKnownSessionsRaw !== null;
   const previewPanelOpen = activeRightPanelKind === "preview" && browserAvailable;
   const rightPanelOpen = rightPanelState.isOpen;
+  const isBotThread = useBotThreadContext(activeThreadRef) !== null;
+  const botPanelOpen = isBotThread && rightPanelState.botPanelOpen === true;
   const { active: panelAnimationsActive, durationMs: panelAnimationDurationMs } =
     usePanelAnimationSettings();
   const rightPanelPresenceValue = {
@@ -1080,7 +1086,18 @@ export default function ChatView(props: ChatViewProps) {
     activeThreadKey,
     panelAnimationDurationMs,
   );
-  const rightPanelPresent = rightPanelPresence.present;
+  const rightPanelPresent = rightPanelPresence.present && !botPanelOpen;
+  const botPanelPresence = usePanelPresence(
+    botPanelOpen,
+    activeThreadKey,
+    panelAnimationsActive,
+    activeThreadKey,
+    panelAnimationDurationMs,
+  );
+  const botPanelPresent = botPanelPresence.present && isBotThread && !rightPanelOpen;
+  const closeBotPanel = useStableCallback(() => {
+    if (activeThreadRef) useRightPanelStore.getState().closeBotPanel(activeThreadRef);
+  });
   const rightPanelControlsInPanel =
     shouldUsePlanSidebarSheet && rightPanelPresent && rightPanelOpen;
   const rightPanelControlsAtRoot = rightPanelPresent && !shouldUsePlanSidebarSheet;
@@ -1460,7 +1477,11 @@ export default function ChatView(props: ChatViewProps) {
     (isSendBusy || phase === "connecting" || phase === "running") &&
     (compactionRunning || (compactRequestIsActive && !compactionSettled));
   const isWorking =
-    phase === "running" || isSendBusy || isCompacting || runlessWorkStartedAt !== null;
+    threadRuntimeIsActive(activeRuntime) ||
+    isSendBusy ||
+    isConnecting ||
+    isCompacting ||
+    runlessWorkStartedAt !== null;
   const activeContextWindow = deriveLatestContextWindowSnapshot(
     serverVisibleTurnItems ?? [],
     activeThreadLiveTokenUsage,
@@ -1471,8 +1492,10 @@ export default function ChatView(props: ChatViewProps) {
     deriveActiveWorkStartedAt(activeActivityRun, activeRuntime, localDispatchStartedAt) ??
     runlessWorkStartedAt;
   const activeRunPreparing = activeActivityRun?.status === "preparing";
-  const sendQueuesBehindSetup =
+  const sendDuringPreparation =
     isServerThread && (activeRunPreparing || activeActivityRun?.status === "starting");
+  const bufferBotSteers = sendDuringPreparation && serverThread?.botId !== undefined;
+  const sendQueuesBehindSetup = sendDuringPreparation && !bufferBotSteers;
   const [setupQueueSendThreadKey, setSetupQueueSendThreadKey] = useState<string | null>(null);
   const downloadFileAttachment = async (attachment: ChatFileAttachment) => {
     const connection = readPreparedConnection(environmentId);
@@ -1749,6 +1772,7 @@ export default function ChatView(props: ChatViewProps) {
         );
   const showComposerContextStrip =
     !embedded &&
+    !isBotThread &&
     shouldShowComposerContextStrip({
       isDraftHeroState,
       persistInActiveThreads: settings.persistComposerContextStrip,
@@ -1899,6 +1923,7 @@ export default function ChatView(props: ChatViewProps) {
     toggleTerminalVisibilityStable,
     shortcuts: terminalShortcuts,
   } = useChatTerminalActions({
+    isBotThread,
     environmentId,
     composerRef,
     terminalUiState,
@@ -2375,6 +2400,7 @@ export default function ChatView(props: ChatViewProps) {
     deviceStateLoaded,
     pullRequestPanelTarget,
     threadPanelPresentation,
+    isBotThread,
     isServerThread,
     embedded,
     isGitRepo,
@@ -2944,6 +2970,8 @@ export default function ChatView(props: ChatViewProps) {
     activeEnvironmentUnavailable,
     isSendBusy,
     sendQueuesBehindSetup,
+    sendDuringPreparation,
+    bufferBotSteers,
     isDraftHeroState,
     panelAnimationsActive,
     panelAnimationDurationMs,
@@ -3266,11 +3294,13 @@ export default function ChatView(props: ChatViewProps) {
     />
   ) : null;
   const panelToggleControlProps = {
+    showTerminalControl: !isBotThread,
     terminalAvailable: activeProject !== null,
     terminalOpen: terminalUiState.terminalOpen,
     terminalShortcutLabel: shortcutLabelForCommand(keybindings, "terminal.toggle"),
-    threadPanelOpen,
-    threadPanelPresentation,
+    botPanel: isBotThread,
+    threadPanelOpen: isBotThread ? botPanelOpen : threadPanelOpen,
+    threadPanelPresentation: isBotThread ? "inline" : threadPanelPresentation,
     threadPanelPopoverHandle,
     threadPanelShortcutLabel: shortcutLabelForCommand(keybindings, "threadPanel.toggle"),
     rightPanelAvailable: activeProject !== null,
@@ -3287,17 +3317,19 @@ export default function ChatView(props: ChatViewProps) {
     />
   );
   const threadPanelHeaderControl = <ThreadPanelHeaderControl {...panelToggleControlProps} />;
-  const panelLayoutControls = (
-    <WorkspaceTitlebarControls
-      showMaximizeControl={!shouldUsePlanSidebarSheet}
-      rightPanelOpen={rightPanelOpen}
-      animationsActive={panelAnimationsActive}
-      maximized={rightPanelMaximized}
-      onToggleMaximized={toggleRightPanelMaximizedStable}
-    >
-      {panelToggleControls}
-    </WorkspaceTitlebarControls>
-  );
+  const panelLayoutControls =
+    botPanelPresent && shouldUsePlanSidebarSheet ? null : (
+      <WorkspaceTitlebarControls
+        withinChat={botPanelPresent}
+        showMaximizeControl={!shouldUsePlanSidebarSheet}
+        rightPanelOpen={rightPanelOpen}
+        animationsActive={panelAnimationsActive}
+        maximized={rightPanelMaximized}
+        onToggleMaximized={toggleRightPanelMaximizedStable}
+      >
+        {panelToggleControls}
+      </WorkspaceTitlebarControls>
+    );
   const workspaceFileDropHandlers = makeWorkspaceFileDropHandlers({
     setDragActive: setIsWorkspaceFileDragActive,
     addFiles: addDroppedFilesToComposer,
@@ -3630,11 +3662,11 @@ export default function ChatView(props: ChatViewProps) {
                               projectSelectionRequired={
                                 isLocalDraftThread && activeProject === null
                               }
-                              phase={phase}
+                              phase={bufferBotSteers ? "running" : phase}
                               isCompacting={isCompacting}
                               canInterrupt={canInterruptRunningThread}
                               isSendBusy={
-                                (isSendBusy && !sendQueuesBehindSetup) ||
+                                (isSendBusy && !sendDuringPreparation) ||
                                 (setupQueueSendThreadKey !== null &&
                                   setupQueueSendThreadKey === activeThreadKey) ||
                                 queuedRunEdit.isSaving ||
@@ -3658,11 +3690,8 @@ export default function ChatView(props: ChatViewProps) {
                                             : projectCloneSendBlockReason
                               }
                               isPreparingWorktree={isPreparingWorktree && !sendQueuesBehindSetup}
-                              bannerItems={
-                                isDraftHeroState || composerBannerItems.length === 0
-                                  ? EMPTY_COMPOSER_BANNER_ITEMS
-                                  : composerBannerItems
-                              }
+                              queuedRunsControl={queuedRunsControl}
+                              bannerItems={isDraftHeroState || composerBannerItems.length === 0 ? EMPTY_COMPOSER_BANNER_ITEMS : composerBannerItems}
                               resumeCompactionTokens={resumeCompactionTokens}
                               keepFullHistory={keepFullHistory}
                               onToggleKeepFullHistory={toggleKeepFullHistoryStable}
@@ -3871,6 +3900,7 @@ export default function ChatView(props: ChatViewProps) {
                   onConfirm={handleSwitchCheckoutToThreadStable}
                 />
 
+                {!isBotThread ? (
                 <ThreadDetailsPanel
                   anchor={threadPanelPopoverAnchorRef}
                   handle={threadPanelPopoverHandle}
@@ -3940,6 +3970,7 @@ export default function ChatView(props: ChatViewProps) {
                     contextWindow: activeContextWindow,
                   }}
                 />
+                ) : null}
 
                 <PullRequestThreadDialogHost
                   threadKey={activeThreadKey}
@@ -3956,7 +3987,7 @@ export default function ChatView(props: ChatViewProps) {
         {embedded ? null : (
           <ChatTerminalDrawers
             activeThreadKey={activeThreadKey}
-            activeTerminalOpen={Boolean(terminalUiState.terminalOpen)}
+            activeTerminalOpen={!isBotThread && Boolean(terminalUiState.terminalOpen)}
             composerHeight={composerReservedHeight}
             launchContext={activeTerminalLaunchContext ?? null}
             splitShortcutLabel={splitTerminalShortcutLabel ?? undefined}
@@ -3969,6 +4000,17 @@ export default function ChatView(props: ChatViewProps) {
         )}
       </div>
 
+      {botPanelPresent && activeThreadRef && !embedded ? (
+        <BotRightPanel
+          threadRef={activeThreadRef}
+          open={botPanelOpen}
+          sheet={shouldUsePlanSidebarSheet}
+          animationDurationMs={panelAnimationsActive ? panelAnimationDurationMs : 0}
+          workspaceLayoutElement={workspaceLayoutElement}
+          widthStorageKey={`sora:bot-panel-width:${activeThreadKey}`}
+          onClose={closeBotPanel}
+        />
+      ) : null}
       {rightPanelPresent && activeThreadRef && !embedded ? (
         <ChatRightPanel
           sheet={shouldUsePlanSidebarSheet}

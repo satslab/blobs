@@ -1443,6 +1443,7 @@ function OpenSenderThreadButton(props: {
 function ThreadAutomationMessageRow(props: {
   readonly environmentId: EnvironmentId;
   readonly text: string;
+  readonly sourceLabel?: string | undefined;
   readonly context?: OrchestrationMessageContext;
   readonly scheduledTaskId: ScheduledTaskId | undefined;
   readonly timestampLabel: string;
@@ -1465,7 +1466,7 @@ function ThreadAutomationMessageRow(props: {
       : null,
   );
   const taskTitle = tasks.data?.tasks.find((task) => task.id === props.scheduledTaskId)?.title;
-  const summary = taskTitle ?? props.text.trim().split(/\r?\n/, 1)[0] ?? "";
+  const summary = taskTitle ?? props.sourceLabel ?? props.text.trim().split(/\r?\n/, 1)[0] ?? "";
 
   return (
     <View className="mb-5 items-end">
@@ -1914,6 +1915,7 @@ function renderFeedEntry(
         <ThreadAutomationMessageRow
           environmentId={props.environmentId}
           text={presentation.text}
+          sourceLabel={presentation.sourceLabel}
           context={message.context}
           scheduledTaskId={presentation.scheduledTaskId}
           timestampLabel={timestampLabel}

@@ -97,6 +97,7 @@ export function mergeOlderHistoryIntoProjection(
             currentItem.type !== "approval_request" &&
             currentItem.type !== "user_input_request") ||
           !isOrchestrationV2TurnItemVisible({
+            bot: projection.thread.botId !== undefined,
             item: currentItem,
             runs: projection.runs,
             attempts: projection.attempts,

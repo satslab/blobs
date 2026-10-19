@@ -821,7 +821,11 @@ const make = Effect.gen(function* () {
         threadId: input.threadId,
       });
     }
-    const steerableRun = latestSteerableRun(target);
+    const steerableRun =
+      latestSteerableRun(target) ??
+      (input.mode === "steer" && target.thread.botId !== undefined
+        ? target.runs.findLast((run) => run.status === "preparing" || run.status === "starting")
+        : undefined);
     // A fresh send never joins a running turn, so it needs none to steer or restart.
     const mode =
       input.freshContext && (input.mode === "steer" || input.mode === "restart")

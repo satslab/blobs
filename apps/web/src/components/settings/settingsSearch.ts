@@ -38,7 +38,8 @@ export type SettingsPath =
   | "/settings/maintenance"
   | "/settings/labs"
   | "/settings/about"
-  | "/settings/archived";
+  | "/settings/archived"
+  | "/settings/bots";
 
 export type SettingsSearchScope =
   | "environment"
@@ -95,6 +96,7 @@ export const SETTINGS_SECTION_LABELS: Readonly<Record<SettingsPath, string>> = {
   "/settings/diffs": "Diffs & pull requests",
   "/settings/keybindings": "Keybindings",
   "/settings/snap-shot": "SnapShots",
+  "/settings/bots": "Bots",
   "/settings/providers": "Providers",
   "/settings/threads": "Threads",
   "/settings/browser": "Browser",
@@ -219,6 +221,13 @@ const SOURCE_CONTROL_HOST_TERMS = sourceControlClients.definitions
   .join(" ");
 
 export const SETTINGS_SEARCH_ITEMS = [
+  {
+    id: "bot-management",
+    title: "Manage bots",
+    to: "/settings/bots",
+    searchTerms: ["memory", "create", "transfer", "environment"],
+    scope: "environment-defaults",
+  },
   {
     id: "storage-worktree-keep-when",
     targetId: "storage-worktrees",
@@ -787,6 +796,26 @@ export const SETTINGS_SEARCH_ITEMS = [
     desktopOnly: true,
   },
   {
+    id: "memory-compaction-concurrency",
+    title: "Memory compaction concurrency",
+    to: "/settings/bots",
+    scope: "environment-defaults",
+    searchTerms: ["memory summary parallel requests rate limit"],
+  },
+  {
+    id: "memory-compaction-model",
+    title: "Memory compaction model",
+    to: "/settings/bots",
+    scope: "environment-defaults",
+    searchTerms: ["memory chat summary summarization compression provider"],
+  },
+  {
+    id: "bot-load-resources",
+    title: "Bot instructions and skills",
+    to: "/settings/bots",
+    searchTerms: ["bot AGENTS.md CLAUDE.md skills instruction files resources load memory"],
+  },
+  {
     id: "text-generation-model",
     title: "Text generation model",
     to: "/settings/threads",
@@ -1252,7 +1281,9 @@ export const SETTINGS_SEARCH_ITEMS = [
     id: "remote-environments",
     title: "Environments",
     to: "/settings/connections",
-    searchTerms: ["add pair backend host code ssh config agent tunnel saved t3 connect"],
+    searchTerms: [
+      "add pair backend host code ssh config agent tunnel saved t3 connect",
+    ],
   },
   {
     id: "load-balancing",
@@ -1321,6 +1352,7 @@ const SETTINGS_CATEGORY_SCOPES: Readonly<Record<SettingsPath, SettingsSearchScop
   "/settings/labs": null,
   "/settings/about": null,
   "/settings/archived": "project-defaults",
+  "/settings/bots": "environment-defaults",
 };
 
 const RENAMED_SETTINGS_PATHS: Readonly<Record<string, SettingsPath>> = {
