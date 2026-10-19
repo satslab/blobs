@@ -2183,6 +2183,7 @@ export const OrchestrationV2ShellSnapshot = Schema.Struct({
   ...OrchestrationV2ThreadShellSnapshot.fields,
   projects: Schema.Array(OrchestrationProjectShell),
   olderSettled: Schema.optionalKey(OrchestrationV2OlderSettledThreads),
+  botThreads: Schema.optionalKey(Schema.Array(OrchestrationV2ThreadShell)),
 });
 export type OrchestrationV2ShellSnapshot = typeof OrchestrationV2ShellSnapshot.Type;
 
@@ -2207,6 +2208,7 @@ export const OrchestrationV2ShellStreamItem = Schema.Union([
   }),
   Schema.Struct({
     kind: Schema.Literal("thread.updated"),
+    botThread: Schema.optionalKey(Schema.Boolean),
     sequence: NonNegativeInt,
     location: Schema.Literals(["active", "archive"]),
     thread: OrchestrationV2ThreadShell,
@@ -2692,6 +2694,7 @@ export const OrchestrationV2ShellSnapshotJson = OrchestrationV2ShellSnapshot.map
   (fields) => ({
     ...fields,
     threads: Schema.Array(OrchestrationV2ThreadShellJson),
+    botThreads: Schema.optionalKey(Schema.Array(OrchestrationV2ThreadShellJson)),
     archivedThreads: Schema.Array(OrchestrationV2ThreadShellJson),
   }),
 );
@@ -3619,6 +3622,7 @@ export const OrchestrationV2SubscribeShellInput = Schema.Struct({
    * `getOlderSettledThreads`. Send only to servers that advertise `shellOlderSettled`.
    */
   omitOlderSettled: Schema.optionalKey(Schema.Boolean),
+  separateBotThreads: Schema.optionalKey(Schema.Boolean),
 });
 export type OrchestrationV2SubscribeShellInput = typeof OrchestrationV2SubscribeShellInput.Type;
 

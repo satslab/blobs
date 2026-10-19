@@ -221,6 +221,7 @@ export function omitOlderSettledShells(input: {
 }
 
 interface ShellSubscriberOptions {
+  readonly separateBotThreads?: boolean;
   readonly omitIdleSubagents: boolean;
   readonly omitOlderSettled: boolean;
 }
@@ -230,15 +231,18 @@ function trimShellSnapshot(
   facts: ShellTrimFacts,
   options: ShellSubscriberOptions & { readonly now: DateTime.Utc },
 ): OrchestrationV2ShellSnapshot {
+  const botThreads = options.separateBotThreads ? base.threads.filter((thread) => thread.botId !== undefined) : undefined;
+  const ordinary = options.separateBotThreads ? base.threads.filter((thread) => thread.botId === undefined) : base.threads;
+  const partition = botThreads === undefined ? {} : { botThreads };
   const threads = options.omitIdleSubagents
-    ? omitIdleSubagentShellsWith(base.threads, facts)
-    : base.threads;
-  if (!options.omitOlderSettled) return { ...base, threads };
+    ? omitIdleSubagentShellsWith(ordinary, facts)
+    : ordinary;
+  if (!options.omitOlderSettled) return { ...base, ...partition, threads };
   const older = omitOlderSettledShellsWith(
     { threads, snapshotSequence: base.snapshotSequence, now: options.now },
     facts,
   );
-  return { ...base, threads: older.threads, olderSettled: older.olderSettled };
+  return { ...base, ...partition, threads: older.threads, olderSettled: older.olderSettled };
 }
 
 /**
@@ -249,8 +253,9 @@ function shellSubscriberThreadIds(
   index: ReadonlyArray<ActiveShellIndexEntry>,
   options: ShellSubscriberOptions,
 ): ReadonlyArray<ThreadId> {
-  const facts = shellTrimFacts(index);
-  const subagents = index.filter(
+  const ordinary = options.separateBotThreads ? index.filter((entry) => entry.botId === undefined) : index;
+  const facts = shellTrimFacts(ordinary);
+  const subagents = ordinary.filter(
     (entry) =>
       entry.lineage.relationshipToParent === "subagent" &&
       (!options.omitIdleSubagents || entry.mayBeLive || facts.subagentParentIds.has(entry.id)),
@@ -259,7 +264,7 @@ function shellSubscriberThreadIds(
   const keptSubagentIds = new Set(subagents.map((entry) => entry.id));
   const beforeMs = facts.olderSettledBeforeMs;
   return index.flatMap((entry) =>
-    entry.lineage.relationshipToParent === "subagent"
+    options.separateBotThreads && entry.botId !== undefined ? [entry.id] : entry.lineage.relationshipToParent === "subagent"
       ? keptSubagentIds.has(entry.id)
         ? [entry.id]
         : []
@@ -273,6 +278,12 @@ function shellSubscriberThreadIds(
         ? [entry.id]
         : [],
   );
+}
+
+export function shellSnapshotForSubscriber(base: OrchestrationV2ShellSnapshot, options: ShellSubscriberOptions & { readonly now: DateTime.Utc }) {
+  const rows = options.separateBotThreads ? base.threads.filter((row) => row.botId === undefined) : base.threads;
+  const facts = shellTrimFacts(rows);
+  return { snapshot: trimShellSnapshot(base, facts, options), subagentThreadIds: facts.subagentThreadIds };
 }
 
 /**
@@ -311,7 +322,8 @@ export const loadSubscriberShellSnapshot = Effect.fn("ShellStream.loadSubscriber
       threads: yield* read.decodeThreads,
       snapshotSequence: read.snapshotSequence,
     });
-    const facts = shellTrimFacts(read.index ?? base.threads);
+    const rows = read.index ?? base.threads;
+    const facts = shellTrimFacts(input.options.separateBotThreads ? rows.filter((row) => row.botId === undefined) : rows);
     return {
       snapshot: trimShellSnapshot(base, facts, { ...input.options, now: yield* DateTime.now }),
       subagentThreadIds: facts.subagentThreadIds,
@@ -657,6 +669,7 @@ export function skipUnchangedThreadShells<A extends OrchestrationV2ShellStreamIt
 export function shellStreamItemFromThreadShell(input: {
   readonly stored: Extract<ShellApplicationEvent, { readonly event: unknown }>;
   readonly shell: OrchestrationV2ThreadShell | null;
+  readonly separateBotThreads?: boolean;
 }): Extract<
   OrchestrationV2ShellStreamItem,
   { readonly kind: "thread.updated" | "thread.removed" }
@@ -675,6 +688,7 @@ export function shellStreamItemFromThreadShell(input: {
       sequence: input.stored.sequence,
       location: "active",
       thread: input.shell,
+      ...(input.separateBotThreads && input.shell.botId !== undefined ? { botThread: true } : {}),
     };
   }
 
