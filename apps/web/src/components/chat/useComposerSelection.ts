@@ -1,3 +1,4 @@
+import { botChatProviderDisabledReason } from "@t3tools/shared/botChat";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 import type { UnifiedSettings } from "@t3tools/contracts";
 import type { Dispatch } from "react";
@@ -128,7 +129,7 @@ export function useComposerSelection(input: ComposerSelectionInput) {
   const hasStartedSession = activeRuntime !== null;
   const runtimeProviderInstanceId = activeRuntime?.providerInstanceId ?? null;
   const currentModelSelection = activeThread?.modelSelection ?? null;
-  const getModelDisabledReason = makeModelDisabledReason(
+  const getStartedModelDisabledReason = makeModelDisabledReason(
     currentModelSelection
       ? {
           hasStartedSession,
@@ -138,6 +139,16 @@ export function useComposerSelection(input: ComposerSelectionInput) {
         }
       : null,
   );
+
+  const getModelDisabledReason = (instanceId: ProviderInstanceId, model: string) => {
+    if (activeThread?.botId) {
+      const provider = providerStatuses.find((entry) => entry.instanceId === instanceId);
+      return provider
+        ? botChatProviderDisabledReason(provider)
+        : "This provider does not support bot chat.";
+    }
+    return getStartedModelDisabledReason(instanceId, model);
+  };
 
   const onProviderModelSelect = (
     instanceId: ProviderInstanceId,
@@ -190,7 +201,8 @@ export function useComposerSelection(input: ComposerSelectionInput) {
         ? { instanceId, model: resolvedModel, options: [...rememberedOptions] }
         : { instanceId, model: resolvedModel };
     const modelChangeBlockReason = getStartedThreadModelChangeBlockReason({
-      hasStartedSession: activeRuntime !== null,
+      providers: providerStatuses,
+      hasStartedSession: activeThread?.botId === undefined && activeRuntime !== null,
       supportsProviderSwitchingViaHandoff,
       currentModelSelection: activeThread.modelSelection,
       currentProviderInstanceId: activeRuntime?.providerInstanceId ?? null,

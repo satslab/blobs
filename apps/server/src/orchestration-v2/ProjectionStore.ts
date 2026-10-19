@@ -1207,6 +1207,7 @@ function activeLocalTurnItems(
   projection: OrchestrationV2ThreadProjection,
 ): Array<OrchestrationV2ProjectedTurnItem> {
   const isVisible = createOrchestrationV2TurnItemVisibility({
+    bot: projection.thread.botId !== undefined,
     runs: projection.runs,
     attempts: projection.attempts,
     items: projection.turnItems,
@@ -1561,6 +1562,10 @@ export function threadShellFromProjection(
     snoozedAt: projection.thread.snoozedAt ?? null,
     pinnedAt: projection.thread.pinnedAt ?? null,
 
+    botId: projection.thread.botId,
+    ...(projection.thread.launchedByThreadId === undefined
+      ? {}
+      : { launchedByThreadId: projection.thread.launchedByThreadId }),
     autoSettleDisabledAt: projection.thread.autoSettleDisabledAt ?? null,
     pinOrderKey: projection.thread.pinOrderKey ?? null,
     lastVisitedAt: projection.thread.lastVisitedAt,
@@ -1827,6 +1832,10 @@ function shellFromState(input: {
     snoozedAt: input.state.thread.snoozedAt ?? null,
     pinnedAt: input.state.thread.pinnedAt ?? null,
 
+    botId: input.state.thread.botId,
+    ...(input.state.thread.launchedByThreadId === undefined
+      ? {}
+      : { launchedByThreadId: input.state.thread.launchedByThreadId }),
     autoSettleDisabledAt: input.state.thread.autoSettleDisabledAt ?? null,
     pinOrderKey: input.state.thread.pinOrderKey ?? null,
     lastVisitedAt: input.state.thread.lastVisitedAt,
@@ -5411,6 +5420,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
       >["inputIntent"];
       readonly createdBy?: "user" | "agent" | "system";
       readonly messageId?: MessageId;
+      readonly text?: string;
       readonly runStatus?: string | undefined;
       readonly attemptId?: string | null;
       readonly attemptStatus?: string | null;
@@ -5447,6 +5457,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
           input_intent: NonNullable<TimelineIndexItem["inputIntent"]> | null;
           created_by: "user" | "agent" | "system" | null;
           message_id: string | null;
+          silent_text: string | null;
           status: OrchestrationV2TurnItem["status"];
           ordinal: number;
           persistent_output: number;
@@ -5460,7 +5471,8 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
           } AS persistent_output,
           CASE WHEN item.type = 'user_message' THEN json_extract(item.payload_json, '$.inputIntent') END AS input_intent,
           CASE WHEN item.type = 'user_message' THEN json_extract(item.payload_json, '$.createdBy') END AS created_by,
-          CASE WHEN item.type IN ('user_message', 'assistant_message') THEN json_extract(item.payload_json, '$.messageId') END AS message_id
+          CASE WHEN item.type IN ('user_message', 'assistant_message') THEN json_extract(item.payload_json, '$.messageId') END AS message_id,
+          CASE WHEN item.type = 'assistant_message' AND trim(json_extract(item.payload_json, '$.text'), char(9,10,13,32)) = 'NO_UPDATES' THEN 'NO_UPDATES' END AS silent_text
         FROM orchestration_v2_projection_turn_items AS item
         ${
           includePersistentOutput
@@ -5482,6 +5494,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
           nodeId: row.node_id === null ? null : NodeId.make(row.node_id),
           parentItemId: row.parent_item_id === null ? null : TurnItemId.make(row.parent_item_id),
           type: row.type,
+          ...(row.silent_text === null ? {} : { text: row.silent_text }),
           status: row.status,
           ordinal: row.ordinal,
           runStatus: row.run_id === null ? undefined : runStatuses.get(row.run_id),
@@ -5499,6 +5512,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
           item,
         }));
         const isVisible = createOrchestrationV2TurnItemVisibility({
+          bot: records.thread.botId !== undefined,
           runs: records.runs,
           attempts: records.attempts,
           items,

@@ -107,6 +107,7 @@ const assertShellIndexCoversShells = Effect.fnUntraced(function* () {
 
 const addRolledBackRecoveryCandidate = Effect.fn("addRolledBackRecoveryCandidate")(function* (
   suffix: string,
+  botId?: BotId,
 ) {
   const projectionStore = yield* ProjectionStore.ProjectionStoreV2;
   const now = yield* DateTime.now;
@@ -142,6 +143,7 @@ const addRolledBackRecoveryCandidate = Effect.fn("addRolledBackRecoveryCandidate
       id: threadId,
       projectId: ProjectId.make(`project:${suffix}`),
       title: "Rolled-back recovery candidate",
+      ...(botId === undefined ? {} : { botId }),
       providerInstanceId,
       modelSelection,
       runtimeMode: "full-access",
@@ -4019,12 +4021,12 @@ it.layer(layerTest)("ProjectionStoreV2", (it) => {
           const sqlShell = (yield* projectionStore.getShellSnapshot()).threads.find(
             (row) => row.id === threadId,
           )!;
-          const memoryShell = ProjectionStore.threadShellFromProjection(projection);
+          const botShell = ProjectionStore.threadShellFromProjection(projection);
           const expected = activityStatus === "completed" ? null : DateTime.toEpochMillis(now);
           const timestamp = (value: DateTime.Utc | null | undefined) =>
             value == null ? null : DateTime.toEpochMillis(value);
           assert.equal(timestamp(sqlShell.activityRunStartedAt), expected);
-          assert.equal(timestamp(memoryShell.activityRunStartedAt), expected);
+          assert.equal(timestamp(botShell.activityRunStartedAt), expected);
           assert.equal(sqlShell.latestRunId, "run:clock:newer");
         }
       }
@@ -4349,10 +4351,10 @@ it.layer(layerTest)("ProjectionStoreV2", (it) => {
         lastErrorClass: string | null,
       ) {
         const projection = yield* store.getThreadProjection(threadId);
-        const memoryShell = ProjectionStore.threadShellFromProjection(projection);
+        const botShell = ProjectionStore.threadShellFromProjection(projection);
         const shells = yield* store.getShellSnapshot();
         const sqlShell = shells.threads.find((row) => row.id === threadId)!;
-        for (const shell of [memoryShell, sqlShell]) {
+        for (const shell of [botShell, sqlShell]) {
           assert.equal(shell.lastError, lastError);
           assert.equal(shell.lastErrorClass, lastErrorClass);
           assert.equal(
@@ -4417,12 +4419,12 @@ it.layer(layerTest)("ProjectionStoreV2", (it) => {
       });
       yield* assertSummary("Plan limit reached.", "usage_limit");
       const queuedProjection = yield* store.getThreadProjection(threadId);
-      const queuedMemoryShell = ProjectionStore.threadShellFromProjection(queuedProjection);
+      const queuedBotShell = ProjectionStore.threadShellFromProjection(queuedProjection);
       const queuedSqlShell = (yield* store.getShellSnapshot()).threads.find(
         (row) => row.id === threadId,
       )!;
-      assert.equal(queuedMemoryShell.status, "failed");
-      assert.equal(queuedMemoryShell.latestRunId, original.id);
+      assert.equal(queuedBotShell.status, "failed");
+      assert.equal(queuedBotShell.latestRunId, original.id);
       assert.equal(queuedSqlShell.status, "failed");
       assert.equal(queuedSqlShell.latestRunId, original.id);
       assert.equal(queuedProjection.runs.find((run) => run.id === queuedRunId)?.status, "queued");
@@ -5076,14 +5078,14 @@ it.layer(layerTest)("ProjectionStoreV2", (it) => {
         const thread = shell.threads.find((candidate) => candidate.id === threadId);
         assert.isDefined(thread);
         const projection = yield* projectionStore.getThreadProjection(threadId);
-        const memoryShell = ProjectionStore.threadShellFromProjection(projection);
+        const botShell = ProjectionStore.threadShellFromProjection(projection);
         const terminal = status === "completed" || status === "rolled_back";
         assert.deepEqual(
-          [thread?.pendingRuntimeRequest?.id, memoryShell.pendingRuntimeRequest?.id],
+          [thread?.pendingRuntimeRequest?.id, botShell.pendingRuntimeRequest?.id],
           terminal ? [requestId, requestId] : ["secret:b", "secret:b"],
         );
         assert.deepEqual(
-          [thread?.pendingRuntimeRequest?.blocking, memoryShell.pendingRuntimeRequest?.blocking],
+          [thread?.pendingRuntimeRequest?.blocking, botShell.pendingRuntimeRequest?.blocking],
           terminal ? [false, false] : [true, true],
         );
       }
@@ -6826,3 +6828,43 @@ it.layer(layerTest)("ProjectionStoreV2", (it) => {
     }),
   );
 });
+
+it.effect("keeps silent bot responses stored but out of snapshots and paged timelines", () =>
+  Effect.gen(function* () {
+    const store = yield* ProjectionStore.ProjectionStoreV2;
+    const threadId = yield* addRolledBackRecoveryCandidate("silent-bot", BotId.make("silent-bot"));
+    const now = yield* DateTime.now;
+    const itemId = TurnItemId.make("silent-response");
+    yield* store.apply({
+      id: EventId.make("silent-response"),
+      type: "turn-item.updated",
+      threadId,
+      occurredAt: now,
+      payload: {
+        id: itemId,
+        threadId,
+        runId: null,
+        nodeId: null,
+        providerThreadId: null,
+        providerTurnId: null,
+        nativeItemRef: null,
+        parentItemId: null,
+        ordinal: 100,
+        status: "completed",
+        title: null,
+        startedAt: now,
+        completedAt: now,
+        updatedAt: now,
+        type: "assistant_message",
+        messageId: MessageId.make("silent-response"),
+        text: "NO_UPDATES",
+        streaming: false,
+      },
+    });
+    const projection = yield* store.getThreadProjection(threadId);
+    assert.isTrue(projection.turnItems.some((item) => item.id === itemId));
+    assert.isFalse(projection.visibleTurnItems.some((row) => row.sourceItemId === itemId));
+    const window = yield* store.getThreadSnapshotWindow(threadId, { rowLimit: 10 });
+    assert.isFalse(window.projection.visibleTurnItems.some((row) => row.sourceItemId === itemId));
+  }).pipe(Effect.provide(layerTest)),
+);
