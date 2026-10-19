@@ -1,5 +1,10 @@
+import { SidebarThreadUndoNotice } from "./sidebar/SidebarThreadUndoNotice";
 import { type EnvironmentId, type ScopedProjectRef } from "@t3tools/contracts";
 import type { EnvironmentServerConfig } from "@t3tools/client-runtime/connection";
+import {
+  FloatingThreadFilters,
+  type FloatingThreadFilter,
+} from "./alternate-layout/FloatingThreadFilters";
 import { ThreadContextDragGhost } from "./chat/ThreadContextDragGhost";
 import {
   dropThreadContext,
@@ -357,6 +362,7 @@ function useSidebarThreads(input: {
   readonly serverConfigs: ReadonlyMap<EnvironmentId, EnvironmentServerConfig>;
   readonly optimisticDrop: SidebarOptimisticDrop | null;
   readonly routeThreadRef: ScopedThreadRef | null;
+  readonly alternate?: boolean;
 }) {
   const { projectScopeKey, scopedProjectKeys, serverConfigs, optimisticDrop, routeThreadRef } =
     input;
@@ -432,12 +438,14 @@ function useSidebarThreads(input: {
     }
     return visible;
   })();
-  const renderedSettledThreads = settledShelfExpanded
-    ? visibleSettledThreads
-    : routeThreadOnly(visibleSettledThreads, routeRowThreadKey);
-  const visibleSnoozedThreads = snoozedShelfExpanded
-    ? snoozedThreads
-    : routeThreadOnly(snoozedThreads, routeRowThreadKey);
+  const renderedSettledThreads =
+    input.alternate || settledShelfExpanded
+      ? visibleSettledThreads
+      : routeThreadOnly(visibleSettledThreads, routeRowThreadKey);
+  const visibleSnoozedThreads =
+    input.alternate || snoozedShelfExpanded
+      ? snoozedThreads
+      : routeThreadOnly(snoozedThreads, routeRowThreadKey);
   const visibleWorkingThreads = workingShelfExpanded
     ? workingThreads
     : routeThreadOnly(workingThreads, routeRowThreadKey);
@@ -737,7 +745,15 @@ const SIDEBAR_DRAG_DISTANCE = 6;
 
 const SIDEBAR_DRAG_LABEL_HEIGHT = 24;
 
-export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReveal }) {
+export default function Sidebar({
+  presentation = "default",
+  routeReveal,
+}: {
+  presentation?: "default" | "alternate";
+  routeReveal: SidebarRouteReveal;
+}) {
+  const alternate = presentation === "alternate";
+  const [alternateFilter, setAlternateFilter] = useState<FloatingThreadFilter>("all");
   const {
     projects,
     serverConfigs,
@@ -1051,7 +1067,24 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     serverConfigs,
     optimisticDrop,
     routeThreadRef,
+    alternate,
   });
+
+  // All holds everything the default sidebar shows above its snoozed and settled shelves.
+  const matchesAlternateFilter = (thread: EnvironmentThreadShell) => {
+    const section = sectionByThreadKey.get(threadShellKey(thread));
+    return (
+      !alternate ||
+      (alternateFilter === "all"
+        ? section === "pinned" || section === "active" || section === "working"
+        : section === alternateFilter)
+    );
+  };
+  const alternateCounts = {
+    all: pinnedThreads.length + activeThreads.length + workingThreads.length,
+    snoozed: snoozedThreads.length,
+    settled: settledThreads.length,
+  };
 
   const isSearchingThreads = threadSearchQuery.trim().length > 0;
 
@@ -1078,6 +1111,12 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
       setProjectScopeKey(null);
       return;
     }
+    if (pendingKey !== null && alternate && !matchesAlternateFilter(thread)) {
+      const section = sectionByThreadKey.get(revealKey);
+      if (section === "snoozed" || section === "settled") setAlternateFilter(section);
+      else setAlternateFilter("all");
+      return;
+    }
     const activeRow = document.querySelector('[data-sidebar="content"] [aria-current="page"]');
     if (!activeRow) return;
     completeSidebarRouteReveal(routeReveal);
@@ -1090,6 +1129,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     threads,
     projectScopeKey,
     isSearchingThreads,
+    alternateFilter,
   ]);
 
   // Ranked across environments as the palette ranks them, so one
@@ -1130,7 +1170,11 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
   );
   if (messageOrder !== shownMessageOrder) setShownMessageOrder(messageOrder);
   const { titleMatches: threadTitleResults, contentMatches: threadContentResults } =
-    searchSidebarThreads(searchableThreads, threadSearchQuery, new Set(messageOrder.keys));
+    searchSidebarThreads(
+      alternate ? searchableThreads.filter(matchesAlternateFilter) : searchableThreads,
+      threadSearchQuery,
+      new Set(messageOrder.keys),
+    );
   const threadSearchResults = [...threadTitleResults, ...threadContentResults];
   // Only rows listed for their messages show one, and open find on it.
   const threadSearchMatchByKey = new Map(
@@ -1664,6 +1708,28 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     ) {
       return [];
     }
+    if (alternate) {
+      const filteredRows = (list: readonly EnvironmentThreadShell[], section: SidebarSection) =>
+        rowsOf(list.filter(matchesAlternateFilter), section);
+      if (alternateFilter === "all") {
+        return [
+          { kind: "marker", marker: "pinned-header" },
+          ...filteredRows(pinnedThreads, "pinned"),
+          { kind: "marker", marker: "pinned-divider" },
+          { kind: "marker", marker: "active-placeholder" },
+          ...filteredRows(activeThreads, "active"),
+          ...(workingThreads.length > 0
+            ? [
+                { kind: "marker", marker: "working-header" } as const,
+                ...filteredRows(visibleWorkingThreads, "working"),
+              ]
+            : []),
+        ];
+      }
+      return alternateFilter === "snoozed"
+        ? rowsOf(snoozedThreads, "snoozed")
+        : rowsOf(renderedSettledThreads, "settled");
+    }
     const items: SidebarListItem[] = [{ kind: "marker", marker: "pinned-header" }];
     const pinnedRows = rowsOf(pinnedThreads, "pinned");
     items.push(...pinnedRows);
@@ -1747,7 +1813,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     boundaryLabelHeight: SIDEBAR_DRAG_LABEL_HEIGHT,
     settledOrder: draggedSettledOrder,
     ...(draggedActiveOrder === undefined ? {} : { activeOrder: draggedActiveOrder }),
-    settledExpanded: settledShelfExpanded,
+    settledExpanded: alternate || settledShelfExpanded,
     settledVisibleCount,
     routeThreadKey: routeRowThreadKey,
     snoozedThreadCount: snoozedThreads.length,
@@ -1763,7 +1829,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     return createSidebarCollisionDetection(
       (id) => {
         const target = resolveSidebarDropTarget(sidebarListItems, draggedThreadKey, id);
-        if (target === null) return false;
+        if (target === null || (alternate && target.section === "settled")) return false;
         return (
           planSidebarThreadDrop({
             activeKey: draggedThreadKey,
@@ -1798,7 +1864,15 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
         ? null
         : resolveSidebarDropTarget(sidebarListItems, activeKey, String(event.over.id));
     const activeThread = threadByKey.get(activeKey);
-    if (activeSection === undefined || target === null || activeThread === undefined) return;
+    if (
+      activeSection === undefined ||
+      target === null ||
+      (alternate &&
+        ((activeSection !== "pinned" && activeSection !== "active") ||
+          target.section === "settled")) ||
+      activeThread === undefined
+    )
+      return;
     const threadRef = scopeThreadRef(activeThread.environmentId, activeThread.id);
     const plan = planSidebarThreadDrop({
       activeKey,
@@ -2650,7 +2724,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
   return (
     <>
       <ThreadContextDragGhost />
-      <SidebarChromeHeader isElectron={isElectron} />
+      {!alternate ? <SidebarChromeHeader isElectron={isElectron} /> : null}
       <SidebarContent
         className="min-h-full"
         fixedHeader={
@@ -2919,6 +2993,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                             sortableId={threadKey}
                             contextDrag={isContextDrag}
                             sortableDisabled={
+                              (alternate && section !== "pinned" && section !== "active") ||
                               renamingThreadKey === threadKey ||
                               !draggableThreadKeys.has(threadKey) ||
                               optimisticDrop !== null
@@ -3013,17 +3088,19 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                         );
                       };
                       const from = isContextDrag ? null : (dragState?.activeSection ?? null);
-                      const items: ReactNode[] = [
-                        <SidebarDraftBlock
-                          key="draft-sessions"
-                          projectByKey={projectByKey}
-                          projectDisplayNameByKey={projectDisplayNameByKey}
-                          scopedProjectKeys={scopedProjectKeys}
-                          routeDraftId={routeDraftIdForRows}
-                          onNavigateToDraft={navigateToDraft}
-                          onDraftContextMenu={handleDraftContextMenu}
-                        />,
-                      ];
+                      const items: ReactNode[] = [];
+                      if (!alternate || alternateFilter === "all")
+                        items.push(
+                          <SidebarDraftBlock
+                            key="draft-sessions"
+                            projectByKey={projectByKey}
+                            projectDisplayNameByKey={projectDisplayNameByKey}
+                            scopedProjectKeys={scopedProjectKeys}
+                            routeDraftId={routeDraftIdForRows}
+                            onNavigateToDraft={navigateToDraft}
+                            onDraftContextMenu={handleDraftContextMenu}
+                          />,
+                        );
                       for (const item of sidebarListItems) {
                         if (item.kind === "thread") {
                           items.push(renderThreadRow(threadByKey.get(item.key)!, item.section));
@@ -3150,7 +3227,8 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                       }
                       return items;
                     })()}
-                    {settledShelfExpanded && hiddenSettledCount > 0 ? (
+                    {(alternate ? alternateFilter === "settled" : settledShelfExpanded) &&
+                    hiddenSettledCount > 0 ? (
                       <li className="list-none">
                         <button
                           type="button"
@@ -3197,7 +3275,19 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
           ) : null}
         </SidebarGroup>
       </SidebarContent>
-      <SidebarChromeFooter />
+      {alternate ? (
+        <SidebarGroup>
+          <div className="flex flex-col gap-2">
+            <SidebarThreadUndoNotice />
+            <FloatingThreadFilters
+              value={alternateFilter}
+              onChange={setAlternateFilter}
+              counts={alternateCounts}
+            />
+          </div>
+        </SidebarGroup>
+      ) : null}
+      {!alternate ? <SidebarChromeFooter /> : null}
     </>
   );
 }
