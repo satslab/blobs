@@ -22,6 +22,8 @@ export const ShellCacheOrigin = Schema.Struct({
   databaseMigration: Schema.NullOr(Schema.Int),
   omitIdleSubagents: Schema.Boolean,
   omitOlderSettled: Schema.Boolean,
+  /** Bot threads arrive in their own list rather than among the threads. */
+  separateBotThreads: Schema.Boolean,
   /** Epoch milliseconds of that snapshot; replay does not renew it. */
   snapshotAt: Schema.Number,
 });

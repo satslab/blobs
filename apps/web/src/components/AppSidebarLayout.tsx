@@ -40,8 +40,13 @@ import {
 import { BackgroundThreadAnnouncer } from "./BackgroundThreadAnnouncer";
 import { HistorySwipeNavigation } from "./HistorySwipeNavigation";
 import ThreadSidebar from "./Sidebar";
-import { SidebarBrandWidthProbe } from "./sidebar/SidebarChrome";
-import { isAppModalPage } from "./sidebar/mainAppLocation";
+import { BotSidebar } from "./bots/BotSidebar";
+import {
+  SidebarBrandWidthProbe,
+  SidebarModeContext,
+  type SidebarMode,
+} from "./sidebar/SidebarChrome";
+import { isAppModalPage, isSidebarUtilityPage } from "./sidebar/mainAppLocation";
 import type { SidebarRouteReveal } from "./sidebar/routeReveal";
 import { useSidebarStageBackdropVariant } from "./SidebarStageBackdrop";
 import {
@@ -405,21 +410,24 @@ function SidebarControl({ showSidebar }: { readonly showSidebar: boolean }) {
   );
 }
 
-export function AppSidebarLayout({
-  children,
-  showSidebar = true,
-}: {
-  children: ReactNode;
-  showSidebar?: boolean;
-}) {
-  const sidebarArea = workspaceAreaProps("sidebar", 0, "Threads");
+export function AppSidebarLayout({ children, showSidebar = true }: { children: ReactNode; showSidebar?: boolean }) {
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const pageMode: SidebarMode | null = pathname.startsWith("/bots")
+    ? "bots"
+    : isAppModalPage(pathname) || isSidebarUtilityPage(pathname)
+      ? null
+      : "threads";
+  const [lastMode, setLastMode] = useState<SidebarMode>("threads");
+  if (pageMode !== null && pageMode !== lastMode) setLastMode(pageMode);
+  const mode = pageMode ?? lastMode;
+  const isOnBots = mode === "bots";
+  const sidebarArea = workspaceAreaProps("sidebar", 0, isOnBots ? "Bots" : "Threads");
   const [sidebarRouteReveal] = useState<SidebarRouteReveal>(() => ({
     observedKey: null,
     pendingKey: null,
   }));
   const { active: panelAnimationsActive, durationMs: panelAnimationDurationMs } =
     usePanelAnimationSettings();
-  const pathname = useLocation({ select: (location) => location.pathname });
   const panelAnimationsSuppressed = usePanelNavigationSuppression(pathname);
   const routePanelAnimationsActive = panelAnimationsActive && !panelAnimationsSuppressed;
   const isMacosDesktop = isElectron && isMacPlatform(navigator.platform);
@@ -453,44 +461,44 @@ export function AppSidebarLayout({
   } as CSSProperties;
 
   return (
-    <PanelAnimationSuppressionProvider value={panelAnimationsSuppressed}>
-      <SidebarProvider
-        className="h-dvh! min-h-0!"
-        data-panel-animations={routePanelAnimationsActive ? "true" : "false"}
-        storageKey="chat_thread_sidebar_open"
-        style={sidebarProviderStyle}
-      >
-        {showSidebar ? (
-          <>
-            <SidebarBrandWidthProbe isElectron={isElectron} onWidthChange={setBrandWidth} />
-            <Sidebar
-              side="left"
-              collapsible="offcanvas"
-              data-app-sidebar=""
-              {...sidebarArea}
-              role="navigation"
-              aria-label="Threads"
-              resizable={{
-                maxWidth: sidebarMaximumWidth,
-                minWidth: sidebarMinimumWidth,
-                shouldAcceptWidth: ({ currentWidth, nextWidth, wrapper }) =>
-                  nextWidth <= currentWidth ||
-                  wrapper.clientWidth - nextWidth >= THREAD_MAIN_CONTENT_MIN_WIDTH,
-                storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
-                onResize: setSidebarWidth,
-              }}
-              style={windowControlsInsetStyle}
-            >
-              <ThreadSidebar routeReveal={sidebarRouteReveal} />
-              <SidebarRail onDoubleClick={resetSidebarWidth} />
-            </Sidebar>
-          </>
-        ) : null}
-        {children}
-        <BackgroundThreadAnnouncer />
-        <SidebarControl showSidebar={showSidebar} />
-        {isElectron ? <HistorySwipeNavigation /> : null}
-      </SidebarProvider>
-    </PanelAnimationSuppressionProvider>
+    <SidebarModeContext.Provider value={mode}>
+      <PanelAnimationSuppressionProvider value={panelAnimationsSuppressed}>
+        <SidebarProvider
+          className="h-dvh! min-h-0!"
+          data-panel-animations={routePanelAnimationsActive ? "true" : "false"}
+          storageKey="chat_thread_sidebar_open"
+          style={sidebarProviderStyle}
+        >
+          {showSidebar ? <>
+          <SidebarBrandWidthProbe isElectron={isElectron} onWidthChange={setBrandWidth} />
+          <Sidebar
+            side="left"
+            collapsible="offcanvas"
+            data-app-sidebar=""
+            {...sidebarArea}
+            role="navigation"
+            aria-label={isOnBots ? "Bots" : "Threads"}
+            resizable={{
+              maxWidth: sidebarMaximumWidth,
+              minWidth: sidebarMinimumWidth,
+              shouldAcceptWidth: ({ currentWidth, nextWidth, wrapper }) =>
+                nextWidth <= currentWidth ||
+                wrapper.clientWidth - nextWidth >= THREAD_MAIN_CONTENT_MIN_WIDTH,
+              storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
+              onResize: setSidebarWidth,
+            }}
+            style={windowControlsInsetStyle}
+          >
+            {isOnBots ? <BotSidebar /> : <ThreadSidebar routeReveal={sidebarRouteReveal} />}
+            <SidebarRail onDoubleClick={resetSidebarWidth} />
+          </Sidebar>
+          </> : null}
+          {children}
+          <BackgroundThreadAnnouncer />
+          <SidebarControl showSidebar={showSidebar} />
+          {isElectron ? <HistorySwipeNavigation /> : null}
+        </SidebarProvider>
+      </PanelAnimationSuppressionProvider>
+    </SidebarModeContext.Provider>
   );
 }

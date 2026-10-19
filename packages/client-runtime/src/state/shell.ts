@@ -109,6 +109,7 @@ function canResumeFrom(
     origin.databaseMigration === identity.databaseMigration &&
     origin.omitIdleSubagents === identity.omitIdleSubagents &&
     origin.omitOlderSettled === identity.omitOlderSettled &&
+    origin.separateBotThreads === identity.separateBotThreads &&
     age >= 0 &&
     age < CACHE_RESUME_MAX_AGE_MILLIS
   );
@@ -175,6 +176,7 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
         snapshot.schemaVersion === lastPersisted.snapshot.schemaVersion &&
         snapshot.projects === lastPersisted.snapshot.projects &&
         snapshot.threads === lastPersisted.snapshot.threads &&
+        snapshot.botThreads === lastPersisted.snapshot.botThreads &&
         snapshot.archivedThreads === lastPersisted.snapshot.archivedThreads
       ) {
         // Keep the live cursor without rewriting the rows. Remember it here too so a
@@ -455,6 +457,7 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
           Effect.map((config): ShellOriginIdentity => {
             const omitIdleSubagents = config.shellThreadFamilies === true;
             return {
+              separateBotThreads: config.shellBotThreads === true,
               serverVersion: config.environment.serverVersion,
               // Migrations rewrite projections without events, so a migrated server reloads.
               databaseMigration: config.environment.databaseMigration ?? null,
@@ -464,9 +467,10 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
           }),
           Effect.orElseSucceed(() => null),
         );
-        const { omitIdleSubagents, omitOlderSettled } = identity ?? {
+        const { omitIdleSubagents, omitOlderSettled, separateBotThreads } = identity ?? {
           omitIdleSubagents: false,
           omitOlderSettled: false,
+          separateBotThreads: false,
         };
         yield* Ref.set(activeSubscription, { session, identity });
         yield* Ref.set(awaitingCompletion, true);
@@ -501,6 +505,7 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
           const httpSnapshot = yield* snapshotLoader.load(prepared, {
             omitIdleSubagents,
             omitOlderSettled,
+            ...(separateBotThreads ? { separateBotThreads: true } : {}),
           });
           if (Option.isSome(httpSnapshot)) {
             yield* cancelActiveFill;
@@ -524,6 +529,7 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
         }
 
         const omission = {
+          ...(separateBotThreads ? { separateBotThreads: true as const } : {}),
           ...(omitIdleSubagents ? { omitIdleSubagents: true as const } : {}),
           ...(omitOlderSettled ? { omitOlderSettled: true as const } : {}),
         };
