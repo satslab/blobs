@@ -95,6 +95,8 @@ export interface ThreadActionMenuState {
   readonly canShareWithGuest?: boolean;
   /** A No project thread with its own folder, on a server that can promote it. */
   readonly canTurnIntoProject?: boolean;
+  /** Bot threads open the same settings page under a bot-facing name. */
+  readonly projectSettingsLabel?: string;
 }
 
 /** Local navigation, read markers, and copying remain available to read-only clients. */
@@ -237,7 +239,11 @@ export function buildThreadActionMenuItems(
         { id: "copy-thread-id", label: "Thread ID", icon: "hash" },
       ],
     },
-    { id: "project-settings", label: "Project settings", icon: "settings" },
+    {
+      id: "project-settings",
+      label: state.projectSettingsLabel ?? "Project settings",
+      icon: "settings",
+    },
     {
       id: "archive",
       label: "Archive thread",

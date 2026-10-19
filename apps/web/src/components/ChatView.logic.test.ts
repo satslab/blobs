@@ -1140,6 +1140,26 @@ describe("planComposerTurn", () => {
       shouldQueueBehindActiveRun: true,
     });
   });
+
+  it("buffers bot steers during preparation without creating another worktree", () => {
+    const preparing = {
+      ...base,
+      isServerThread: true,
+      phase: "connecting" as const,
+      bufferBotSteers: true,
+    };
+    expect(planComposerTurn({ ...preparing, dispatchMode: "steer" })).toMatchObject({
+      missingWorktreeBaseBranch: false,
+      baseBranchForWorktree: null,
+      turnDispatchMode: "steer",
+      shouldQueueBehindActiveRun: false,
+    });
+    expect(planComposerTurn({ ...preparing, dispatchMode: "queue" })).toMatchObject({
+      baseBranchForWorktree: null,
+      turnDispatchMode: "queue",
+      shouldQueueBehindActiveRun: true,
+    });
+  });
 });
 
 describe("withMessageContext", () => {

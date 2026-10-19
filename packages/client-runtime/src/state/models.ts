@@ -135,6 +135,7 @@ function threadRunStatusIsActive(status: ThreadRuntimeSummary["status"]): boolea
 }
 
 export interface EnvironmentThreadShell {
+  readonly botId?: OrchestrationV2ThreadShell["botId"];
   readonly environmentId: EnvironmentId;
   readonly id: ThreadId;
   readonly projectId: ProjectId;
@@ -280,6 +281,7 @@ export function presentThreadShell(
   const runtime = shellRuntime(thread);
   return {
     environmentId,
+    ...(thread.botId === undefined ? {} : { botId: thread.botId }),
     id: thread.id,
     projectId: thread.projectId,
     title:

@@ -44,6 +44,7 @@ interface RightPanelActionsInput {
   readonly deviceStateLoaded: boolean;
   readonly pullRequestPanelTarget: ReturnType<typeof threadPullRequestPanelTarget> | null;
   readonly threadPanelPresentation: ThreadPanelPresentation;
+  readonly isBotThread: boolean;
   readonly isServerThread: boolean;
   /** A side chat pane; the main view already answers preview bus actions. */
   readonly embedded: boolean;
@@ -230,6 +231,10 @@ export function useRightPanelActions(input: RightPanelActionsInput) {
   const toggleRightPanelStable = useStableCallback(toggleRightPanel);
   const toggleThreadPanel = () => {
     if (!activeThreadRef) return;
+    if (input.isBotThread) {
+      useRightPanelStore.getState().toggleBotPanel(activeThreadRef);
+      return;
+    }
     const store = useRightPanelStore.getState();
     if (threadPanelPresentation === "inline") {
       const open = selectThreadPanelOpen(

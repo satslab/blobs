@@ -1,3 +1,4 @@
+import { useBotAwareThreadRoute } from "../state/bots";
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import type { ThreadContextRecord, ProjectId } from "@t3tools/contracts";
 import { Link } from "@tanstack/react-router";
@@ -17,6 +18,7 @@ export function ThreadContextChip(props: {
   unreadable?: boolean;
 }) {
   const { environmentId, threadId } = props.record;
+  const route = useBotAwareThreadRoute({ environmentId, threadId });
   const shell = useThreadShell({ environmentId, threadId });
   const lookup = useEnvironmentQuery(
     shell === null && props.projectId === undefined
@@ -37,7 +39,7 @@ export function ThreadContextChip(props: {
           <ContextChip
             kind="thread"
             {...(props.unreadable ? { state: "invalid" as const } : {})}
-            render={<Link to="/$environmentId/$threadId" params={{ environmentId, threadId }} />}
+            render={<Link to={route} params={{ environmentId, threadId }} />}
             aria-label={`Thread, ${title}`}
             data-markdown-copy={props.copyMarkdown}
             className="no-underline"

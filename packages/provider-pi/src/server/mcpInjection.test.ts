@@ -1,10 +1,11 @@
 import { assert, describe, expect, it } from "@effect/vitest";
-import { EnvironmentId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ProviderInstanceId, RunId, ThreadId } from "@t3tools/contracts";
 
 import {
   T3_MCP_BEARER_ENV,
   T3_MCP_URL_ENV,
   T3_PI_RUNTIME_MODE_ENV,
+  T3_PI_MEMORY_CHAT_ENV,
   T3_PI_MCP_EXTENSION_PATH_ENV,
 } from "./mcpExtensionSource.ts";
 import * as Effect from "effect/Effect";
@@ -16,7 +17,9 @@ import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
   buildPiRpcLaunch,
   materializePiT3McpExtension,
+  piBotLaunchArgs,
   resolvePiLaunchArgs,
+  withoutPiPromptResources,
 } from "./mcpInjection.ts";
 import { PI_T3_MCP_EXTENSION_SOURCE } from "./mcpExtensionSource.ts";
 
@@ -33,6 +36,24 @@ const mcpSession = {
 };
 
 describe("pi T3 MCP injection", () => {
+  it("keeps native tools and coding instructions for workers with inherited memory", () => {
+    const launch = buildPiRpcLaunch({
+      launchArgs: [],
+      environment: { [T3_PI_MEMORY_CHAT_ENV]: "1" },
+      mcpSession: {
+        ...mcpSession,
+        endpoint: "http://127.0.0.1:43123/bot-mcp",
+        botRunId: RunId.make("parent-turn"),
+        botThreadId: ThreadId.make("parent"),
+      },
+      extensionPath: "/tmp/cache/pi-t3-mcp-extension.ts",
+    });
+    assert.equal(launch.env[T3_MCP_URL_ENV], "http://127.0.0.1:43123/bot-mcp");
+    assert.isUndefined(launch.env[T3_PI_MEMORY_CHAT_ENV]);
+    assert.notInclude(launch.args, "--no-tools");
+    assert.notInclude(launch.args, "--no-extensions");
+  });
+
   it("always adds the permission bridge and configures MCP when available", () => {
     const resolvedArgs = resolvePiLaunchArgs(
       "--extension=/home/user/.pi/agent/extensions/demo.ts --session-dir=/tmp/pi-sessions --provider=anthropic --model=claude-sonnet --tools='' --name=-review --extension-flag=kept",
@@ -205,4 +226,58 @@ describe("materializePiT3McpExtension", () => {
       expect(anomalies).toEqual([]);
     }).pipe(Effect.provide(NodeServices.layer)),
   );
+});
+
+it("removes explicit skill and prompt resources while preserving model and authentication options", () => {
+  assert.deepEqual(
+    withoutPiPromptResources([
+      "--skill",
+      "/personal/SKILL.md",
+      "--skill=/repo/SKILL.md",
+      "--system-prompt",
+      "personal",
+      "--append-system-prompt=personal",
+      "--prompt-template",
+      "/personal/prompt.md",
+      "--provider",
+      "custom",
+      "--api-key",
+      "token",
+    ]),
+    ["--provider", "custom", "--api-key", "token"],
+  );
+});
+
+describe("piBotLaunchArgs", () => {
+  const launchArgs = [
+    "--skill",
+    "/mine/SKILL.md",
+    "--system-prompt",
+    "mine",
+    "--provider",
+    "custom",
+  ];
+
+  it("drops discovery and explicit resources unless the bot loads them", () => {
+    assert.deepEqual(piBotLaunchArgs(launchArgs, { loadResources: false, systemPrompt: "bot" }), [
+      "--provider",
+      "custom",
+      "--no-context-files",
+      "--no-skills",
+      "--no-prompt-templates",
+      "--system-prompt",
+      "bot",
+    ]);
+  });
+
+  it("keeps Pi's discovery and explicit resources but always replaces the system prompt", () => {
+    assert.deepEqual(piBotLaunchArgs(launchArgs, { loadResources: true, systemPrompt: "bot" }), [
+      "--skill",
+      "/mine/SKILL.md",
+      "--provider",
+      "custom",
+      "--system-prompt",
+      "bot",
+    ]);
+  });
 });

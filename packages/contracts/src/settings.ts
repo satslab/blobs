@@ -1170,6 +1170,7 @@ export const PROJECT_SCOPED_SERVER_SETTING_KEYS = [
   "continueThreadsAfterServerUpdate",
   "responseStreamingMode",
   "speechProjectCustomWords",
+  "botLoadResources",
 ] as const;
 export type ProjectScopedServerSettingKey = (typeof PROJECT_SCOPED_SERVER_SETTING_KEYS)[number];
 
@@ -1208,6 +1209,7 @@ export const ProjectSettingsOverrides = Schema.Struct({
   continueThreadsAfterServerUpdate: Schema.optionalKey(Schema.Boolean),
   responseStreamingMode: Schema.optionalKey(ResponseStreamingMode),
   speechProjectCustomWords: Schema.optionalKey(SpeechCustomWords),
+  botLoadResources: Schema.optionalKey(Schema.Boolean),
   providerInstances: Schema.optionalKey(
     Schema.Record(ProviderInstanceId, ProjectProviderInstanceOverride),
   ),
@@ -1330,6 +1332,22 @@ export const CloudSpeechCredentials = Schema.Struct({
   openrouter: CloudSpeechCredential,
 });
 
+export const MEMORY_COMPACTION_CONCURRENCY_OPTIONS = [2, 4, 6, 8] as const;
+const MemoryCompactionConcurrency = Schema.Literals(MEMORY_COMPACTION_CONCURRENCY_OPTIONS);
+
+// Older settings allowed every integer from 1 to 8; round them up to a supported limit.
+const PersistedMemoryCompactionConcurrency = Schema.Int.check(
+  Schema.isBetween({ minimum: 1, maximum: 8 }),
+).pipe(
+  Schema.decodeTo(
+    MemoryCompactionConcurrency,
+    SchemaTransformation.transform({
+      decode: (value) => (value <= 2 ? 2 : value <= 4 ? 4 : value <= 6 ? 6 : 8),
+      encode: (value) => value,
+    }),
+  ),
+);
+
 export const ServerSettings = Schema.Struct({
   // Null means unmigrated; empty is authoritative and must not resurrect cleared preferences.
   favorites: Schema.NullOr(ModelFavorites).pipe(Schema.withDecodingDefault(Effect.succeed(null))),
@@ -1355,6 +1373,11 @@ export const ServerSettings = Schema.Struct({
   continueThreadsAfterServerUpdate: Schema.Boolean.pipe(
     Schema.withDecodingDefault(Effect.succeed(true)),
   ),
+  /**
+   * Whether root bot replies load the provider's own global and workspace
+   * instruction files and skills. Memory compaction never does.
+   */
+  botLoadResources: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
 
   enableAgentBrowserAccess: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
   cloudSpeechCredentials: CloudSpeechCredentials.pipe(
@@ -1484,6 +1507,12 @@ export const ServerSettings = Schema.Struct({
   addProjectBaseDirectory: TrimmedString.pipe(Schema.withDecodingDefault(Effect.succeed(""))),
   /** Clones default to `<addProjectBaseDirectory>/<host>/<owner>/<repo>`, like ghq. */
   ghqCloneLayout: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
+  memoryCompactionConcurrency: PersistedMemoryCompactionConcurrency.pipe(
+    Schema.withDecodingDefault(Effect.succeed(8)),
+  ),
+  memoryCompactionModelSelection: Schema.NullOr(ModelSelection).pipe(
+    Schema.withDecodingDefault(Effect.succeed(null)),
+  ),
   textGenerationModelSelection: ModelSelection.pipe(
     Schema.withDecodingDefault(
       Effect.succeed({
@@ -1802,6 +1831,7 @@ export const ServerSettingsPatch = Schema.Struct({
   responseStreamingMode: Schema.optionalKey(ResponseStreamingMode),
   enableProviderUpdateChecks: Schema.optionalKey(Schema.Boolean),
   continueThreadsAfterServerUpdate: Schema.optionalKey(Schema.Boolean),
+  botLoadResources: Schema.optionalKey(Schema.Boolean),
   enableAgentBrowserAccess: Schema.optionalKey(Schema.Boolean),
   cloudSpeechCredentials: Schema.optionalKey(
     Schema.Struct({
@@ -1880,6 +1910,8 @@ export const ServerSettingsPatch = Schema.Struct({
   worktreeSubmodules: Schema.optionalKey(Schema.NullOr(WorktreeSubmodules)),
   addProjectBaseDirectory: Schema.optionalKey(TrimmedString),
   ghqCloneLayout: Schema.optionalKey(Schema.Boolean),
+  memoryCompactionConcurrency: Schema.optionalKey(MemoryCompactionConcurrency),
+  memoryCompactionModelSelection: Schema.optionalKey(Schema.NullOr(ModelSelectionPatch)),
   textGenerationModelSelection: Schema.optionalKey(ModelSelectionPatch),
   threadTitleInstructions: Schema.optionalKey(TrimmedString),
   branchNamingMode: Schema.optionalKey(BranchNamingMode),
