@@ -1,6 +1,13 @@
-import { ArrowLeftIcon, ArrowRightIcon, ChartNoAxesColumnIcon, SettingsIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  BotIcon,
+  ChartNoAxesColumnIcon,
+  MessagesSquareIcon,
+  SettingsIcon,
+} from "lucide-react";
 import type { ReactNode } from "react";
-import { memo } from "react";
+import { createContext, memo, use } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 
 import { useAtomValue } from "@effect/atom-react";
@@ -39,6 +46,10 @@ import { SidebarProviderUpdatePill } from "./SidebarProviderUpdatePill";
 import { SidebarUpdateArchitectureWarning, SidebarUpdatePill } from "./SidebarUpdatePill";
 import { PullRequestGlyph } from "~/components/pullRequest/pullRequestIcons";
 import { observeResize } from "~/lib/observeResize";
+
+/** Which workspace the sidebar lists. Settings, Usage, and Pull requests keep the mode they were opened from. */
+export type SidebarMode = "threads" | "bots";
+export const SidebarModeContext = createContext<SidebarMode>("threads");
 
 export const SidebarChromeHeader = memo(function SidebarChromeHeader({
   isElectron,
@@ -163,14 +174,15 @@ function HistoryNavigationButton({
 }
 
 function SidebarBrand({ onBackdrop }: { onBackdrop: boolean }) {
+  const mode = use(SidebarModeContext);
   return (
     <Link
-      aria-label="T3 Code home"
+      aria-label={mode === "bots" ? "Go to bots" : "Go to threads"}
       className={cn(
         "relative z-10 ml-[var(--workspace-titlebar-content-left)] hidden h-7 w-fit min-w-0 shrink-0 items-center overflow-hidden rounded-md outline-hidden ring-ring focus-visible:ring-2 focus-visible:ring-inset md:flex",
         onBackdrop ? "text-white" : "text-foreground",
       )}
-      to="/"
+      to={mode === "bots" ? "/bots" : "/"}
     >
       <SidebarBrandMark onBackdrop={onBackdrop} />
     </Link>
@@ -178,16 +190,17 @@ function SidebarBrand({ onBackdrop }: { onBackdrop: boolean }) {
 }
 
 function SidebarBrandMark({ onBackdrop }: { onBackdrop: boolean }) {
+  const mode = use(SidebarModeContext);
   return (
-    <span className="inline-flex min-w-0 items-baseline gap-1 text-sm font-medium tracking-tight">
-      <T3Wordmark aria-label="T3" className="h-[1cap] w-auto shrink-0" />
+    <span className="inline-flex min-w-0 items-center gap-2 text-sm font-medium tracking-tight">
+      <T3Wordmark aria-label="Sora" className="size-5 shrink-0 rounded-md" />
       <span
         className={cn(
           "truncate [text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both_cap_alphabetic]:py-1",
           onBackdrop ? "text-white/70" : "text-muted-foreground",
         )}
       >
-        Code
+        {mode === "bots" ? "Bots" : "Code"}
       </span>
     </span>
   );
@@ -225,6 +238,7 @@ const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
   const isOnUtilityPage = useLocation({
     select: (location) => isSidebarUtilityPage(location.pathname),
   });
+  const isOnBots = use(SidebarModeContext) === "bots";
   const pullRequestsSupported = usePullRequestsSupported();
   const closeMobileSidebar = () => {
     if (isMobile) {
@@ -257,6 +271,14 @@ const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
 
   return (
     <SidebarMenu className="flex-row items-center">
+      <SidebarUtilityItem
+        icon={isOnBots ? <MessagesSquareIcon /> : <BotIcon />}
+        label={isOnBots ? "Threads" : "Bots"}
+        onClick={() => {
+          closeMobileSidebar();
+          void navigate({ to: isOnBots ? "/" : "/bots" });
+        }}
+      />
       {isOnUtilityPage ? (
         <SidebarMenuItem className="min-w-0 flex-1">
           <SidebarMenuButton onClick={handleBackClick}>
@@ -271,7 +293,7 @@ const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
             label="Settings"
             onClick={handleSettingsClick}
           />
-          {pullRequestsSupported ? (
+          {pullRequestsSupported && !isOnBots ? (
             <SidebarUtilityItem
               icon={<PullRequestGlyph.pullRequest />}
               label="Pull requests"

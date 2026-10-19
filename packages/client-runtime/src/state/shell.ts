@@ -132,6 +132,7 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
         snapshot.schemaVersion === lastPersisted.schemaVersion &&
         snapshot.projects === lastPersisted.projects &&
         snapshot.threads === lastPersisted.threads &&
+        snapshot.botThreads === lastPersisted.botThreads &&
         snapshot.archivedThreads === lastPersisted.archivedThreads
       ) {
         // Keep the live cursor without rewriting the rows. Remember it here too so a
@@ -378,14 +379,20 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
       ORCHESTRATION_V2_WS_METHODS.subscribeShell,
       Effect.fn("EnvironmentShellState.makeSubscribeInput")(function* (session) {
         yield* Ref.set(activeSubscriptionSession, session);
-        const { omitIdleSubagents, omitOlderSettled } = yield* session.initialConfig.pipe(
-          Effect.map((config) => ({
-            omitIdleSubagents: config.shellThreadFamilies === true,
-            omitOlderSettled:
-              config.shellOlderSettled === true && config.shellThreadFamilies === true,
-          })),
-          Effect.orElseSucceed(() => ({ omitIdleSubagents: false, omitOlderSettled: false })),
-        );
+        const { omitIdleSubagents, omitOlderSettled, separateBotThreads } =
+          yield* session.initialConfig.pipe(
+            Effect.map((config) => ({
+              separateBotThreads: config.shellBotThreads === true,
+              omitIdleSubagents: config.shellThreadFamilies === true,
+              omitOlderSettled:
+                config.shellOlderSettled === true && config.shellThreadFamilies === true,
+            })),
+            Effect.orElseSucceed(() => ({
+              omitIdleSubagents: false,
+              omitOlderSettled: false,
+              separateBotThreads: false,
+            })),
+          );
         yield* Ref.set(awaitingCompletion, true);
         yield* setSynchronizing;
 
@@ -414,6 +421,7 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
           const httpSnapshot = yield* snapshotLoader.load(prepared, {
             omitIdleSubagents,
             omitOlderSettled,
+            ...(separateBotThreads ? { separateBotThreads: true } : {}),
           });
           if (Option.isSome(httpSnapshot)) {
             yield* cancelActiveFill;
@@ -437,6 +445,7 @@ export const makeEnvironmentShellState = Effect.fn("EnvironmentShellState.make")
         }
 
         const omission = {
+          ...(separateBotThreads ? { separateBotThreads: true as const } : {}),
           ...(omitIdleSubagents ? { omitIdleSubagents: true as const } : {}),
           ...(omitOlderSettled ? { omitOlderSettled: true as const } : {}),
         };
