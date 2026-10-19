@@ -149,7 +149,7 @@ function SettingsRouteLayout() {
   const pathname = useLocation({ select: (location) => location.pathname });
   return (
     <SettingsScopeProvider
-      search={rawSearch}
+      search={pathname === "/settings/bots" ? { machine: rawSearch.machine } : rawSearch}
       singleEnvironment={pathname === "/settings/providers"}
       onChange={(next) => {
         // Send every axis so retain middleware recognizes "all" as an explicit target.

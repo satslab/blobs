@@ -12,7 +12,7 @@ import { threadSearchSubject, type ThreadSearchShell } from "./state/threadSearc
 const COMPOSER_THREAD_RESULT_LIMIT = 5;
 
 export type ComposerThreadCandidate = ThreadSearchShell &
-  Pick<EnvironmentThreadShell, "archivedAt" | "lineage">;
+  Pick<EnvironmentThreadShell, "archivedAt" | "lineage" | "botId" | "deletedAt">;
 
 export interface ComposerThreadItem {
   readonly id: string;
@@ -20,6 +20,7 @@ export interface ComposerThreadItem {
   readonly thread: ScopedThreadRef;
   readonly label: string;
   readonly description: string;
+  readonly isBot?: boolean;
 }
 
 /**
@@ -39,21 +40,27 @@ export function matchComposerThreadItems(input: {
   now: number;
 }): ComposerThreadItem[] {
   const query = foldSearchQuery(input.query);
-  if (query.length === 0) return [];
   const candidates = input.shells.filter(
     (shell) =>
       (shell.environmentId === input.environmentId ||
         input.linkedEnvironments.has(shell.environmentId)) &&
       shell.id !== input.excludeThreadId &&
       shell.archivedAt === null &&
+      shell.deletedAt == null &&
+      (query.length > 0 || shell.botId !== undefined) &&
       shell.lineage.relationshipToParent !== "subagent",
   );
-  return rankSearchItems(candidates, (shell, options) =>
-    scoreThreadSearch(query, threadSearchSubject(shell, null), input.now, {
-      ...options,
-      picks: false,
-    }),
-  )
+  const ranked =
+    query.length === 0
+      ? candidates.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).map((item) => ({ item }))
+      : rankSearchItems(candidates, (shell, options) =>
+          scoreThreadSearch(query, threadSearchSubject(shell, null), input.now, {
+            ...options,
+            picks: false,
+          }),
+        );
+  return [...ranked]
+    .sort((a, b) => Number(b.item.botId !== undefined) - Number(a.item.botId !== undefined))
     .slice(0, COMPOSER_THREAD_RESULT_LIMIT)
     .map(({ item: shell }) => {
       const machine =
@@ -65,7 +72,8 @@ export function matchComposerThreadItems(input: {
         type: "thread",
         thread: { environmentId: shell.environmentId, threadId: shell.id },
         label: shell.title,
-        description: machine === undefined ? "Thread" : `Thread on ${machine}`,
+        description: shell.botId === undefined ? (machine === undefined ? "Thread" : `Thread on ${machine}`) : (machine === undefined ? "Bot" : `Bot on ${machine}`),
+        ...(shell.botId === undefined ? {} : { isBot: true }),
       };
     });
 }

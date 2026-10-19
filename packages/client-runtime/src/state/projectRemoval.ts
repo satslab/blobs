@@ -4,7 +4,7 @@ export function planProjectRemoval<
   Thread extends Pick<EnvironmentThreadShell, "environmentId" | "projectId">,
 >(options: {
   readonly members: ReadonlyArray<
-    Pick<EnvironmentProject, "id" | "environmentId" | "title" | "workspaceRoot"> & {
+    Pick<EnvironmentProject, "id" | "environmentId" | "title" | "workspaceRoot" | "isBot"> & {
       readonly environmentLabel?: string | null;
     }
   >;
@@ -29,6 +29,9 @@ export function planProjectRemoval<
     threadCount > 0
       ? `Remove ${targetKind} "${targetLabel}" and delete its ${threadCount} thread${threadCount === 1 ? "" : "s"}?`
       : `Remove ${targetKind} "${targetLabel}"?`,
+    ...(members.some((member) => member.isBot)
+      ? ["This also deletes the bot and permanently clears its memory and conversations."]
+      : []),
     ...(singleMember
       ? [
           `Path: ${singleMember.workspaceRoot}`,

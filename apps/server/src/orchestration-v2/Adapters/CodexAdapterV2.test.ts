@@ -4,6 +4,7 @@ import {
   type ProviderTextDeltaUpdate,
 } from "./ProviderTextDeltaCoalescer.ts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
+import * as ServerConfig from "../../config.ts";
 import {
   CommandId,
   CheckpointId,
@@ -72,6 +73,7 @@ import * as CodexAdapterV2Testkit from "./CodexAdapterV2.testkit.ts";
 const replayTranscriptJson = Schema.fromJsonString(CodexReplay.CodexAppServerReplayTranscript);
 const encodeReplayTranscriptJson = Schema.encodeEffect(replayTranscriptJson);
 const decodeReplayTranscriptJson = Schema.decodeUnknownEffect(replayTranscriptJson);
+const encodeUnknownJson = Schema.encodeUnknownSync(Schema.fromJsonString(Schema.Unknown));
 const encodeStringJson = Schema.encodeEffect(Schema.fromJsonString(Schema.String));
 const isProviderAdapterEventStreamError = Schema.is(
   ProviderAdapter.ProviderAdapterEventStreamError,
@@ -7682,4 +7684,195 @@ describe("CodexAdapterV2 post-settle continuation", () => {
       ),
     );
   });
+});
+
+describe("CodexAdapterV2 memory process spawning", () => {
+  it.effect("memory turns preserve composer options without ordinary coding instructions", () =>
+    Effect.gen(function* () {
+      const policy = {
+        ...CODEX_TEST_RUNTIME_POLICY,
+        botChat: {
+          systemPrompt: "Frozen memory instructions",
+          runId: RunId.make("memory-run"),
+          loadResources: false,
+        },
+      };
+      const params = CodexAdapterV2.codexThreadRuntimeParams({
+        mcpSession: undefined,
+        modelSelection: { model: "custom-codex" },
+        runtimePolicy: policy,
+      });
+      assert.include(params.baseInstructions ?? "", "Frozen memory instructions");
+      assert.include(params.baseInstructions ?? "", "through the Codex harness, as custom-codex");
+      assert.equal(params.developerInstructions, "");
+      assert.deepEqual(params.environments, []);
+      assert.equal(params.config["tools.update_plan.enabled"], true);
+      assert.equal(params.config.project_doc_max_bytes, 0);
+      const loading = CodexAdapterV2.codexThreadRuntimeParams({
+        mcpSession: undefined,
+        modelSelection: { model: "custom-codex" },
+        runtimePolicy: {
+          ...policy,
+          botChat: { ...policy.botChat, loadResources: true },
+        },
+      });
+      assert.notProperty(loading.config, "project_doc_max_bytes");
+      assert.notProperty(loading.config, "skills.include_instructions");
+      assert.notProperty(loading.config, "features.skip_host_skill_discovery");
+      assert.equal(loading.config["tools.update_plan.enabled"], true);
+      assert.equal(loading.developerInstructions, "");
+      assert.include(loading.baseInstructions ?? "", "Frozen memory instructions");
+      const turn = yield* CodexAdapterV2.buildCodexTurnStartParams({
+        nativeThreadId: "memory-native",
+        codexInput: [],
+        runtimePolicy: policy,
+        modelSelection: {
+          instanceId: ProviderInstanceId.make("custom-home"),
+          model: "custom-codex",
+          options: [
+            { id: "reasoningEffort", value: "high" },
+            { id: "serviceTier", value: "priority" },
+          ],
+        },
+        hasT3Mcp: true,
+      });
+      assert.equal(turn.model, "custom-codex");
+      assert.equal(turn.effort, "high");
+      assert.equal(turn.serviceTier, "priority");
+      assert.equal(turn.collaborationMode, undefined);
+      assert.include(turn.additionalContext?.t3_code_runtime?.value ?? "", "high reasoning effort");
+      assert.include(
+        turn.additionalContext?.t3_code_orchestration_01?.value ?? "",
+        "delegate_task",
+      );
+    }),
+  );
+
+  // Opens one bot session per home and records what the spawned app server received.
+  const openBotSessions = (homes: ReadonlyArray<string>, loadResources: boolean) =>
+    Effect.gen(function* () {
+      const probes: Array<{ home: string | undefined; args: ReadonlyArray<string> }> = [];
+      const starts: Array<ReadonlyArray<string>> = [];
+      const botHomes: string[] = [];
+      const spawner = ChildProcessSpawner.make((command) =>
+        Effect.gen(function* () {
+          if (!ChildProcess.isStandardCommand(command))
+            return yield* Effect.die("Expected standard command");
+          const home = command.options.env?.CODEX_HOME;
+          if (command.args[0] === "debug" || command.args[0] === "--version") {
+            if (command.args[0] === "debug") probes.push({ home, args: command.args });
+            const text =
+              command.args[0] === "--version"
+                ? "codex-cli 0.163.0"
+                : encodeUnknownJson({
+                    models: [
+                      {
+                        slug: home,
+                        tool_mode: "code_mode_only",
+                        experimental_supported_tools: ["apply_patch"],
+                      },
+                    ],
+                  });
+            return ChildProcessSpawner.makeHandle({
+              pid: ChildProcessSpawner.ProcessId(1),
+              stdout: Stream.make(new TextEncoder().encode(text)),
+              exitCode: Effect.succeed(ChildProcessSpawner.ExitCode(0)),
+              isRunning: Effect.succeed(false),
+              kill: () => Effect.void,
+              unref: Effect.succeed(Effect.void),
+              stdin: Sink.drain,
+              stderr: Stream.empty,
+              all: Stream.empty,
+              getInputFd: () => Sink.drain,
+              getOutputFd: () => Stream.empty,
+            });
+          }
+          starts.push(command.args);
+          assert.isDefined(home);
+          botHomes.push(home!);
+          return yield* PlatformError.systemError({
+            _tag: "NotFound",
+            module: "ChildProcess",
+            method: "spawn",
+          });
+        }),
+      );
+      const factory = yield* CodexAdapterV2.CodexAppServerClientFactory.pipe(
+        Effect.provide(CodexAdapterV2.layerAppServerClientFactory),
+        Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
+        Effect.provideService(
+          ProviderEventLoggers.ProviderEventLoggers,
+          ProviderEventLoggers.NoOpProviderEventLoggers,
+        ),
+      );
+      for (const home of homes) {
+        yield* factory
+          .open({
+            instanceId: ProviderInstanceId.make(home.endsWith("one") ? "codex-one" : "codex-two"),
+            threadId: ThreadId.make("memory-thread"),
+            providerSessionId: ProviderSessionId.make("memory-session"),
+            settings: {
+              ...DEFAULT_CODEX_SETTINGS,
+              homePath: home,
+              launchArgs: '-c model_provider="custom"',
+            },
+            environment: { CODEX_HOME: "/unrelated-home" },
+            runtimePolicy: {
+              ...CODEX_TEST_RUNTIME_POLICY,
+              botChat: {
+                systemPrompt: "Memory",
+                runId: RunId.make("memory-run"),
+                loadResources,
+              },
+            },
+          })
+          .pipe(Effect.scoped, Effect.exit);
+      }
+      return { probes, starts, botHomes };
+    }).pipe(
+      Effect.provide(
+        ServerConfig.layerTest(process.cwd(), { prefix: "sora-codex-profiles-" }).pipe(
+          Layer.provideMerge(NodeServices.layer),
+        ),
+      ),
+      Effect.scoped,
+    );
+
+  it.effect("isolates instruction resources without replacing Codex model catalogs", () =>
+    Effect.gen(function* () {
+      const homes = ["/codex/profile-one", "/codex/profile-two"];
+      const { probes, starts, botHomes } = yield* openBotSessions(homes, false);
+      assert.deepEqual(probes, []);
+      assert.lengthOf(starts, 2);
+      assert.lengthOf(botHomes, 2);
+      assert.notEqual(botHomes[0], botHomes[1]);
+      for (const home of botHomes) assert.notInclude(homes, home);
+      for (const args of starts) {
+        assert.include(args, "project_doc_max_bytes=0");
+        assert.include(args, "skills.include_instructions=false");
+        assert.include(args, "features.skip_host_skill_discovery=true");
+        assert.include(args, 'developer_instructions=""');
+        assert.include(args, 'user_instructions=""');
+      }
+      for (const args of starts) {
+        assert.isFalse(args.some((arg) => arg.startsWith("model_catalog_json=")));
+        assert.notInclude(args, "features.shell_tool=false");
+      }
+    }).pipe(Effect.provide(NodeServices.layer)),
+  );
+
+  it.effect("runs resource-loading bots in the selected profile with native tools available", () =>
+    Effect.gen(function* () {
+      const { starts, botHomes } = yield* openBotSessions(["/codex/profile-one"], true);
+      assert.deepEqual(botHomes, ["/codex/profile-one"]);
+      assert.lengthOf(starts, 1);
+      const args = starts[0] ?? [];
+      assert.notInclude(args, "project_doc_max_bytes=0");
+      assert.notInclude(args, "skills.include_instructions=false");
+      assert.notInclude(args, "features.skip_host_skill_discovery=true");
+      assert.include(args, 'developer_instructions=""');
+      assert.notInclude(args, "features.shell_tool=false");
+      assert.isFalse(args.some((arg) => arg.startsWith("model_catalog_json=")));
+    }).pipe(Effect.provide(NodeServices.layer)),
+  );
 });

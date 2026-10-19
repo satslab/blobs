@@ -358,7 +358,6 @@ export const OrchestratorToolkit = Toolkit.make(
   ListScheduledTasksTool,
   DeleteScheduledTaskTool,
   RequestSecretTool,
-  CreateThreadsTool,
   ThreadListTool,
   ThreadReadTool,
   ThreadUpdateTool,
@@ -369,3 +368,6 @@ export const OrchestratorToolkit = Toolkit.make(
   EnvironmentLinkTool,
   EnvironmentUnlinkTool,
 );
+
+// Bots run inside a hidden internal project, so threads that inherit it would be orphaned there.
+export const CreateThreadsToolkit = Toolkit.make(CreateThreadsTool);

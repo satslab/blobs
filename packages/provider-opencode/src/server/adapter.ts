@@ -1,3 +1,4 @@
+import { buildBotSystemPrompt } from "@t3tools/provider-core/server/botInstructions";
 import type {
   Event as OpenCodeEvent,
   Message as OpenCodeMessage,
@@ -938,6 +939,13 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
           serverUrl: options.settings.serverUrl,
           environment: options.environment,
         });
+        if (input.runtimePolicy.botChat !== undefined && connection.external) {
+          return yield* new ProviderAdapter.ProviderAdapterOpenSessionError({
+            driver: OPENCODE_PROVIDER,
+            providerSessionId: input.providerSessionId,
+            cause: "Bots require a local OpenCode server for its turn-scoped MCP tools.",
+          });
+        }
         const client = runtime.createOpenCodeSdkClient({
           baseUrl: connection.url,
           directory: cwd,
@@ -3252,15 +3260,29 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
                 );
                 return;
               }
-              const systemPrompt = [
-                orchestrationSystemPrompt,
-                buildRuntimeInstructions({
-                  harness: "OpenCode",
-                  model: turnInput.modelSelection.model,
-                }),
-              ]
-                .filter(Boolean)
-                .join("\n\n");
+              const systemPrompt =
+                turnInput.runtimePolicy.botChat === undefined
+                  ? [
+                      orchestrationSystemPrompt,
+                      buildRuntimeInstructions({
+                        harness: "OpenCode",
+                        model: turnInput.modelSelection.model,
+                      }),
+                    ]
+                      .filter(Boolean)
+                      .join("\n\n")
+                  : buildBotSystemPrompt({
+                      botPrompt: turnInput.runtimePolicy.botChat.systemPrompt,
+                      runtime: {
+                        harness: "OpenCode",
+                        model: turnInput.modelSelection.model,
+                        reasoningEffort: getModelSelectionStringOptionValue(
+                          turnInput.modelSelection,
+                          "variant",
+                        ),
+                      },
+                      mcpSession,
+                    });
               const agent =
                 getModelSelectionStringOptionValue(turnInput.modelSelection, "agent") ??
                 (turnInput.runtimePolicy.interactionMode === "plan" ? "plan" : undefined);

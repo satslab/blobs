@@ -7,6 +7,7 @@ import {
   type ProviderInstanceId,
   type ProviderInteractionMode,
   type RuntimeMode,
+  type RunId,
   type ThreadId,
 } from "@t3tools/contracts";
 import * as Context from "effect/Context";
@@ -25,6 +26,8 @@ export type McpCapability = (typeof ALL_MCP_CAPABILITIES)[number];
 
 export interface McpThreadCaller {
   readonly threadId: ThreadId;
+  readonly botRunId?: RunId;
+  readonly botThreadId?: ThreadId;
   readonly providerSessionId: string;
   readonly providerInstanceId: ProviderInstanceId;
   /** A delegated child task; its parent owns the work it hands back. */

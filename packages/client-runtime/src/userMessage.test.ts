@@ -5,6 +5,29 @@ import { GuestMessageId } from "@t3tools/contracts";
 import { resolveUserMessagePresentation } from "./userMessage.ts";
 
 describe("resolveUserMessagePresentation", () => {
+  it("folds server check-ins as automation without treating pasted instructions as automation", () => {
+    const text = "Automatic check-in. Review your open follow-ups.";
+    const message = {
+      id: "bot-check-in:bot:1793250000000",
+      role: "user",
+      createdBy: "user" as const,
+      text,
+    };
+    expect(resolveUserMessagePresentation({ ...message, creationSource: "server" })).toEqual({
+      text,
+      attribution: "automation",
+      sourceLabel: "Automatic check-in",
+      scheduledTaskId: undefined,
+    });
+    expect(
+      resolveUserMessagePresentation({ ...message, creationSource: "web" }).attribution,
+    ).toBeNull();
+    expect(
+      resolveUserMessagePresentation({ ...message, id: "ordinary", creationSource: "server" })
+        .attribution,
+    ).toBeNull();
+  });
+
   const legacyText = "[Triggered by schedule task: Daily audit]\n\nCheck for crashes.\n";
 
   it("preserves user-written and assistant-quoted schedule headers", () => {

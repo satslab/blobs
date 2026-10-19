@@ -88,6 +88,7 @@ const isPullRequestsPanelKey = (threadKey: string) => threadKey.endsWith(":pull-
 
 export interface ThreadRightPanelState {
   isOpen: boolean;
+  botPanelOpen?: boolean;
   activeSurfaceId: string | null;
   surfaces: RightPanelSurface[];
   dismissedDeviceSurfaceIds?: string[];
@@ -186,6 +187,8 @@ interface RightPanelStoreState {
     presentation: ThreadPanelPresentation,
     open: boolean,
   ) => void;
+  toggleBotPanel: (ref: ScopedThreadRef) => void;
+  closeBotPanel: (ref: ScopedThreadRef) => void;
   toggleThreadPanel: (ref: ScopedThreadRef, presentation: ThreadPanelPresentation) => void;
   removeThread: (ref: ScopedThreadRef) => void;
 }
@@ -306,8 +309,11 @@ const updateThreadStateMap = (
   updater: (current: ThreadRightPanelState) => ThreadRightPanelState,
 ): Record<string, ThreadRightPanelState> => {
   const current = byThreadKey[threadKey] ?? EMPTY_THREAD_STATE;
-  const next = updater(current);
+  const updated = updater(current);
+  const next =
+    updated.isOpen && updated.botPanelOpen ? { ...updated, botPanelOpen: false } : updated;
   if (
+    !next.botPanelOpen &&
     !next.isOpen &&
     next.activeSurfaceId === null &&
     next.surfaces.length === 0 &&
@@ -1064,6 +1070,20 @@ export const useRightPanelStore = create<RightPanelStoreState>()(
             },
           ),
         })),
+      toggleBotPanel: (ref) =>
+        set((state) =>
+          userAction(state, scopedThreadKey(ref), (current) => ({
+            ...current,
+            isOpen: false,
+            botPanelOpen: !current.botPanelOpen,
+          })),
+        ),
+      closeBotPanel: (ref) =>
+        set((state) =>
+          userAction(state, scopedThreadKey(ref), (current) =>
+            current.botPanelOpen ? { ...current, botPanelOpen: false } : current,
+          ),
+        ),
       toggleThreadPanel: (ref, presentation) =>
         set((state) => ({
           threadPanelVisibilityByThreadKey: updateThreadPanelVisibilityMap(

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import ChatView from "./ChatView";
 import { BackgroundThreadContext } from "./chat/backgroundThread";
+import { BotThreadRouteBoundary } from "./bots/BotThreadRouteBoundary";
 import { SidebarInset } from "./ui/sidebar";
 import { useComposerDraftStore } from "../composerDraftStore";
 import { useSidebarPendingFileDropStore } from "../sidebarPendingFileDropStore";
@@ -149,6 +150,7 @@ export function ThreadRouteView({
   }
 
   return (
+    <BotThreadRouteBoundary threadRef={target.kind === "server" ? target.threadRef : null}>
     <SidebarInset
       className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
       inert={background}
@@ -156,5 +158,6 @@ export function ThreadRouteView({
       <BackgroundThreadContext value={background}>{view}</BackgroundThreadContext>
       {background ? null : redirect}
     </SidebarInset>
+    </BotThreadRouteBoundary>
   );
 }

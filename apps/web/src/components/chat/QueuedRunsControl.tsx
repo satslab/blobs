@@ -416,7 +416,8 @@ function QueuedMessage(props: {
       ? {
           icon: CalendarClockIcon,
           label: "Automation",
-          summary: taskTitle ?? props.previewText.split(/\r?\n/, 1)[0] ?? "",
+          summary:
+            taskTitle ?? presentation?.sourceLabel ?? props.previewText.split(/\r?\n/, 1)[0] ?? "",
         }
       : attribution === "agent"
         ? {

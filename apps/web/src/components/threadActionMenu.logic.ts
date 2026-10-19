@@ -90,6 +90,8 @@ export interface ThreadActionMenuState {
   readonly snoozePresets: ReadonlyArray<SnoozePreset>;
   /** Guest links need their own grant, so the caller checks it instead of `canOperate`. */
   readonly canShareWithGuest?: boolean;
+  /** Bot threads open the same settings page under a bot-facing name. */
+  readonly projectSettingsLabel?: string;
 }
 
 /** Local navigation, read markers, and copying remain available to read-only clients. */
@@ -218,7 +220,11 @@ export function buildThreadActionMenuItems(
         { id: "copy-thread-id", label: "Thread ID", icon: "hash" },
       ],
     },
-    { id: "project-settings", label: "Project settings", icon: "settings" },
+    {
+      id: "project-settings",
+      label: state.projectSettingsLabel ?? "Project settings",
+      icon: "settings",
+    },
     {
       id: "archive",
       label: "Archive thread",

@@ -3,6 +3,7 @@ import {
   matchComposerThreadItems,
 } from "@t3tools/client-runtime/composerThreadItems";
 import { useAtomValue } from "@effect/atom-react";
+import { useBots, useBotThreadShells } from "../../state/bots";
 import { useState } from "react";
 import type {
   EnvironmentId,
@@ -114,6 +115,18 @@ export function useComposerMenuItems({
     ...identity,
     machine: environmentMachines.get(identity.environmentId) ?? ("server" as const),
   }));
+  const bots = useBots();
+  const botShells = useBotThreadShells(isPathTrigger);
+  const activeBotShells = isPathTrigger
+    ? botShells.filter((shell) =>
+        bots.some(
+          (bot) =>
+            bot.status === "active" &&
+            bot.ownerEnvironmentId === shell.environmentId &&
+            bot.threadId === shell.id,
+        ),
+      )
+    : [];
   const workspaceEntries = useComposerPathSearch({
     environmentId,
     cwd: isPathTrigger ? gitCwd : null,
@@ -183,7 +196,7 @@ export function useComposerMenuItems({
     if (composerTrigger.kind === "path") {
       return [
         ...matchComposerThreadItems({
-          shells: environmentThreadShells,
+          shells: [...activeBotShells, ...environmentThreadShells],
           environmentId,
           linkedEnvironments,
           excludeThreadId: activeThreadId,
@@ -377,7 +390,7 @@ export function useComposerMenuItems({
         : "No pull requests found in this repository.";
     }
     return composerTriggerKind === "path"
-      ? "No matching files or folders."
+      ? "No matching files, threads, or bots."
       : "No matching command.";
   })();
 

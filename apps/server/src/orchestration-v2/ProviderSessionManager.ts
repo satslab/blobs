@@ -1,3 +1,5 @@
+import { botInput } from "../bots/BotInput.ts";
+import { BOT_CHAT_PROVIDER_DRIVERS } from "@t3tools/contracts";
 import { AgentScope } from "@t3tools/shared/AgentScope";
 import * as KeyedLock from "@t3tools/shared/KeyedLock";
 import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
@@ -12,6 +14,7 @@ import {
   ProviderSessionId,
   ThreadId,
   type ProviderThreadId,
+  type RunId,
 } from "@t3tools/contracts";
 import * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";
@@ -413,6 +416,8 @@ export const layerWithOptions = (
       const prepareMcpSession = (
         threadId: ThreadId,
         providerInstanceId: ProviderInstanceId,
+        botRunId?: RunId,
+        botThreadId?: ThreadId,
       ): Effect.Effect<PreparedMcpCredential> =>
         options.configureMcp === false
           ? mcpSessions
@@ -452,6 +457,8 @@ export const layerWithOptions = (
                     resolved !== undefined &&
                     resolved.thread.threadId === threadId &&
                     resolved.thread.providerInstanceId === providerInstanceId &&
+                    resolved.thread.botRunId === botRunId &&
+                    resolved.thread.botThreadId === botThreadId &&
                     resolved.capabilities.has("preview") === browserToolsAvailable &&
                     resolved.capabilities.has("device") === deviceToolsAvailable &&
                     // A credential issued while the lineage read failed is replaced once it works.
@@ -468,6 +475,8 @@ export const layerWithOptions = (
                   browserToolsAvailable,
                   capabilities,
                   subagent,
+                  ...(botRunId === undefined ? {} : { botRunId }),
+                  ...(botThreadId === undefined ? {} : { botThreadId }),
                 });
                 yield* mcpSessions.set(credential.config);
                 reserveMcpCredential(threadId, credential.config.providerSessionId);
@@ -1648,6 +1657,7 @@ export const layerWithOptions = (
         eventSubscribers: Ref.Ref<
           ReadonlyMap<number, Queue.Queue<ProviderSessionEventSignal, Cause.Done>>
         >,
+        botChat: boolean,
       ): ProviderAdapter.ProviderAdapterV2SessionRuntime => {
         const providerSessionId = runtime.providerSessionId;
         const subscribeEvents = makeEventSubscription(eventSubscribers);
@@ -1805,7 +1815,21 @@ export const layerWithOptions = (
             ),
           steerTurn: (input) =>
             observeActivity(providerSessionId, touchActivity(providerSessionId)).pipe(
-              Effect.andThen(runtime.steerTurn(input).pipe(turnMetrics("steer"))),
+              Effect.andThen(
+                runtime
+                  .steerTurn(
+                    botChat
+                      ? {
+                          ...input,
+                          message: {
+                            ...input.message,
+                            ...botInput(input.message.text, input.message.attachments),
+                          },
+                        }
+                      : input,
+                  )
+                  .pipe(turnMetrics("steer")),
+              ),
             ),
           interruptTurn: (input) =>
             observeActivity(providerSessionId, touchActivity(providerSessionId)).pipe(
@@ -2075,9 +2099,21 @@ export const layerWithOptions = (
                     }),
                 ),
               );
+              if (
+                input.runtimePolicy.botChat !== undefined &&
+                !BOT_CHAT_PROVIDER_DRIVERS.has(adapter.driver)
+              )
+                return yield* new ProviderSessionOpenError({
+                  instanceId: input.modelSelection.instanceId,
+                  providerSessionId: input.providerSessionId,
+                  cause:
+                    "This provider does not support bot chat's system prompt and built-in tool policy.",
+                });
               const prepared = yield* prepareMcpSession(
                 input.threadId,
                 input.modelSelection.instanceId,
+                input.runtimePolicy.botChat?.runId ?? input.runtimePolicy.memoryContext?.runId,
+                input.runtimePolicy.memoryContext?.threadId,
               );
               const mcpCredentialId = prepared.mcpCredentialId;
               let reservationDropped = mcpCredentialId === undefined;
@@ -2142,7 +2178,11 @@ export const layerWithOptions = (
               const eventSubscribers = yield* Ref.make<
                 ReadonlyMap<number, Queue.Queue<ProviderSessionEventSignal, Cause.Done>>
               >(new Map());
-              const exposedRuntime = decorateRuntime(runtime, eventSubscribers);
+              const exposedRuntime = decorateRuntime(
+                runtime,
+                eventSubscribers,
+                input.runtimePolicy.botChat !== undefined,
+              );
               const entry: LiveSessionEntry = {
                 attachedThreadIds: new Set([input.threadId]),
                 loadedProviderThreadKeyByThread: new Map(),

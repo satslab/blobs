@@ -1,4 +1,10 @@
+import { botInput, botMessageText } from "../bots/BotInput.ts";
+import { makeEnsureWorkspace } from "../bots/BotWorkspace.ts";
+import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
+import * as BotChat from "../bots/BotChat.ts";
+import { delegatedBotInstructions, turnInstructions } from "../bots/MemoryWorker.ts";
 import { modelSelectionsEqual } from "@t3tools/shared/model";
+import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
 import { projectComposerContextForProvider } from "@t3tools/shared/composerContextReferences";
 import {
   CommandId,
@@ -140,6 +146,8 @@ export const layer: Layer.Layer<
   | ProviderSessionManager.ProviderSessionManagerV2
   | RunExecutionService.RunExecutionServiceV2
   | RuntimePolicy.RuntimePolicyV2
+  | BotChat.BotChat
+  | ThreadCommandExecutor.ThreadCommandExecutor
 > = Layer.effect(
   ProviderTurnStartServiceV2,
   Effect.gen(function* () {
@@ -154,6 +162,9 @@ export const layer: Layer.Layer<
     const projectionStore = yield* ProjectionStore.ProjectionStoreV2;
     const providerSessions = yield* ProviderSessionManager.ProviderSessionManagerV2;
     const runExecution = yield* RunExecutionService.RunExecutionServiceV2;
+    const botChat = yield* BotChat.BotChat;
+    const threadCommands = yield* ThreadCommandExecutor.ThreadCommandExecutor;
+    const ensureWorkspace = yield* makeEnsureWorkspace;
     const runtimePolicy = yield* RuntimePolicy.RuntimePolicyV2;
     const isManagedWorktreePath = yield* makeIsManagedWorktreePath;
 
@@ -638,7 +649,7 @@ export const layer: Layer.Layer<
       });
       const { isCurrentAttemptInStatus } = runControls;
 
-      const resolvedRuntimePolicy = yield* runtimePolicy.resolve({
+      const baseRuntimePolicy = yield* runtimePolicy.resolve({
         thread: projection.thread,
         modelSelection: run.modelSelection,
       });
@@ -711,6 +722,98 @@ export const layer: Layer.Layer<
         });
         if (!repaired.committed) return;
       }
+      const workspaceResult = yield* Effect.result(
+        projection.thread.botId === undefined
+          ? Effect.succeed(undefined)
+          : ensureWorkspace(projection.thread.botId),
+      );
+      if (workspaceResult._tag === "Failure") {
+        yield* settleStartFailure({
+          signal: "memory-workspace-failure",
+          title: "Memory workspace is unavailable",
+          error: workspaceResult.failure,
+        });
+        return;
+      }
+      const delegatedMemoryResult = yield* Effect.result(
+        projection.thread.lineage.relationshipToParent === "subagent"
+          ? botChat.delegatedContext(projection.thread)
+          : Effect.succeed(undefined),
+      );
+      if (delegatedMemoryResult._tag === "Failure") {
+        yield* settleStartFailure({
+          signal: "memory-delegate-failure",
+          title: "Delegated memory is unavailable",
+          error: delegatedMemoryResult.failure,
+        });
+        return;
+      }
+      const delegatedMemory = delegatedMemoryResult.success;
+      const delegatedBotPrompt =
+        delegatedMemory === undefined
+          ? ""
+          : `${delegatedBotInstructions}\n${delegatedMemory.snapshot.view}`;
+      // An unreadable settings file keeps the bot isolated rather than loading host files unasked.
+      const botLoadResources =
+        projection.thread.botId === undefined
+          ? false
+          : yield* serverSettings.getSettings.pipe(
+              Effect.map(
+                (settings) =>
+                  resolveProjectSettings(settings, projection.thread.projectId).settings
+                    .botLoadResources,
+              ),
+              Effect.catch((cause) =>
+                Effect.logWarning(
+                  "Could not read bot resource loading; keeping the bot isolated.",
+                  {
+                    threadId: projection.thread.id,
+                    cause,
+                  },
+                ).pipe(Effect.as(false)),
+              ),
+            );
+      const resolvedRuntimePolicy =
+        projection.thread.botId === undefined
+          ? {
+              ...baseRuntimePolicy,
+              ...(delegatedMemory === undefined
+                ? {}
+                : {
+                    memoryContext: {
+                      threadId: delegatedMemory.threadId,
+                      runId: delegatedMemory.snapshot.runId,
+                    },
+                  }),
+            }
+          : {
+              ...baseRuntimePolicy,
+              cwd: workspaceResult.success ?? baseRuntimePolicy.cwd,
+              botChat: {
+                systemPrompt: turnInstructions(projection.thread.title, projection.thread.id),
+                runId: run.id,
+                loadResources: botLoadResources,
+              },
+            };
+      const memorySnapshotResult = yield* Effect.result(
+        projection.thread.botId === undefined
+          ? Effect.succeed(undefined)
+          : botChat.prepare({
+              botId: projection.thread.botId,
+              runId: run.id,
+              message,
+            }),
+      );
+      if (memorySnapshotResult._tag === "Failure") {
+        yield* settleStartFailure({
+          signal: "memory-prepare-failure",
+          title: "Memory is not ready",
+          error: memorySnapshotResult.failure,
+        });
+        return;
+      }
+      const memorySnapshot = memorySnapshotResult.success;
+      if (!(yield* isCurrentAttemptInStatus("starting"))) return;
       const sessionResult = yield* Effect.result(
         providerSessions.open({
           threadId: projection.thread.id,
@@ -1360,21 +1463,61 @@ export const layer: Layer.Layer<
           payload: runningRootNode,
         },
       ];
-      const runningWrite = yield* eventSink.writeIfRunCurrent({
+      const markRunning = eventSink.writeIfRunCurrent({
         threadId: projection.thread.id,
         runId: run.id,
         activeAttemptId: attempt.id,
         expectedStatus: "starting",
         events,
       });
+      // Close the input buffer atomically with the transition out of preparation.
+      const { runningWrite, bufferedMessages } = yield* memorySnapshot === undefined
+        ? Effect.map(markRunning, (runningWrite) => ({ runningWrite, bufferedMessages: [] }))
+        : threadCommands.withLock(
+            projection.thread.id,
+            Effect.gen(function* () {
+              const latest = yield* projectionStore.getThreadRecords(
+                projection.thread.id,
+                ["messages"],
+                { runIds: [run.id] },
+              );
+              const bufferedMessages = latest.messages.filter(
+                (candidate) =>
+                  candidate.runId === run.id &&
+                  candidate.role === "user" &&
+                  candidate.id !== message.id,
+              );
+              for (const buffered of bufferedMessages) {
+                yield* botChat.prepare({
+                  botId: memorySnapshot.botId,
+                  runId: run.id,
+                  message: buffered,
+                });
+              }
+              return { runningWrite: yield* markRunning, bufferedMessages };
+            }),
+          );
       if (!runningWrite.committed) {
         return;
       }
       const routableSubagents = projection.subagents.filter((subagent) =>
         RunExecutionService.canRouteRelatedSubagent(subagent.status),
       );
+      const botUserText = [message, ...bufferedMessages].map((input) => {
+        const text = projectComposerContextForProvider({ text: input.text, records: input.context?.records ?? [] });
+        return projection.thread.botId === undefined ? text : botMessageText({ ...input, text });
+      }).join("\n\n");
+      const inputAttachments = [message, ...bufferedMessages].flatMap((input) => input.attachments);
       const startWithHandoffs = Effect.fn("ProviderTurnStartService.startWithHandoffs")(
         function* (turnInput: Parameters<typeof session.startTurn>[0], compact = false) {
+          if (memorySnapshot !== undefined) {
+            if (!(yield* isCurrentAttemptInStatus("running"))) return;
+            return yield* session.startTurn({
+              ...turnInput,
+              message: { ...turnInput.message, ...botInput(`${memorySnapshot.view}\n\nIncoming message:\n${botUserText}`, turnInput.message.attachments) },
+            });
+          }
+
           const delivery = yield* deliverContextHandoffs({
             handoffs: [...effectiveHandoffs, ...retryHandoff],
             deferInline: compact || goalCommand,
@@ -1411,7 +1554,7 @@ export const layer: Layer.Layer<
           });
           if (!(yield* isCurrentAttemptInStatus("running"))) return;
           const start = compact ? session.compactThread! : session.startTurn;
-          const context = [delivery.context, restartNote]
+          const context = [delegatedBotPrompt, delivery.context, restartNote]
             .filter((part) => part !== "")
             .join("\n\n");
           const { restartContinuationOfRunId: _resumedRunId, ...promptedInput } = turnInput;
@@ -1461,6 +1604,8 @@ export const layer: Layer.Layer<
         ),
       );
       const deliverySession =
+        memorySnapshot === undefined &&
+        delegatedMemory === undefined &&
         effectiveHandoffs.length === 0 &&
         retryHandoff.length === 0 &&
         restartNote === "" &&
@@ -1504,7 +1649,7 @@ export const layer: Layer.Layer<
         message: {
           messageId: message.id,
           text: userText,
-          attachments: message.attachments,
+          attachments: inputAttachments,
           createdBy: message.createdBy,
           creationSource: message.creationSource,
           ...(message.scheduledTaskId === undefined

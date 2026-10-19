@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 // @effect-diagnostics nodeBuiltinImport:off
+import { turnInstructions } from "../../apps/server/src/bots/MemoryWorker.ts";
+import { buildBotSystemPrompt } from "@satslab/provider-core/server/botInstructions";
 /**
  * Replays small fake threads on a Claude or Codex model to check T3's MCP tool use. A trimmed
  * harness capture supplies the prompt and native tools; a cheap model plays the shell. See
@@ -222,7 +224,7 @@ export const McpToolUseCase = Schema.Struct({
   rule: Schema.optional(Schema.String),
   privacy: Schema.optional(Schema.Literals(["commit-safe", "private"])),
   setup: Schema.Struct({
-    role: Schema.Literals(["top", "delegated-child", "native-subagent"]),
+    role: Schema.Literals(["top", "delegated-child", "native-subagent", "bot"]),
     /** Runs only on this harness, for cases whose right answer depends on it. */
     harness: Schema.optional(Schema.Literals(["claude", "codex"])),
     /** The Linked environments beta is on, so T3 lists its link tools. */
@@ -393,7 +395,17 @@ const visibleT3Tools = (options: { readonly subagent?: boolean; readonly links?:
  * T3's Claude Code options for an eval thread: its system prompt append and its hooks. `device` says
  * whether the thread holds the `device` capability, as agent device access decides.
  */
-const claudeQueryOptions = (model: Model, device = true) => {
+const botSession = (device: boolean) => ({
+  environmentId: EnvironmentId.make("eval"),
+  threadId: ThreadId.make("bot-eval"),
+  providerInstanceId: ProviderInstanceId.make(CLAUDE_PROVIDER),
+  providerSessionId: "bot-eval",
+  endpoint: "http://127.0.0.1/bot-mcp",
+  authorizationHeader: "Bearer eval",
+  browserToolsAvailable: true,
+  capabilities: new Set(device ? ["device"] : []),
+});
+const claudeQueryOptions = (model: Model, device = true, bot = false) => {
   // Refs whose device text follows the capability read deviceToolsAvailable; older ones ignore it.
   const input: Parameters<typeof makeClaudeQueryOptions>[0] & {
     readonly deviceToolsAvailable?: boolean;
@@ -404,13 +416,19 @@ const claudeQueryOptions = (model: Model, device = true) => {
     cwd: null,
     mcpServers: { "t3-code": { type: "http", url: "http://127.0.0.1/mcp" } },
     deviceToolsAvailable: device,
+    ...(bot
+      ? {
+          botPrompt: turnInstructions("Atlas", ThreadId.make("bot-eval")),
+          mcpSession: botSession(device),
+        }
+      : {}),
   };
   return makeClaudeQueryOptions(input);
 };
 
 /** Text T3 appends to Claude Code's system prompt. Delegated children get the same text. */
-export const t3SystemAppend = (model: Model, device = true) => {
-  const { systemPrompt } = claudeQueryOptions(model, device);
+export const t3SystemAppend = (model: Model, device = true, bot = false) => {
+  const { systemPrompt } = claudeQueryOptions(model, device, bot);
   if (isRecord(systemPrompt) && systemPrompt.type === "preset" && systemPrompt.append) {
     return systemPrompt.append;
   }
@@ -491,6 +509,7 @@ export const buildBase = (
   options: {
     readonly model: Model;
     readonly keepUserInstructions: boolean;
+    readonly bot?: boolean;
     readonly subagent?: boolean;
     readonly links?: boolean;
     /** A native subagent starts from its task: T3 appends nothing to its system prompt. */
@@ -515,7 +534,9 @@ export const buildBase = (
   const nativeDeferred = deferredList.split("\n").filter((name) => name && !isT3Name(name));
   const names = [...nativeDeferred, ...t3.map((tool) => tool.name)].toSorted().join("\n");
   const { model } = options;
-  const append = options.nativeSubagent ? "" : t3SystemAppend(model, options.deviceAccess);
+  const append = options.nativeSubagent
+    ? ""
+    : t3SystemAppend(model, options.deviceAccess, options.bot);
   const modelLine = `You are powered by the model named ${MODELS[model]}. The exact model ID is ${model}.`;
   const joined = systemTexts.join("\n");
   // The capture's home directory names its user. Cases use `/home/user` paths instead.
@@ -574,6 +595,7 @@ const buildCodexBase = (
   options: {
     readonly model: Model;
     readonly keepUserInstructions: boolean;
+    readonly bot?: boolean;
     readonly effort?: string | undefined;
     readonly subagent?: boolean;
     readonly links?: boolean;
@@ -616,9 +638,25 @@ const buildCodexBase = (
     { model: options.model, reasoningEffort: effort },
     { browser: true, device: options.deviceAccess ?? true },
   );
-  input.push(
-    ...Object.entries(context).map(([key, entry]) => message(`<${key}>${entry.value}</${key}>`)),
-  );
+  if (options.bot) {
+    for (let index = input.length - 1; index >= 0; index--) {
+      if (input[index]?.role === "system") input.splice(index, 1);
+    }
+    input.unshift(
+      message(
+        buildBotSystemPrompt({
+          botPrompt: turnInstructions("Atlas", ThreadId.make("bot-eval")),
+          runtime: { harness: "Codex", model: options.model },
+          mcpSession: botSession(options.deviceAccess ?? true),
+        }),
+        "system",
+      ),
+    );
+  } else {
+    input.push(
+      ...Object.entries(context).map(([key, entry]) => message(`<${key}>${entry.value}</${key}>`)),
+    );
+  }
   const nativeTools = input
     .flatMap((item) =>
       item.type === "additional_tools" && Array.isArray(item.tools)
@@ -1953,6 +1991,7 @@ const main = Effect.gen(function* () {
               model: flags.model,
               keepUserInstructions,
               effort: flags.effort,
+              bot: role === "bot",
               subagent: role === "delegated-child",
               links,
               deviceAccess,
@@ -1964,6 +2003,7 @@ const main = Effect.gen(function* () {
             const built = buildBase(capture.request.provider_native, {
               model: flags.model,
               keepUserInstructions,
+              bot: role === "bot",
               subagent: role === "delegated-child",
               nativeSubagent: role === "native-subagent",
               links,

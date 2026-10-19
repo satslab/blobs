@@ -570,7 +570,7 @@ export function resolveSidebarRowThreadId(
  * the sidebar lists, by thread key; they show under that thread, as subagents do.
  */
 export function filterSidebarV2VisibleThreads<
-  T extends Pick<SidebarThreadSummary, "archivedAt" | "environmentId" | "id" | "lineage"> & {
+  T extends Pick<SidebarThreadSummary, "archivedAt" | "environmentId" | "id" | "lineage" | "botId"> & {
     projectId: string;
   },
 >(
@@ -581,6 +581,7 @@ export function filterSidebarV2VisibleThreads<
   return threads.filter(
     (thread) =>
       thread.archivedAt === null &&
+      thread.botId === undefined &&
       !isShownUnderParent(
         { environmentId: thread.environmentId, threadId: thread.id },
         thread.lineage,

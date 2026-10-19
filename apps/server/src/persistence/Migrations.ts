@@ -1,6 +1,7 @@
 import * as Migrator from "effect/sql/Migrator";
 import * as Effect from "effect/Effect";
 import * as SqlClient from "effect/sql/SqlClient";
+import { reconcileForkMigrations } from "./reconcileForkMigrations.ts";
 import { reconcileV2PreviewMigration } from "./reconcileV2PreviewMigration.ts";
 
 import Migration0001 from "./Migrations/001_OrchestrationEvents.ts";
@@ -76,6 +77,11 @@ import Migration0070 from "./Migrations/070_PeerLinks.ts";
 import Migration0071 from "./Migrations/071_PeerLinkFence.ts";
 import Migration0072 from "./Migrations/072_WaitingLinkRequestIndex.ts";
 
+import BotChatMigration from "./Migrations/073_BotChat.ts";
+import BotProjectsMigration from "./Migrations/074_BotProjects.ts";
+import BotSystemTimezoneMigration from "./Migrations/079_BotSystemTimezone.ts";
+import BotResourcesMigration from "./Migrations/078_BotResources.ts";
+
 const migrationEntries = [
   [1, "OrchestrationEvents", Migration0001],
   [2, "OrchestrationCommandReceipts", Migration0002],
@@ -150,6 +156,10 @@ const migrationEntries = [
   [70, "PeerLinks", Migration0070],
   [71, "PeerLinkFence", Migration0071],
   [72, "WaitingLinkRequestIndex", Migration0072],
+  [73, "BotChat", BotChatMigration],
+  [74, "BotProjects", BotProjectsMigration],
+  [78, "BotResources", BotResourcesMigration],
+  [79, "BotSystemTimezone", BotSystemTimezoneMigration],
 ] as const;
 
 export const migrationManifest = migrationEntries.map(([id, name]) => [id, name] as const);
@@ -211,6 +221,9 @@ export const runMigrations = Effect.fn("runMigrations")(function* ({
     toMigrationInclusive === undefined || toMigrationInclusive >= FIRST_V2_MIGRATION_ID;
   const previewMigrations = includesV2 ? yield* reconcileV2PreviewMigration() : [];
   if (includesV2) {
+    if (toMigrationInclusive === undefined || toMigrationInclusive >= 68) {
+      yield* reconcileForkMigrations();
+    }
     yield* assertV2MigrationsCanRun(toMigrationInclusive);
   }
   const executedMigrations = [
