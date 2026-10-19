@@ -1,3 +1,5 @@
+import * as MemoryHandlers from "./toolkits/bots/handlers.ts";
+import { BotDiscoveryToolkit, MemoryToolkit } from "./toolkits/bots/tools.ts";
 import * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
@@ -58,7 +60,7 @@ import * as ThreadMetadataMcpService from "./ThreadMetadataMcpService.ts";
 import * as McpSessionRegistry from "./McpSessionRegistry.ts";
 import * as PreviewAutomationBroker from "./PreviewAutomationBroker.ts";
 import * as OrchestratorHandlers from "./toolkits/orchestrator/handlers.ts";
-import { OrchestratorToolkit } from "./toolkits/orchestrator/tools.ts";
+import { CreateThreadsToolkit, OrchestratorToolkit } from "./toolkits/orchestrator/tools.ts";
 import * as PreviewHandlers from "./toolkits/preview/handlers.ts";
 import {
   PreviewSnapshotTool,
@@ -235,6 +237,11 @@ const makeMcpAuthMiddleware = Effect.gen(function* () {
     const limited = McpInvocationContext.withRuntimeModeCeiling(asked, runtimeModeCeiling);
     const linkedEnvironments = yield* linksEnabled;
     if (limited.client?.linked === true && !linkedEnvironments) return linkedEnvironmentsOff;
+    if (
+      invocation.thread?.botRunId !== undefined &&
+      !request.url.split("?")[0]?.startsWith("/bot-mcp")
+    )
+      return unauthorized({ request, presentedToken: true, offerOAuth: false });
     return { ...limited, linkedEnvironments };
   });
   // Untraced: a span here would wrap the tool call; the HTTP server span already covers it.
@@ -1155,6 +1162,11 @@ export const layerOrchestratorToolkit = toolkitRegistration(
   OrchestratorHandlers.layer,
 ).pipe(Layer.provide(OrchestratorMcpService.layer), Layer.provide(ThreadMetadataMcpService.layer));
 
+const layerCreateThreadsToolkit = toolkitRegistration(
+  CreateThreadsToolkit,
+  OrchestratorHandlers.layerCreateThreads,
+).pipe(Layer.provide(OrchestratorMcpService.layer));
+
 export const layerThreadToolkit = toolkitRegistration(ThreadToolkit, ThreadHandlers.layer);
 
 const layerWorktreeToolkitRegistration = toolkitRegistration(
@@ -1228,8 +1240,13 @@ export const layerMcpTransport = <RA, RE, RR>(registrations: Layer.Layer<RA, RE,
     registrations,
   }).pipe(Layer.provide(layerMcpAuthMiddleware));
 
-/** Every tool the T3 MCP server advertises. AgentContextBudget.test.ts measures this set. */
+const layerBotDiscoveryToolkit = toolkitRegistration(
+  BotDiscoveryToolkit,
+  MemoryHandlers.layerDiscovery,
+);
+
 export const layerTools = Layer.mergeAll(
+  layerBotDiscoveryToolkit,
   layerPreviewToolkit,
   layerOrchestratorToolkit,
   layerThreadToolkit,
@@ -1243,4 +1260,25 @@ export const layerTools = Layer.mergeAll(
   layerHtmlToolkit,
 );
 
-export const layer = layerMcpTransport(layerTools);
+export const layerBotTransport = <RA, RE, RR>(registrations: Layer.Layer<RA, RE, RR>) =>
+  McpServer.layerHttp({
+    name: "T3 Code bots",
+    version: packageJson.version,
+    path: "/bot-mcp",
+    protocols: [McpProtocol.v2025_06_18],
+    allowSessionTermination: true,
+    registrations,
+  }).pipe(Layer.provide(layerMcpAuthMiddleware));
+
+export const layerMemoryRecallToolkit = toolkitRegistration(MemoryToolkit, MemoryHandlers.layer);
+
+// Bots and their delegated subagents keep turn-bound recall alongside the app tools
+// ordinary threads use, except create_threads.
+const layerBots = layerBotTransport(Layer.merge(layerTools, layerMemoryRecallToolkit)).pipe(
+  Layer.fresh,
+);
+
+export const layer = Layer.merge(
+  layerMcpTransport(Layer.merge(layerTools, layerCreateThreadsToolkit)),
+  layerBots,
+);

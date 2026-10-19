@@ -111,6 +111,13 @@ export interface ProviderTextGeneration {
   readonly generateTranscriptionPostProcessing: (
     input: TranscriptionPostProcessingInput,
   ) => Effect.Effect<TranscriptionPostProcessingResult, TextGenerationError>;
+  readonly generateMemorySummary?: (input: {
+    readonly cwd: string;
+    readonly instructions: string;
+    readonly context: string;
+    readonly task: string;
+    readonly modelSelection: ModelSelection;
+  }) => Effect.Effect<string, TextGenerationError>;
 
   readonly generateCommitMessage: (
     input: CommitMessageGenerationInput,

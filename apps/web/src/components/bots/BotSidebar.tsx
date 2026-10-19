@@ -41,7 +41,7 @@ import {
   createSidebarSortingStrategy,
   restrictBelowSidebarLabel,
 } from "../Sidebar.drag";
-import { SidebarDragLifecycle, SidebarPointerSensor } from "../Sidebar.pointer";
+import { SidebarPointerSensor } from "../Sidebar.pointer";
 import { botSidebarItems } from "./BotSidebar.logic";
 import { EnvironmentMachineIcon } from "../EnvironmentMachineIcon";
 import { SidebarChromeHeader, SidebarChromeFooter } from "../sidebar/SidebarChrome";
@@ -110,6 +110,8 @@ function BotSidebarContent() {
     setDragTarget(null);
   });
   const cancelDrag = useStableCallback(() => sensorRef.current?.cancel());
+  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- cancels the active pointer sensor when the sidebar unmounts
+  useLayoutEffect(() => () => sensorRef.current?.cancel(), []);
   const sensors = useSensors(
     useSensor(SidebarPointerSensor, {
       distance: 6,
@@ -209,9 +211,11 @@ function BotSidebarContent() {
   ];
   const busy = placements !== null;
   const motionPass = { layoutKey: itemsKey, animate: !dragging && query.length === 0 };
+  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- updates the imperative sidebar animation after layout changes
   useLayoutEffect(() => {
     motion.current?.update(motionPass.animate);
   }, [motionPass]);
+  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- cancels the pointer sensor when its dragged row disappears or filtering begins
   useLayoutEffect(() => {
     if (query || (draggedId !== null && !rows.some((row) => row.bot.id === draggedId)))
       cancelDrag();
@@ -358,7 +362,6 @@ function BotSidebarContent() {
         onDragOver={onDragOver}
         onDragEnd={(event) => void onDragEnd(event)}
       >
-        <SidebarDragLifecycle onUnmount={cancelDrag} />
         <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {query && visiblePinned.length + visibleActive.length === 0 ? (
             <div className="px-2 py-3 text-xs text-muted-foreground">No bots found</div>

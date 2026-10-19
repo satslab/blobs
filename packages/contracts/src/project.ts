@@ -151,6 +151,7 @@ export const ReceivedProjectIcon = ForwardCompatibleUnion(projectIconMembers, "k
 );
 
 export const Project = Schema.Struct({
+  isBot: Schema.optional(Schema.Boolean),
   id: ProjectId,
   title: TrimmedNonEmptyString,
   workspaceRoot: TrimmedNonEmptyString,

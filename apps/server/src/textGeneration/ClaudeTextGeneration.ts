@@ -53,10 +53,12 @@ const NO_SESSION_PERSISTENCE = "--no-session-persistence";
 const NO_SESSION_PERSISTENCE_REJECTED = `error: unknown option '${NO_SESSION_PERSISTENCE}'`;
 
 const ClaudeOutputEnvelope = Schema.Struct({
-  structured_output: Schema.Unknown,
+  structured_output: Schema.optionalKey(Schema.Unknown),
+  result: Schema.optionalKey(Schema.String),
 });
 const ClaudeOutputMessage = Schema.Struct({
   type: Schema.String,
+  result: Schema.optionalKey(Schema.String),
   structured_output: Schema.optionalKey(Schema.Unknown),
 });
 const isClaudeOutputEnvelope = Schema.is(ClaudeOutputEnvelope);
@@ -153,11 +155,14 @@ export const makeClaudeTextGeneration = Effect.fn("makeClaudeTextGeneration")(fu
       ...modelSelection,
       model: resolveClaudeModelSlug(catalog, modelSelection.model),
     };
-    const jsonSchemaStr = yield* encodeJsonForOperation(
-      operation,
-      toJsonSchemaObject(outputSchemaJson),
-      "Failed to encode structured output schema.",
-    );
+    const jsonSchemaStr =
+      operation === "generateMemorySummary"
+        ? undefined
+        : yield* encodeJsonForOperation(
+            operation,
+            toJsonSchemaObject(outputSchemaJson),
+            "Failed to encode structured output schema.",
+          );
     const caps = getClaudeCatalogModelCapabilities(catalog, resolvedModelSelection.model);
     const descriptors = getProviderOptionDescriptors({
       caps,
@@ -187,6 +192,9 @@ export const makeClaudeTextGeneration = Effect.fn("makeClaudeTextGeneration")(fu
       fastModeDescriptor?.type === "boolean" ? fastModeDescriptor.currentValue : undefined;
     const settings = {
       disableAllHooks: true,
+      ...(operation === "generateMemorySummary"
+        ? { autoMemoryEnabled: false, disableBundledSkills: true }
+        : {}),
       ...(typeof thinking === "boolean" ? { alwaysThinkingEnabled: thinking } : {}),
       ...(fastMode ? { fastMode: true } : {}),
       ...(typeof ultracode === "boolean" ? { ultracode } : {}),
@@ -217,8 +225,7 @@ export const makeClaudeTextGeneration = Effect.fn("makeClaudeTextGeneration")(fu
           "-p",
           "--output-format",
           "json",
-          "--json-schema",
-          jsonSchemaStr,
+          ...(jsonSchemaStr === undefined ? [] : ["--json-schema", jsonSchemaStr]),
           "--model",
           resolveClaudeCatalogApiModelId(catalog, resolvedModelSelection),
           ...(cliEffort ? ["--effort", cliEffort] : []),
@@ -236,6 +243,12 @@ export const makeClaudeTextGeneration = Effect.fn("makeClaudeTextGeneration")(fu
             : ["--tools", ""]),
           "--disable-slash-commands",
           ...(noSessionPersistence ? [NO_SESSION_PERSISTENCE] : []),
+          // User settings carry the account's own auth (apiKeyHelper, base URL).
+          // Safe mode already drops hooks, skills, and memory, so keeping user
+          // sources isolates compaction without logging the CLI out.
+          ...(operation === "generateMemorySummary"
+            ? ["--safe-mode", "--setting-sources", "user"]
+            : []),
           // managed-mcp.json already isolates servers and makes Claude reject this flag.
           ...(managedMcpConfig ? [] : ["--strict-mcp-config"]),
           "--permission-mode",
@@ -330,7 +343,9 @@ export const makeClaudeTextGeneration = Effect.fn("makeClaudeTextGeneration")(fu
       : output.findLast((message) => message.type === "result");
 
     const decodeOutput = Schema.decodeEffect(outputSchemaJson);
-    return yield* decodeOutput(envelope?.structured_output).pipe(
+    return yield* decodeOutput(
+      operation === "generateMemorySummary" ? envelope?.result : envelope?.structured_output,
+    ).pipe(
       Effect.catchTags({
         SchemaError: (cause) =>
           Effect.fail(
