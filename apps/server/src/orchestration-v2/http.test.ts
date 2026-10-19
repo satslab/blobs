@@ -1,5 +1,6 @@
 import {
   AuthSessionId,
+  BotId,
   type AuthEnvironmentScope,
   EnvironmentAuthenticatedAuth,
   EnvironmentAuthenticatedPrincipal,
@@ -292,5 +293,46 @@ it.effect("leaves older settled threads out of the HTTP shell only when asked", 
       [thread.id, ...Array.from({ length: 25 }, (_, index) => `settled-${index + 1}`)].toSorted(),
     );
     expect(cut.olderSettled?.counts).toEqual([{ projectId: thread.projectId, count: 1 }]);
+  }),
+);
+
+it.effect("separates bot rows in HTTP snapshots only for clients requesting it", () =>
+  Effect.gen(function* () {
+    const { eventSink, handler } = yield* serveOrchestrationHttp(() => true);
+    const id = ThreadId.make("bot-root");
+    yield* eventSink.write({
+      events: [
+        {
+          id: EventId.make("create-bot-root"),
+          type: "thread.created",
+          threadId: id,
+          occurredAt: now,
+          payload: {
+            ...thread,
+            id,
+            botId: BotId.make("bot"),
+            lineage: { ...thread.lineage, rootThreadId: id },
+          },
+        },
+      ],
+    });
+    const read = (query: string) =>
+      Effect.promise(async () => {
+        const response = await handler(
+          new Request(`http://localhost/api/orchestration/shell${query}`, {
+            headers: { [ORCHESTRATION_PROTOCOL_HEADER]: ORCHESTRATION_PROTOCOL_VERSION_TEXT },
+          }),
+        );
+        expect(response.status).toBe(200);
+        return (await response.json()) as {
+          threads: Array<{ id: string }>;
+          botThreads?: Array<{ id: string }>;
+        };
+      });
+    const legacy = yield* read("");
+    expect(legacy.threads.map((row) => row.id)).toContain(id);
+    const partitioned = yield* read("?separateBotThreads=1");
+    expect(partitioned.threads.map((row) => row.id)).not.toContain(id);
+    expect(partitioned.botThreads?.map((row) => row.id)).toEqual([id]);
   }),
 );

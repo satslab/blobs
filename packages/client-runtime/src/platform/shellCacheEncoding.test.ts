@@ -119,6 +119,7 @@ describe("cooperative shell cache encoding", () => {
         unexpected: "drop this field",
       })),
       archivedThreads: [{ ...SHELL_SNAPSHOT.threads[0]!, archivedAt: NOW }],
+      botThreads: [{ ...SHELL_SNAPSHOT.threads[0]!, id: ThreadId.make("bot-root") }],
       unexpected: "drop this field",
     },
     unexpected: "drop this field",

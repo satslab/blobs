@@ -1,12 +1,13 @@
 import {
   EnvironmentId,
+  BotId,
   ProjectId,
   RunId,
   RuntimeRequestId,
   ThreadId,
   type OrchestrationV2ShellSnapshot,
   type OrchestrationV2ThreadShell,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Option from "effect/Option";
 import { Atom, AtomRegistry } from "effect/reactivity";
@@ -539,4 +540,48 @@ describe("v2 thread shell lists", () => {
       harness.registry.dispose();
     }
   });
+});
+
+it("keeps memory threads addressable but out of thread lists and navigation", () => {
+  const { registry, threads, snapshotAtom } = makeHarness();
+  try {
+    const memory = {
+      ...v2ThreadShell,
+      id: ThreadId.make("memory"),
+      botId: BotId.make("personal"),
+    };
+    registry.set(snapshotAtom(environmentId), {
+      ...v2ShellSnapshot,
+      threads: [v2ThreadShell, memory],
+    });
+    expect(registry.get(threads.threadShellsAtom).map((thread) => thread.id)).toEqual([
+      v2ThreadShell.id,
+    ]);
+    expect(registry.get(threads.navigationThreadShellsAtom).map((thread) => thread.id)).toEqual([
+      v2ThreadShell.id,
+    ]);
+    expect(
+      registry.get(threads.threadShellAtom({ environmentId, threadId: memory.id }))?.botId,
+    ).toBe(memory.botId);
+  } finally {
+    registry.dispose();
+  }
+});
+
+it("uses the server's ordinary partition while bot shells remain directly addressable", () => {
+  const { registry, threads, snapshotAtom } = makeHarness();
+  const bot = { ...v2ThreadShell, id: ThreadId.make("bot"), botId: BotId.make("bot") };
+  registry.set(snapshotAtom(environmentId), {
+    ...v2ShellSnapshot,
+    threads: [v2ThreadShell],
+    botThreads: [bot],
+  });
+  expect(registry.get(threads.threadRefsAtom).map((ref) => ref.threadId)).toEqual([
+    v2ThreadShell.id,
+  ]);
+  expect(registry.get(threads.environmentBotThreadsAtom(environmentId))).toEqual([bot]);
+  expect(
+    registry.get(threads.quietThreadShellAtom({ environmentId, threadId: bot.id }))?.botId,
+  ).toBe(bot.botId);
+  registry.dispose();
 });

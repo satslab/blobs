@@ -1,6 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import {
   EnvironmentId,
+  BotId,
   EventId,
   CommandId,
   CheckpointId,
@@ -1407,6 +1408,7 @@ it.effect("SQL list older settled threads below a cursor", () =>
       readonly settledDay: number | null;
       readonly project?: string;
       readonly subagent?: boolean;
+      readonly bot?: boolean;
       readonly archived?: boolean;
       readonly snoozedUntilDay?: number;
     }) =>
@@ -1421,6 +1423,7 @@ it.effect("SQL list older settled threads below a cursor", () =>
           id: id(input.name),
           projectId: ProjectId.make(input.project ?? "project:a"),
           title: input.name,
+          ...(input.bot ? { botId: BotId.make(input.name) } : {}),
           providerInstanceId,
           modelSelection,
           runtimeMode: "full-access",
@@ -1453,6 +1456,7 @@ it.effect("SQL list older settled threads below a cursor", () =>
     yield* createThread({ name: "unsettled", settledDay: null });
     yield* createThread({ name: "child", settledDay: 1, subagent: true });
     yield* createThread({ name: "archived", settledDay: 1, archived: true });
+    yield* createThread({ name: "bot", settledDay: 1, bot: true });
 
     const list = (
       before: { readonly settledAt: string; readonly threadId?: ThreadId },

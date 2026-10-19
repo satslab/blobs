@@ -5,8 +5,8 @@ import type {
   ScopedProjectRef,
   ScopedThreadRef,
   ThreadId,
-} from "@t3tools/contracts";
-import { isProviderNativeSubagentThread, OrchestrationV2ThreadShell } from "@t3tools/contracts";
+} from "@satslab/contracts";
+import { isProviderNativeSubagentThread, OrchestrationV2ThreadShell } from "@satslab/contracts";
 import * as Schema from "effect/Schema";
 import { Atom } from "effect/reactivity";
 
@@ -199,11 +199,34 @@ export function createEnvironmentThreadShellAtoms(input: {
     return value;
   };
 
+  const environmentListThreadsAtom = Atom.family((environmentId: EnvironmentId) =>
+    Atom.make((get): ReadonlyArray<OrchestrationV2ThreadShell> => {
+      const snapshot = get(input.snapshotAtom(environmentId));
+      if (snapshot === null) return EMPTY_THREADS;
+      // Older servers send a combined list instead of a separate bot partition.
+      return snapshot.botThreads === undefined
+        ? snapshot.threads.filter((thread) => thread.botId === undefined)
+        : snapshot.threads;
+    }),
+  );
+  const environmentBotThreadsAtom = Atom.family((environmentId: EnvironmentId) =>
+    Atom.make((get): ReadonlyArray<OrchestrationV2ThreadShell> => {
+      const snapshot = get(input.snapshotAtom(environmentId));
+      return (
+        snapshot?.botThreads ??
+        snapshot?.threads.filter((thread) => thread.botId !== undefined) ??
+        EMPTY_THREADS
+      );
+    }),
+  );
   const environmentThreadsAtom = Atom.family((environmentId: EnvironmentId) =>
-    Atom.make(
-      (get): ReadonlyArray<OrchestrationV2ThreadShell> =>
-        get(input.snapshotAtom(environmentId))?.threads ?? EMPTY_THREADS,
-    ).pipe(Atom.withLabel(`environment-threads:${environmentId}`)),
+    Atom.make((get): ReadonlyArray<OrchestrationV2ThreadShell> => {
+      const snapshot = get(input.snapshotAtom(environmentId));
+      if (snapshot === null) return EMPTY_THREADS;
+      return snapshot.botThreads?.length
+        ? [...snapshot.threads, ...snapshot.botThreads]
+        : snapshot.threads;
+    }).pipe(Atom.withLabel(`environment-threads:${environmentId}`)),
   );
 
   const environmentThreadIndexAtom = Atom.family((environmentId: EnvironmentId) =>
@@ -293,7 +316,7 @@ export function createEnvironmentThreadShellAtoms(input: {
   const environmentThreadRefsAtom = Atom.family((environmentId: EnvironmentId) => {
     let previous: ReadonlyArray<ScopedThreadRef> = [];
     return Atom.make((get) => {
-      const next = get(environmentThreadsAtom(environmentId)).map((thread) => ({
+      const next = get(environmentListThreadsAtom(environmentId)).map((thread) => ({
         environmentId,
         threadId: thread.id,
       }));
@@ -312,7 +335,7 @@ export function createEnvironmentThreadShellAtoms(input: {
     > = EMPTY_THREAD_REFS_BY_PROJECT;
     return Atom.make((get) => {
       const grouped = new Map<ProjectId, ScopedThreadRef[]>();
-      for (const thread of get(environmentThreadsAtom(environmentId))) {
+      for (const thread of get(environmentListThreadsAtom(environmentId))) {
         const refs = grouped.get(thread.projectId);
         const ref = { environmentId, threadId: thread.id };
         if (refs === undefined) {
@@ -493,7 +516,7 @@ export function createEnvironmentThreadShellAtoms(input: {
     const next: EnvironmentThreadShell[] = [];
     for (const environmentId of enabledEnvironmentIds(get(input.catalogValueAtom))) {
       const subagentRequests = get(pendingSubagentRequestsAtom(environmentId));
-      for (const thread of get(environmentThreadsAtom(environmentId))) {
+      for (const thread of get(environmentListThreadsAtom(environmentId))) {
         next.push(scopedThread(environmentId, thread, subagentRequests));
       }
     }
@@ -552,7 +575,7 @@ export function createEnvironmentThreadShellAtoms(input: {
     const underParent = get(delegatedUnderParentAtom);
     for (const environmentId of enabledEnvironmentIds(get(input.catalogValueAtom))) {
       const subagentRequests = get(pendingSubagentRequestsAtom(environmentId));
-      for (const thread of get(environmentThreadsAtom(environmentId))) {
+      for (const thread of get(environmentListThreadsAtom(environmentId))) {
         if (
           thread.archivedAt !== null ||
           isShownUnderParent({ environmentId, threadId: thread.id }, thread.lineage, underParent)
@@ -569,6 +592,7 @@ export function createEnvironmentThreadShellAtoms(input: {
 
   return {
     environmentThreadsAtom,
+    environmentBotThreadsAtom,
     environmentThreadIndexAtom,
     environmentThreadRefsAtom,
     environmentThreadRefsByProjectAtom,

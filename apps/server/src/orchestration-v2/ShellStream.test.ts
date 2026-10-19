@@ -4,8 +4,8 @@ import type {
   OrchestrationV2ShellSnapshot,
   OrchestrationV2ShellStreamItem,
   OrchestrationV2ThreadShell,
-} from "@t3tools/contracts";
-import { ProjectId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
+} from "@satslab/contracts";
+import { BotId, ProjectId, ProviderInstanceId, ThreadId } from "@satslab/contracts";
 import type * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -18,6 +18,8 @@ import * as TestClock from "effect/testing/TestClock";
 
 import {
   activeShellRowsForSubscriber,
+  shellSnapshotForSubscriber,
+  shellStreamItemFromThreadShell,
   bufferShellLiveStream,
   composeShellStreamWithEnrichment,
   dedupeShellEnrichment,
@@ -661,4 +663,45 @@ describe("skipUnchangedThreadShells", () => {
       expect(sent).toEqual([1, 2, 3]);
     }),
   );
+});
+
+describe("bot shell partitions", () => {
+  const ordinary = shellFixture({
+    id: ThreadId.make("ordinary"),
+    lineage: {
+      parentThreadId: null,
+      relationshipToParent: null,
+      rootThreadId: ThreadId.make("ordinary"),
+    },
+  });
+  const bot = { ...ordinary, id: ThreadId.make("bot"), botId: BotId.make("bot") };
+  const snapshot = { ...emptyShellSnapshot, threads: [ordinary, bot] };
+  it("separates bot rows before building the ordinary thread list", () => {
+    const result = shellSnapshotForSubscriber(snapshot, {
+      omitIdleSubagents: false,
+      omitOlderSettled: false,
+      separateBotThreads: true,
+      now: DateTime.makeUnsafe(0),
+    }).snapshot;
+    expect(result.threads).toEqual([ordinary]);
+    expect(result.botThreads).toEqual([bot]);
+  });
+  it("keeps the combined snapshot for clients without partition support", () => {
+    expect(
+      shellSnapshotForSubscriber(snapshot, {
+        omitIdleSubagents: false,
+        omitOlderSettled: false,
+        now: DateTime.makeUnsafe(0),
+      }).snapshot.threads,
+    ).toEqual([ordinary, bot]);
+  });
+  it("marks bot updates on the server while preserving legacy events", () => {
+    const stored = { sequence: 1, event: { threadId: bot.id } } as Parameters<
+      typeof shellStreamItemFromThreadShell
+    >[0]["stored"];
+    expect(
+      shellStreamItemFromThreadShell({ stored, shell: bot, separateBotThreads: true }),
+    ).toMatchObject({ botThread: true });
+    expect(shellStreamItemFromThreadShell({ stored, shell: bot })).not.toHaveProperty("botThread");
+  });
 });

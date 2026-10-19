@@ -10,7 +10,7 @@ import type {
   OrchestrationV2ThreadHistoryPage,
 } from "@t3tools/contracts";
 import {
-  latestRootProviderFailure,
+  BotId,  latestRootProviderFailure,
   latestUnheldRun,
   threadErrorSummary,
   usageLimitRunPresentedAsLatest,
@@ -404,7 +404,7 @@ export interface ShellSnapshotOptions {
 /** What a shell subscriber's trims read from an active thread, without building its shell. */
 export interface ActiveShellIndexEntry extends Pick<
   OrchestrationV2ThreadShell,
-  "id" | "projectId" | "lineage" | "settledOverride" | "settledAt" | "pinnedAt" | "snoozedUntil"
+  "id" | "projectId" | "lineage" | "settledOverride" | "settledAt" | "pinnedAt" | "snoozedUntil" | "botId"
 > {
   /** False only when no run, request, work item, or watch can make the shell live. */
   readonly mayBeLive: boolean;
@@ -6745,6 +6745,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
     const listActiveShellIndex = Effect.fn("ProjectionStore.listActiveShellIndex")(function* () {
       const rows = yield* sql<{
         readonly thread_id: string;
+        readonly bot_id: string | null;
         readonly project_id: string;
         readonly relationship_to_parent: string | null;
         readonly parent_thread_id: string | null;
@@ -6757,6 +6758,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
       }>`
         SELECT
           t.thread_id,
+          json_extract(t.payload_json, '$.botId') AS bot_id,
           t.project_id,
           json_extract(t.payload_json, '$.lineage.relationshipToParent') AS relationship_to_parent,
           json_extract(t.payload_json, '$.lineage.parentThreadId') AS parent_thread_id,
@@ -6806,6 +6808,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
       `;
       return rows.map((row): ActiveShellIndexEntry => ({
         id: ThreadId.make(row.thread_id),
+        ...(row.bot_id === null ? {} : { botId: BotId.make(row.bot_id) }),
         projectId: ProjectId.make(row.project_id),
         lineage: {
           parentThreadId:
@@ -6849,6 +6852,7 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
         FROM orchestration_v2_projection_threads t
         WHERE t.deleted_at IS NULL
           AND json_extract(t.payload_json, '$.archivedAt') IS NULL
+          AND json_extract(t.payload_json, '$.botId') IS NULL
           AND json_extract(t.payload_json, '$.lineage.relationshipToParent') IS NOT 'subagent'
           AND json_extract(t.payload_json, '$.settledOverride') = 'settled'
           AND json_extract(t.payload_json, '$.settledAt') IS NOT NULL${
