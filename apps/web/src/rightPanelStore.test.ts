@@ -39,6 +39,44 @@ async function reloadRightPanelStore() {
 }
 
 describe("rightPanelStore", () => {
+  it("toggles the bot panel independently for each thread", () => {
+    const store = useRightPanelStore.getState();
+    store.toggleBotPanel(refA);
+    expect(
+      selectThreadRightPanelState(useRightPanelStore.getState().byThreadKey, refA).botPanelOpen,
+    ).toBe(true);
+    expect(
+      selectThreadRightPanelState(useRightPanelStore.getState().byThreadKey, refB).botPanelOpen,
+    ).toBeUndefined();
+    store.toggleBotPanel(refA);
+    expect(
+      selectThreadRightPanelState(useRightPanelStore.getState().byThreadKey, refA).botPanelOpen,
+    ).not.toBe(true);
+  });
+
+  it("switches between the bot panel and existing surfaces without reopening the bot panel", () => {
+    const store = useRightPanelStore.getState();
+    store.openFile(refA, "src/app.ts");
+    store.toggleBotPanel(refA);
+    let panel = selectThreadRightPanelState(useRightPanelStore.getState().byThreadKey, refA);
+    expect(panel.isOpen).toBe(false);
+    expect(panel.botPanelOpen).toBe(true);
+    expect(panel.surfaces.map((surface) => surface.id)).toEqual(["file:src/app.ts"]);
+    store.show(refA);
+    panel = selectThreadRightPanelState(useRightPanelStore.getState().byThreadKey, refA);
+    expect(panel.isOpen).toBe(true);
+    expect(panel.botPanelOpen).toBe(false);
+    store.close(refA);
+    expect(
+      selectThreadRightPanelState(useRightPanelStore.getState().byThreadKey, refA).botPanelOpen,
+    ).toBe(false);
+    store.toggleBotPanel(refA);
+    store.openBrowser(refA, "tab-1");
+    expect(
+      selectThreadRightPanelState(useRightPanelStore.getState().byThreadKey, refA).botPanelOpen,
+    ).toBe(false);
+  });
+
   it("records single and bulk tab closes, newest first", () => {
     const store = useRightPanelStore.getState();
     const pr = pullRequestSurface({
