@@ -1,3 +1,4 @@
+import { useBots, useBotThreadShells } from "../../state/bots";
 import { matchComposerThreadItems } from "@t3tools/client-runtime/composerThreadItems";
 import { useState } from "react";
 import type {
@@ -92,6 +93,18 @@ export function useComposerMenuItems({
     pullRequestTextQuery === debouncedPullRequestTextQuery ? pullRequestTextQuery : null;
   const isPathTrigger = composerTriggerKind === "path";
   const environmentThreadShells = useThreadShells(isPathTrigger);
+  const bots = useBots();
+  const botShells = useBotThreadShells(isPathTrigger);
+  const activeBotShells = isPathTrigger
+    ? botShells.filter((shell) =>
+        bots.some(
+          (bot) =>
+            bot.status === "active" &&
+            bot.ownerEnvironmentId === shell.environmentId &&
+            bot.threadId === shell.id,
+        ),
+      )
+    : [];
   const workspaceEntries = useComposerPathSearch({
     environmentId,
     cwd: isPathTrigger ? gitCwd : null,
@@ -161,7 +174,7 @@ export function useComposerMenuItems({
     if (composerTrigger.kind === "path") {
       return [
         ...matchComposerThreadItems({
-          shells: environmentThreadShells,
+          shells: [...activeBotShells, ...environmentThreadShells],
           environmentId,
           excludeThreadId: activeThreadId,
           query: composerTrigger.query,
@@ -340,7 +353,7 @@ export function useComposerMenuItems({
         : "No pull requests found in this repository.";
     }
     return composerTriggerKind === "path"
-      ? "No matching files or folders."
+      ? "No matching files, threads, or bots."
       : "No matching command.";
   })();
 

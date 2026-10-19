@@ -1,3 +1,4 @@
+import type { NavigationSection } from "./navigation.logic";
 import { ThreadUndoShortcut } from "../AppSidebarLayout";
 import { useAtomValue } from "@effect/atom-react";
 import * as Schema from "effect/Schema";
@@ -192,11 +193,15 @@ function ProjectProjectionRetention() {
 export function AlternateSidebarFrame({
   children,
   threadSidebar,
+  botSidebar,
   navigationRail,
+  section,
 }: {
   children: ReactNode;
   threadSidebar: ReactNode;
+  botSidebar: ReactNode;
   navigationRail: ReactNode;
+  section: NavigationSection;
 }) {
   const navigate = useNavigate();
   const { active: panelAnimationsActive, durationMs: panelAnimationDurationMs } =
@@ -208,6 +213,7 @@ export function AlternateSidebarFrame({
   const panelAnimationsSuppressed = usePanelNavigationSuppression(pathname);
   const routePanelAnimationsActive = panelAnimationsActive && !panelAnimationsSuppressed;
   const isOnSettings = pathname === "/settings" || pathname.startsWith("/settings/");
+  const isBot = section === "bots";
   const [threadSidebarOpen, setThreadSidebarOpen] = useState(true);
   const isMacosDesktop = isElectron && isMacPlatform(navigator.platform);
   const [sidebarWidth, setSidebarWidth] = useState(readInitialThreadSidebarWidth);
@@ -290,53 +296,55 @@ export function AlternateSidebarFrame({
         <SidebarBrandWidthProbe onWidthChange={setBrandWidth} />
         <ProjectProjectionRetention />
         <Sidebar
-            side="left"
-            collapsible="offcanvas"
-            data-app-sidebar=""
-            role="navigation"
-            aria-label={isOnSettings ? "Settings" : "Threads"}
-            className={
-              navigationRail
-                ? "left-12 group-data-[collapsible=offcanvas]:invisible group-data-[collapsible=offcanvas]:left-[calc(3rem-var(--sidebar-width))]"
-                : undefined
-            }
-            resizable={{
-              maxWidth: sidebarMaximumWidth,
-              minWidth: sidebarMinimumWidth,
-              shouldAcceptWidth: ({ currentWidth, nextWidth, wrapper }) =>
-                nextWidth <= currentWidth ||
-                wrapper.clientWidth - nextWidth - navigationRailWidth >=
-                  THREAD_MAIN_CONTENT_MIN_WIDTH,
-              storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
-              onResize: setSidebarWidth,
-            }}
-            style={
-              navigationRail
-                ? ({
-                    "--workspace-titlebar-content-left":
-                      isMacosDesktop && !isWindowFullscreen
-                        ? isOnSettings
-                          ? "var(--workspace-controls-left)"
-                          : "calc(var(--workspace-controls-left) + var(--workspace-titlebar-control-size) + var(--workspace-titlebar-control-gap))"
-                        : "0.75rem",
-                    "--workspace-controls-left":
-                      isMacosDesktop && !isWindowFullscreen
-                        ? `calc(${MACOS_TRAFFIC_LIGHTS_LEFT_INSET} - 3rem)`
-                        : "0.75rem",
-                  } as CSSProperties)
-                : windowControlsInsetStyle
-            }
-          >
-            {isOnSettings ? (
-              <>
-                <AlternateSidebarHeader />
-                <SettingsSidebarNav pathname={pathname} />
-              </>
-            ) : (
-              threadSidebar
-            )}
-            {!isOnSettings ? <SidebarRail onDoubleClick={resetSidebarWidth} /> : null}
-          </Sidebar>
+          side="left"
+          collapsible="offcanvas"
+          data-app-sidebar=""
+          role="navigation"
+          aria-label={isOnSettings ? "Settings" : isBot ? "Bots" : "Threads"}
+          className={
+            navigationRail
+              ? "left-12 group-data-[collapsible=offcanvas]:invisible group-data-[collapsible=offcanvas]:left-[calc(3rem-var(--sidebar-width))]"
+              : undefined
+          }
+          resizable={{
+            maxWidth: sidebarMaximumWidth,
+            minWidth: sidebarMinimumWidth,
+            shouldAcceptWidth: ({ currentWidth, nextWidth, wrapper }) =>
+              nextWidth <= currentWidth ||
+              wrapper.clientWidth - nextWidth - navigationRailWidth >=
+                THREAD_MAIN_CONTENT_MIN_WIDTH,
+            storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
+            onResize: setSidebarWidth,
+          }}
+          style={
+            navigationRail
+              ? ({
+                  "--workspace-titlebar-content-left":
+                    isMacosDesktop && !isWindowFullscreen
+                      ? isOnSettings
+                        ? "var(--workspace-controls-left)"
+                        : "calc(var(--workspace-controls-left) + var(--workspace-titlebar-control-size) + var(--workspace-titlebar-control-gap))"
+                      : "0.75rem",
+                  "--workspace-controls-left":
+                    isMacosDesktop && !isWindowFullscreen
+                      ? `calc(${MACOS_TRAFFIC_LIGHTS_LEFT_INSET} - 3rem)`
+                      : "0.75rem",
+                } as CSSProperties)
+              : windowControlsInsetStyle
+          }
+        >
+          {isOnSettings ? (
+            <>
+              <AlternateSidebarHeader />
+              <SettingsSidebarNav pathname={pathname} />
+            </>
+          ) : isBot ? (
+            botSidebar
+          ) : (
+            threadSidebar
+          )}
+          {!isOnSettings ? <SidebarRail onDoubleClick={resetSidebarWidth} /> : null}
+        </Sidebar>
         {children}
         {!isOnSettings ? (
           <SidebarControl showButton={!navigationRail || (isMacosDesktop && !isWindowFullscreen)} />

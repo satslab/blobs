@@ -1,3 +1,4 @@
+import { useBotThreadContext } from "../state/bots";
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import { requestCustomSnooze } from "../components/CustomSnoozeDialog";
 import { openGuestShareDialog } from "../components/chat/guestShareDialogState";
@@ -11,6 +12,7 @@ import { canSnooze, effectiveSnoozed } from "@t3tools/client-runtime/state/threa
 import {
   AuthOrchestrationOperateScope,
   type ScopedThreadRef,
+  type ContextMenuItem,
   type ThreadId,
 } from "@t3tools/contracts";
 import { useRouter } from "@tanstack/react-router";
@@ -63,10 +65,14 @@ export function useThreadActionMenu(input: {
   readonly projectCwd: string | null;
   readonly onStartRename: () => void;
   readonly canShareWithGuest: boolean;
+  readonly actions?: ReadonlyArray<ThreadActionMenuId>;
+  readonly projectSettingsLabel?: string;
 }) {
-  const { threadRef, projectCwd, onStartRename, canShareWithGuest } = input;
+  const { threadRef, projectCwd, onStartRename, canShareWithGuest, actions, projectSettingsLabel } =
+    input;
   const router = useRouter();
-  const projects = useProjects();
+  const botContext = useBotThreadContext(threadRef);
+  const projects = useProjects({ includeBot: true });
   const primaryEnvironmentId = usePrimaryEnvironmentId();
   const projectGroupingSettings = useClientSettings(selectProjectGroupingSettings);
   const logicalProjectKeyByPhysicalKey = buildPhysicalToLogicalProjectKeyMap({
@@ -113,7 +119,14 @@ export function useThreadActionMenu(input: {
     onError: (error) => failureToast("Failed to copy thread ID", error),
   });
 
-  const openMenu = (position: { x: number; y: number }) => {
+  const openMenu = (
+    position: { x: number; y: number },
+    additional?: {
+      items: ReadonlyArray<ContextMenuItem>;
+      sharedItemsIndex?: number;
+      onSelect: (action: string) => void;
+    },
+  ) => {
     if (threadRef === null) return;
     void (async () => {
       const api = readLocalApi();
@@ -144,10 +157,33 @@ export function useThreadActionMenu(input: {
         supports,
         snoozePresets,
         canShareWithGuest,
+        ...(projectSettingsLabel === undefined ? {} : { projectSettingsLabel }),
       });
-      const clicked = await settlePromise(() => api.contextMenu.show(items, position));
+      const visibleItems = actions ? items.filter((item) => actions.includes(item.id)) : items;
+      const additionalItems = additional?.items ?? [];
+      const sharedItemsIndex = additional?.sharedItemsIndex ?? additionalItems.length;
+      const clicked = await settlePromise(() =>
+        api.contextMenu.show(
+          [
+            ...additionalItems.slice(0, sharedItemsIndex),
+            ...visibleItems,
+            ...additionalItems.slice(sharedItemsIndex),
+          ].map((item, index) => ({
+            ...item,
+            separatorBefore: index > 0 && (item.separatorBefore ?? false),
+          })),
+          position,
+        ),
+      );
       if (clicked._tag === "Failure" || clicked.value === null) return;
-      const action: ThreadActionMenuId = clicked.value;
+      if (additional?.items.some((item) => item.id === clicked.value)) {
+        additional.onSelect(clicked.value);
+        return;
+      }
+      const action = visibleItems
+        .flatMap((item) => [item, ...(item.children ?? [])])
+        .find((item) => item.id === clicked.value)?.id;
+      if (!action) return;
       if (
         threadActionRequiresOperate(action) &&
         !readEnvironmentScope(threadRef.environmentId, AuthOrchestrationOperateScope)
@@ -181,6 +217,14 @@ export function useThreadActionMenu(input: {
       };
       switch (action) {
         case "project-settings": {
+          if (botContext) {
+            void router.navigate({
+              to: "/bots/settings/$environmentId/$botId",
+              params: { environmentId: thread.environmentId, botId: botContext.botId },
+              state: { botSettingsReturnHref: router.state.location.href },
+            });
+            return;
+          }
           const project = projects.find(
             (candidate) =>
               candidate.environmentId === thread.environmentId && candidate.id === thread.projectId,
