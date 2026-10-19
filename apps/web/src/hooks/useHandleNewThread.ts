@@ -5,6 +5,7 @@ import {
 } from "@t3tools/client-runtime/environment";
 import { DEFAULT_SERVER_SETTINGS, type ScopedProjectRef, type ThreadId } from "@t3tools/contracts";
 import { type AnyRouter, useRouter } from "@tanstack/react-router";
+import { isBotProject } from "@t3tools/shared/botChat";
 import {
   composerDraftHasUserContent,
   markPromotedDraftThreadByRef,
@@ -87,6 +88,8 @@ export function createNewThreadHandler(router: AnyRouter) {
       prompt?: string;
     },
   ): Promise<{ draftId: DraftId; threadId: ThreadId } | null> => {
+    const targetProject = readProject(projectRef);
+    if (isBotProject(targetProject ?? { id: projectRef.projectId })) return Promise.resolve(null);
     const projects = readProjects();
     const projectGroupingSettings = selectProjectGroupingSettings(getClientSettings());
     // Read at call time; status pushes replace the config map and would recreate every sidebar handler.

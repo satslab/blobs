@@ -15,6 +15,7 @@ import {
   type ServerProviderSlashCommand,
 } from "@t3tools/contracts";
 import {
+  BotIcon,
   BlocksIcon,
   FolderIcon,
   MessagesSquareIcon,
@@ -77,6 +78,7 @@ export type ComposerCommandItem =
   | {
       id: string;
       type: "thread";
+      isBot?: boolean;
       thread: ScopedThreadRef;
       label: string;
       description: string;
@@ -161,7 +163,7 @@ export const ComposerCommandMenu = memo(function ComposerCommandMenu(props: {
                   (props.triggerKind === "skill"
                     ? "No skills found. Try / to browse provider commands."
                     : props.triggerKind === "path"
-                      ? "No matching files or folders."
+                      ? "No matching files, threads, or bots."
                       : "No matching command."))}
             </p>
           </div>
@@ -212,7 +214,11 @@ const ComposerCommandMenuItem = memo(function ComposerCommandMenuItem(props: {
         />
       ) : null}
       {props.item.type === "thread" ? (
-        <MessagesSquareIcon aria-hidden="true" className="size-4 shrink-0 text-secondary-label" />
+        props.item.isBot ? (
+          <BotIcon aria-hidden="true" className="size-4 shrink-0 text-secondary-label" />
+        ) : (
+          <MessagesSquareIcon aria-hidden="true" className="size-4 shrink-0 text-secondary-label" />
+        )
       ) : null}
       {props.item.type === "environment" ? (
         <EnvironmentMachineIcon
@@ -259,7 +265,7 @@ export function composerSuggestionOptionId(listId: string, itemId: string): stri
 }
 
 const LISTBOX_LABEL_BY_TRIGGER: Record<ComposerTriggerKind, string> = {
-  path: "Files and folders",
+  path: "Files, threads, and bots",
   "pull-request": "Pull requests",
   "slash-command": "Commands",
   skill: "Skills",

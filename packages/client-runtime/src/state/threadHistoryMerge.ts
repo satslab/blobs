@@ -93,6 +93,7 @@ export function mergeOlderHistoryIntoProjection(
         if (
           currentItem.type !== "run_interrupt_request" ||
           !isOrchestrationV2TurnItemVisible({
+            bot: projection.thread.botId !== undefined,
             item: currentItem,
             runs: projection.runs,
             attempts: projection.attempts,

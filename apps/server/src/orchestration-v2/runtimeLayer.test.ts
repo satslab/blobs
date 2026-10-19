@@ -1,6 +1,8 @@
+import { CloudManagedEndpointRuntime } from "../cloud/ManagedEndpointRuntime.ts";
 import { SourceControlProviderKind } from "@t3tools/contracts";
 import { limitRecoveryCommand } from "./UsageLimitRecoveryWorker.ts";
 import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
+import * as SourceControlRepositoryService from "../sourceControl/SourceControlRepositoryService.ts";
 import * as SourceControlProviderRegistry from "../sourceControl/SourceControlProviderRegistry.ts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
@@ -42,19 +44,25 @@ import * as Path from "effect/Path";
 import * as Queue from "effect/Queue";
 import * as Stream from "effect/Stream";
 import * as TestClock from "effect/testing/TestClock";
+import { HttpClient } from "effect/http";
 import * as SqlClient from "effect/sql/SqlClient";
 
 import * as CheckpointStore from "../checkpointing/CheckpointStore.ts";
 import * as GitWorkflow from "../git/GitWorkflowService.ts";
+import * as ServerSecretStore from "../auth/ServerSecretStore.ts";
 import * as ServerConfig from "../config.ts";
+import * as ServerEnvironment from "../environment/ServerEnvironment.ts";
 import * as SqlitePersistence from "../persistence/Sqlite.ts";
 import * as OrchestrationEventStore from "../persistence/OrchestrationEventStore.ts";
 import * as ProjectEnrichmentService from "../project/ProjectEnrichmentService.ts";
 import * as ProjectService from "../project/ProjectService.ts";
 import * as ServerSettings from "../serverSettings.ts";
+import * as McpSessionRegistry from "../mcp/McpSessionRegistry.ts";
+import type * as McpInvocationContext from "../mcp/McpInvocationContext.ts";
 import * as McpSessionRegistryTestkit from "../mcp/McpSessionRegistry.testkit.ts";
 import * as ProviderInstanceRegistry from "../provider/ProviderInstanceRegistry.ts";
 import type { ProviderInstance } from "@t3tools/provider-core/server/driver";
+import * as GitVcsDriver from "../vcs/GitVcsDriver.ts";
 import * as VcsDriverRegistry from "../vcs/VcsDriverRegistry.ts";
 import * as VcsProcess from "../vcs/VcsProcess.ts";
 import * as WorkspacePaths from "../workspace/WorkspacePaths.ts";
@@ -76,6 +84,10 @@ import * as RuntimeLayer from "./runtimeLayer.ts";
 import { shellStreamItemFromThreadShell } from "./ShellStream.ts";
 import { CodexProviderCapabilitiesV2 } from "./Adapters/CodexAdapterV2.ts";
 import * as ThreadManagementService from "./ThreadManagementService.ts";
+import * as WorktreeSetupTracker from "../project/WorktreeSetupTracker.ts";
+import * as ProjectCloneTracker from "../project/ProjectCloneTracker.ts";
+import * as ProviderRegistry from "../provider/ProviderRegistry.ts";
+import * as TextGeneration from "../textGeneration/TextGeneration.ts";
 import * as ManagedProjectFolders from "../project/ManagedProjectFolders.ts";
 import * as ScratchThreadPromotion from "../project/ScratchThreadPromotion.ts";
 import * as ScheduledTaskService from "../scheduledTasks/ScheduledTaskService.ts";
@@ -88,8 +100,19 @@ import * as ThreadLaunchService from "./ThreadLaunchService.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
 import type * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
 
-const layerPlatformTest = Layer.merge(
+const layerPlatformTest = Layer.mergeAll(
   NodeServices.layer,
+  Layer.mock(ProjectEnrichmentService.ProjectEnrichmentService)({
+    getAvailable: () =>
+      Effect.succeed({
+        repositoryIdentity: null,
+        faviconPath: null,
+        repositoryIdentityResolved: false,
+      }),
+  }),
+  Layer.mock(WorkspacePaths.WorkspacePaths)({
+    normalizeWorkspaceRoot: (root) => Effect.succeed(root),
+  }),
   Layer.mock(SourceControlProviderRegistry.SourceControlProviderRegistry)({
     resolveLink: () => Effect.die("unused title link"),
   }),
@@ -272,6 +295,123 @@ const moveProject = (projectId: ProjectId, workspaceRoot: string, updatedAt: str
       payload: { projectId, workspaceRoot, updatedAt },
     }),
   );
+
+it.effect("production bot and normal sessions retain project agent capabilities", () =>
+  Effect.gen(function* () {
+    const issued: ReadonlySet<McpInvocationContext.McpCapability>[] = [];
+    const projectId = ProjectId.make("runtime-agent-access-project");
+    const registry = Layer.effect(
+      McpSessionRegistry.McpSessionRegistry,
+      Effect.gen(function* () {
+        const base = yield* McpSessionRegistry.McpSessionRegistry;
+        return McpSessionRegistry.McpSessionRegistry.of({
+          ...base,
+          issue: (request) => {
+            issued.push(new Set(request.capabilities));
+            return base.issue(request);
+          },
+        });
+      }),
+    ).pipe(Layer.provide(McpSessionRegistryTestkit.layer));
+    yield* Effect.gen(function* () {
+      const orchestrator = yield* Orchestrator.OrchestratorV2;
+      const manager = yield* ProviderSessionManager.ProviderSessionManagerV2;
+      yield* seedProject({
+        projectId,
+        title: "Agent access",
+        workspaceRoot: process.cwd(),
+        defaultModelSelection: modelSelection,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      });
+      for (const kind of ["bot", "normal"] as const) {
+        const threadId = ThreadId.make(`runtime-agent-access-${kind}`);
+        yield* orchestrator.dispatch({
+          type: "thread.create",
+          commandId: CommandId.make(`${threadId}:create`),
+          createdBy: "user",
+          creationSource: "web",
+          threadId,
+          projectId,
+          title: kind,
+          modelSelection,
+          runtimeMode: "full-access",
+          interactionMode: "default",
+          branch: null,
+          worktreePath: null,
+        });
+        // The fixture adapter stops at openSession, after MCP credentials are issued.
+        yield* manager
+          .open({
+            threadId,
+            providerSessionId: ProviderSessionId.make(`${threadId}:session`),
+            modelSelection,
+            runtimePolicy: {
+              cwd: process.cwd(),
+              runtimeMode: "full-access",
+              interactionMode: "default",
+              ...(kind === "bot"
+                ? { memoryContext: { runId: RunId.make(`${threadId}:run`), threadId } }
+                : {}),
+            },
+          })
+          .pipe(Effect.exit);
+      }
+      assert.deepEqual(
+        issued.map((capabilities) => [...capabilities].sort()),
+        [
+          ["device", "orchestration", "preview", "pull-requests", "worktree"],
+          ["device", "orchestration", "preview", "pull-requests", "worktree"],
+        ],
+      );
+    }).pipe(
+      Effect.provide(
+        RuntimeLayer.layerProduction.pipe(
+          Layer.provide(
+            Layer.mergeAll(
+              Layer.mock(CloudManagedEndpointRuntime)({}),
+              Layer.mock(ServerEnvironment.ServerEnvironment)({}),
+              Layer.succeed(
+                HttpClient.HttpClient,
+                HttpClient.make(() => Effect.die("Unexpected HTTP request in agent access test")),
+              ),
+            ),
+          ),
+          Layer.provideMerge(ProjectStore.layer),
+          Layer.provide(WorktreeSetupTracker.layer),
+          Layer.provide(ProjectCloneTracker.layer),
+          Layer.provide(Layer.mock(ProviderRegistry.ProviderRegistry)({})),
+          Layer.provide(Layer.mock(TextGeneration.TextGeneration)({})),
+          Layer.provide(
+            Layer.mock(SourceControlRepositoryService.SourceControlRepositoryService)({}),
+          ),
+          Layer.provide(
+            Layer.mock(ServerSecretStore.ServerSecretStore)({
+              getOrCreateRandom: () => Effect.succeed(new Uint8Array(32)),
+            }),
+          ),
+          Layer.provide(registry),
+          Layer.provide(McpProviderSessions.layer),
+          Layer.provide(SqlitePersistence.layerMemory),
+          Layer.provide(GitVcsDriver.layer.pipe(Layer.provide(layerVcsDriverRegistryTest))),
+          Layer.provide(layerCheckpointStoreTest),
+          Layer.provide(layerServerConfig),
+          Layer.provide(
+            ServerSettings.layerTest({
+              projectSettingsOverrides: {
+                [projectId]: { enableAgentBrowserAccess: true, enableAgentDeviceAccess: true },
+              },
+            }),
+          ),
+          Layer.provide(layerTestProviderInstanceRegistry),
+          Layer.provide(layerGitWorkflowTest),
+          Layer.provide(Layer.mock(TerminalManager.TerminalManager)({ close: () => Effect.void })),
+          Layer.provide(Layer.mock(PreviewManager.PreviewManager)({ close: () => Effect.void })),
+          Layer.provide(layerPlatformTest),
+        ),
+      ),
+    );
+  }),
+);
 
 const layerTest = Layer.mergeAll(
   RuntimeLayer.layer,
@@ -658,7 +798,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive", (it) => {
         runtimeMode: "full-access",
         interactionMode: "default",
         branch: null,
-        worktreePath: `/tmp/t3-${name}`,
+        worktreePath: `/tmp/sora-${name}`,
       });
       yield* orchestrator.dispatch({
         type: "message.dispatch",
@@ -3805,7 +3945,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           notification: {
             source: { kind: "system" as const },
             outcome: "updated" as const,
-            summary: "T3 Code restarted and resumed this turn",
+            summary: "Sora restarted and resumed this turn",
             detail: "Continue where you left off.",
           },
           attachments: [],
@@ -3826,7 +3966,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           continuationItems.flatMap((item) =>
             item.type === "notification" ? [[item.summary, item.detail]] : [],
           ),
-          ["T3 Code restarted and resumed this turn", "Continue where you left off."],
+          ["Sora restarted and resumed this turn", "Continue where you left off."],
         );
         yield* orchestrator.dispatch({
           ...command,

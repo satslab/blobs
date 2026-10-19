@@ -50,6 +50,14 @@ export function resolveUserMessagePresentation(message: {
       guestName: guest.name,
     };
   }
+  if (message.creationSource === "server" && message.id?.startsWith("bot-check-in:")) {
+    return {
+      text: message.text,
+      attribution: "automation",
+      sourceLabel: "Automatic check-in",
+      scheduledTaskId: undefined,
+    };
+  }
   if (message.scheduledTaskId !== undefined) {
     return {
       text: message.text,

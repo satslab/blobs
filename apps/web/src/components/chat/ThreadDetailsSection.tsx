@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 
+import { SettingsGroup } from "../settings/SettingsGroup";
 import { cn } from "../../lib/utils";
 
 export function ThreadDetailsSection({
@@ -8,6 +9,8 @@ export function ThreadDetailsSection({
   actions,
   separated = true,
   showHeading = true,
+  variant = "inline",
+  padded = true,
   children,
   ...props
 }: Omit<ComponentProps<"section">, "className" | "style" | "title" | "aria-labelledby"> & {
@@ -16,34 +19,46 @@ export function ThreadDetailsSection({
   actions?: ReactNode;
   separated?: boolean;
   showHeading?: boolean;
+  variant?: "inline" | "card";
+  padded?: boolean;
 }) {
   return (
     <section
       {...props}
       aria-labelledby={showHeading ? headingId : undefined}
       aria-label={showHeading ? undefined : title}
-      // A row can still render nothing (a fresh draft quiets Git actions), so an empty section
-      // collapses, and a divider only follows a section that has content.
       className={cn(
-        "px-2 pt-2 pb-2.5 has-[>div:last-child:empty]:hidden",
-        separated && "border-border/65 [section:not(:has(>div:last-child:empty))~&]:border-t",
+        variant === "card" ? "space-y-1.5" : "px-2 pt-2 pb-2.5 has-[>div:last-child:empty]:hidden",
+        variant === "inline" && separated && "border-border/65 [section:not(:has(>div:last-child:empty))~&]:border-t",
       )}
     >
       <div
         className={cn(
-          "mb-1 flex min-h-8 min-w-0 items-center justify-between gap-2 px-2.5",
+          "flex min-w-0 items-center justify-between gap-2",
+          variant === "card" ? "min-h-7 px-0.5" : "mb-1 min-h-8 px-1.5",
           !showHeading && "hidden",
         )}
       >
         <h3
           id={headingId}
-          className="min-w-0 truncate text-2xs font-medium text-muted-foreground select-none"
+          className={cn(
+            "min-w-0 truncate select-none",
+            variant === "card"
+              ? "text-xs font-semibold text-foreground"
+              : "text-2xs font-medium text-muted-foreground",
+          )}
         >
           {title}
         </h3>
         {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
       </div>
-      {children}
+      {variant === "card" ? (
+        <SettingsGroup divided={false}>
+          <div className={cn("overflow-clip rounded-xl", padded && "p-2")}>{children}</div>
+        </SettingsGroup>
+      ) : (
+        children
+      )}
     </section>
   );
 }

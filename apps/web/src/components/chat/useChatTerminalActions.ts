@@ -57,6 +57,7 @@ export interface TerminalLaunchContext {
 }
 
 interface ChatTerminalActionsInput {
+  readonly isBotThread: boolean;
   readonly environmentId: EnvironmentId;
   readonly composerRef: ComposerHandleRef;
   readonly terminalUiState: ReturnType<typeof selectThreadTerminalUiState>;
@@ -81,6 +82,7 @@ interface ChatTerminalActionsInput {
  */
 export function useChatTerminalActions(input: ChatTerminalActionsInput) {
   const {
+    isBotThread,
     environmentId,
     composerRef,
     terminalUiState,
@@ -137,7 +139,7 @@ export function useChatTerminalActions(input: ChatTerminalActionsInput) {
   };
   const setTerminalOpenStable = useStableCallback(setTerminalOpen);
   const toggleTerminalVisibility = () => {
-    if (!activeThreadRef) return;
+    if (isBotThread || !activeThreadRef) return;
     const nextOpen = !terminalUiState.terminalOpen;
     if (
       nextOpen &&
@@ -403,6 +405,7 @@ export function useChatTerminalActions(input: ChatTerminalActionsInput) {
   // A focused right-panel terminal takes the split/new/close chords; otherwise they act on the drawer.
   const shortcuts = {
     "terminal.toggle": () => {
+      if (isBotThread) return;
       if (
         !terminalUiState.terminalOpen &&
         !readEnvironmentScope(environmentId, AuthTerminalReadScope) &&

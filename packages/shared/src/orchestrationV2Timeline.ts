@@ -9,6 +9,7 @@ type TimelineRun = Pick<OrchestrationV2Run, "id" | "status">;
 type TimelineRunAttempt = Pick<OrchestrationV2RunAttempt, "runId" | "rootNodeId" | "status">;
 type TimelineTurnItem = Pick<OrchestrationV2TurnItem, "type" | "runId" | "nodeId"> & {
   readonly inputIntent?: OrchestrationV2UserMessageInputIntent;
+  readonly text?: string;
 };
 
 export function isOrchestrationV2SupersededInterrupt(input: {
@@ -40,11 +41,14 @@ export function isOrchestrationV2SupersededInterrupt(input: {
 
 export function isOrchestrationV2TurnItemVisible(input: {
   readonly item: TimelineTurnItem;
+  readonly bot?: boolean;
   readonly runs: ReadonlyArray<TimelineRun>;
   readonly attempts: ReadonlyArray<TimelineRunAttempt>;
   readonly items: ReadonlyArray<TimelineTurnItem>;
 }): boolean {
   const { item } = input;
+  if (input.bot && item.type === "assistant_message" && item.text?.trim() === "NO_UPDATES")
+    return false;
   if (
     item.runId !== null &&
     input.runs.some((run) => run.id === item.runId && run.status === "rolled_back")
@@ -70,6 +74,7 @@ export function isOrchestrationV2TurnItemVisible(input: {
 }
 
 export function createOrchestrationV2TurnItemVisibility(input: {
+  readonly bot?: boolean;
   readonly runs: ReadonlyArray<TimelineRun>;
   readonly attempts: ReadonlyArray<TimelineRunAttempt>;
   readonly items: ReadonlyArray<TimelineTurnItem>;
@@ -89,6 +94,8 @@ export function createOrchestrationV2TurnItemVisibility(input: {
     input.items.filter((item) => item.type === "run_interrupt_request").map((item) => item.runId),
   );
   return (item) => {
+    if (input.bot && item.type === "assistant_message" && item.text?.trim() === "NO_UPDATES")
+      return false;
     const status = item.runId === null ? undefined : statuses.get(item.runId);
     if (status === "rolled_back") return false;
     if (

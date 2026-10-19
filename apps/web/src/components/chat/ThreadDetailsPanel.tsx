@@ -1,3 +1,4 @@
+import { useBotThreadContext } from "../../state/bots";
 import type {
   EditorId,
   EnvironmentId,
@@ -90,6 +91,7 @@ export function ThreadDetailsPanel(props: ThreadDetailsPanelProps) {
     props.activeProjectScripts && visible.scripts ? props.gitCwd : null,
   );
   const activeThreadRef = { environmentId: props.environmentId, threadId: props.threadId };
+  const botId = useBotThreadContext(activeThreadRef)?.botId;
   const branchToolbarProps = {
     showGitControls: props.isGitRepo,
     environmentId: props.environmentId,
@@ -146,12 +148,12 @@ export function ThreadDetailsPanel(props: ThreadDetailsPanelProps) {
       {(density) => {
         // Section flags follow the rows that will render, so no empty section steals the divider rule.
         const show = {
-          environment: density === "full" && visible.environment,
-          openIn: density !== "essential" && visible.openIn && props.showOpenInPicker,
-          scripts: visible.scripts && props.activeProjectScripts !== undefined,
-          branch: props.gitCwd !== null && props.isGitRepo && visible.branch,
+          environment: !botId && density === "full" && visible.environment,
+          openIn: !botId && density !== "essential" && visible.openIn && props.showOpenInPicker,
+          scripts: !botId && visible.scripts && props.activeProjectScripts !== undefined,
+          branch: !botId && props.gitCwd !== null && props.isGitRepo && visible.branch,
           git:
-            props.gitCwd !== null &&
+            !botId && props.gitCwd !== null &&
             props.activeProjectName !== undefined &&
             (visible.gitActions || (visible.changes && props.isGitRepo)),
         };
@@ -234,18 +236,18 @@ export function ThreadDetailsPanel(props: ThreadDetailsPanelProps) {
                 </ThreadDetailsSection>
               ) : null}
 
-              {density === "full" && !props.draftId && visible.servers ? (
+              {!botId && density === "full" && !props.draftId && visible.servers ? (
                 <ThreadServersPanel environmentId={props.environmentId} threadId={props.threadId} />
               ) : null}
 
-              {density === "full" && !props.draftId && visible.automations ? (
+              {!botId && density === "full" && !props.draftId && visible.automations ? (
                 <ThreadAutomationsPanel
                   environmentId={props.environmentId}
                   threadId={props.threadId}
                 />
               ) : null}
 
-              {density === "full" && !props.draftId && visible.lineage ? (
+              {(botId || density === "full") && !props.draftId && visible.lineage ? (
                 <ThreadRelationshipsPanel
                   environmentId={props.environmentId}
                   threadId={props.threadId}

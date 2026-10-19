@@ -93,6 +93,7 @@ export function ProjectDefaultsSettings({ category }: { category: ProjectSetting
   const mixedMergeMethod = useScopedSettingsMixed(["pullRequestMergeMethod"]);
   const modelSource = useScopedSettingSource(["defaultModelSelection"]);
   const isProjectScope = scope.kind === "project" || scope.kind === "checkout";
+  const isBotProject = isProjectScope && scope.members.some((member) => member.isBot);
   const unavailable = connectedEnvironments.length === 0;
   const effective = target
     ? resolveProjectSettings(target.settings, null, null, null).settings
@@ -286,7 +287,7 @@ export function ProjectDefaultsSettings({ category }: { category: ProjectSetting
         <>
           {modelRow}
           {fallbackRow}
-          {workspaceRow}
+          {isBotProject ? null : workspaceRow}
         </>
       ) : category === "general" ? (
         <>
@@ -353,7 +354,7 @@ export function ProjectDefaultsSettings({ category }: { category: ProjectSetting
               </Select>
             }
           />
-          {workspaceRow}
+          {isBotProject ? null : workspaceRow}
         </>
       ) : (
         <>

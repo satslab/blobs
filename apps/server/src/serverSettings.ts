@@ -428,6 +428,13 @@ function selectionSupportsTextGeneration(
 }
 
 function resolveTextGenerationProvider(settings: ServerSettings): ServerSettings {
+  const memory = settings.memoryCompactionModelSelection;
+  if (
+    memory !== null &&
+    (!isModelSelectionProviderEnabled(settings, memory) ||
+      !selectionSupportsTextGeneration(settings, memory))
+  )
+    settings = { ...settings, memoryCompactionModelSelection: null };
   return isModelSelectionProviderEnabled(settings, settings.textGenerationModelSelection) &&
     selectionSupportsTextGeneration(settings, settings.textGenerationModelSelection)
     ? settings
@@ -454,6 +461,7 @@ const ATOMIC_SETTINGS_KEYS: ReadonlySet<string> = new Set([
   "reviewGuideModelSelection",
   "textGenerationModelSelection",
   "fallbackModelSelection",
+  "memoryCompactionModelSelection",
   "pullRequestMergeMethod",
 ]);
 
