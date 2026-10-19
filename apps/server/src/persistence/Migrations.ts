@@ -1,6 +1,7 @@
 import * as Migrator from "effect/sql/Migrator";
 import * as Effect from "effect/Effect";
 import * as SqlClient from "effect/sql/SqlClient";
+import { reconcileForkMigrations } from "./reconcileForkMigrations.ts";
 import { reconcileV2PreviewMigration } from "./reconcileV2PreviewMigration.ts";
 
 import Migration0001 from "./Migrations/001_OrchestrationEvents.ts";
@@ -83,6 +84,11 @@ import Migration0077 from "./Migrations/077_RepairBooleanSettledOverride.ts";
 import Migration0078 from "./Migrations/078_DropOrchestrationEventCorrelationIndex.ts";
 
 import Migration0079 from "./Migrations/079_DelegatedRecoveryIndexes.ts";
+
+import BotChatMigration from "./Migrations/073_BotChat.ts";
+import BotProjectsMigration from "./Migrations/074_BotProjects.ts";
+import BotSystemTimezoneMigration from "./Migrations/079_BotSystemTimezone.ts";
+import BotResourcesMigration from "./Migrations/078_BotResources.ts";
 
 const migrationEntries = [
   [1, "OrchestrationEvents", Migration0001],
@@ -226,6 +232,9 @@ export const runMigrations = Effect.fn("runMigrations")(function* ({
     toMigrationInclusive === undefined || toMigrationInclusive >= FIRST_V2_MIGRATION_ID;
   const previewMigrations = includesV2 ? yield* reconcileV2PreviewMigration() : [];
   if (includesV2) {
+    if (toMigrationInclusive === undefined || toMigrationInclusive >= 68) {
+      yield* reconcileForkMigrations();
+    }
     yield* assertV2MigrationsCanRun(toMigrationInclusive);
   }
   const executedMigrations = [

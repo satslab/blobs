@@ -15,6 +15,18 @@ import { WS_METHODS } from "./rpc.ts";
 
 /** Incremental client enforcement; the server still authorizes every request. */
 export const CLIENT_GUARDED_RPC_SCOPES = {
+  [WS_METHODS.botsCreate]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsRename]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsReset]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsResourcesChange]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsCheckIn]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsDelete]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsTransferBegin]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsTransferWrite]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsTransferStage]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsTransferRelease]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsTransferActivate]: AuthOrchestrationOperateScope,
+  [WS_METHODS.botsTransferCancel]: AuthOrchestrationOperateScope,
   [WS_METHODS.previewClose]: AuthPreviewOperateScope,
   // Stopping a server signals its processes, as closing a terminal does.
   [WS_METHODS.previewStopLocalServer]: AuthTerminalOperateScope,

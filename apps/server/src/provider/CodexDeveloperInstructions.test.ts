@@ -59,7 +59,7 @@ describe("Codex runtime context", () => {
 describe("Codex orchestration context", () => {
   it("routes subagents native first, delegate_task for the rest", () => {
     const orchestration = Object.entries(buildCodexAdditionalContext({ model: "gpt-6.1-sol" }))
-      .filter(([key]) => key.startsWith("t3_code_orchestration_"))
+      .filter(([key]) => key.startsWith("sora_code_orchestration_"))
       .map(([, entry]) => entry.value)
       .join("\n");
 
