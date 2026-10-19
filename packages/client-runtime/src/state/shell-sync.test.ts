@@ -831,6 +831,7 @@ describe("environment shell synchronization", () => {
           shellResumeCompletionMarker: true,
           shellThreadFamilies: true,
           shellOlderSettled: true,
+          shellBotThreads: true,
         } as never),
       };
       const supervisor = EnvironmentSupervisor.EnvironmentSupervisor.of({
@@ -875,9 +876,10 @@ describe("environment shell synchronization", () => {
         afterSequence: 1,
         omitIdleSubagents: true,
         omitOlderSettled: true,
+        separateBotThreads: true,
       });
       expect(yield* Ref.get(loadOptions)).toEqual([
-        { omitIdleSubagents: true, omitOlderSettled: true },
+        { omitIdleSubagents: true, omitOlderSettled: true, separateBotThreads: true },
       ]);
       const loaded = Option.getOrThrow(yield* stateWhere((state) => state.generation > 0));
       expect(loaded.removedAt.size).toBe(0);
