@@ -327,3 +327,24 @@ describe("reuseUnchangedThreadShells", () => {
     expect(next.threads[0]?.pullRequests).toEqual([]);
   });
 });
+
+it("keeps server-partitioned bot updates out of ordinary lists and removes them on deletion", () => {
+  const bot = { ...v2ThreadShell, id: ThreadId.make("bot") };
+  const initial = { ...v2ShellSnapshot, threads: [], botThreads: [] };
+  const updated = applyShellStreamEvent(initial, {
+    kind: "thread.updated",
+    sequence: 1,
+    location: "active",
+    botThread: true,
+    thread: bot,
+  });
+  expect(updated.threads).toEqual([]);
+  expect(updated.botThreads).toEqual([bot]);
+  const removed = applyShellStreamEvent(updated, {
+    kind: "thread.removed",
+    sequence: 2,
+    location: "active",
+    threadId: bot.id,
+  });
+  expect(removed.botThreads).toEqual([]);
+});

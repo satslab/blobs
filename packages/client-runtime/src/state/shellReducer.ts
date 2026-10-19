@@ -160,7 +160,9 @@ export function applyShellStreamEvent(
     case "thread.updated": {
       const existing =
         event.location === "active"
-          ? snapshot.threads.find((thread) => thread.id === event.thread.id)
+          ? (event.botThread ? (snapshot.botThreads ?? []) : snapshot.threads).find(
+              (thread) => thread.id === event.thread.id,
+            )
           : undefined;
       if (existing !== undefined && sameThreadShell(existing, event.thread)) {
         return { ...snapshot, snapshotSequence: event.sequence };
@@ -170,12 +172,20 @@ export function applyShellStreamEvent(
       return {
         ...snapshot,
         threads:
-          event.location === "active"
+          event.location === "active" && !event.botThread
             ? upsertById(snapshot.threads, event.thread)
             : withoutThread(snapshot.threads),
         // The archive has its own bounded query/subscription. Older servers may
         // still send archive-located deltas here; remove them from the normal
         // shell instead of growing its persisted cache again.
+        ...(snapshot.botThreads !== undefined || event.botThread
+          ? {
+              botThreads:
+                event.location === "active" && event.botThread
+                  ? upsertById(snapshot.botThreads ?? [], event.thread)
+                  : withoutThread(snapshot.botThreads ?? []),
+            }
+          : {}),
         archivedThreads: withoutThread(snapshot.archivedThreads),
         snapshotSequence: event.sequence,
       };
@@ -184,6 +194,9 @@ export function applyShellStreamEvent(
       return {
         ...snapshot,
         threads: snapshot.threads.filter((thread) => thread.id !== event.threadId),
+        ...(snapshot.botThreads === undefined
+          ? {}
+          : { botThreads: snapshot.botThreads.filter((thread) => thread.id !== event.threadId) }),
         archivedThreads: snapshot.archivedThreads.filter((thread) => thread.id !== event.threadId),
         snapshotSequence: event.sequence,
       };

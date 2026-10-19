@@ -25,6 +25,7 @@ const encodeEnvelope = Schema.encodeEffect(
       snapshot: fields.snapshot.mapFields((snapshotFields) => ({
         ...snapshotFields,
         threads: EncodedRows,
+        botThreads: Schema.optionalKey(EncodedRows),
         archivedThreads: EncodedRows,
       })),
     })),
@@ -77,10 +78,14 @@ export function makeStoredShellSnapshotEncoder(
     const { snapshot } = stored;
     const threads = yield* encodeRows(snapshot.threads);
     const archivedThreads = yield* encodeRows(snapshot.archivedThreads);
+    const botThreads =
+      snapshot.botThreads === undefined
+        ? {}
+        : { botThreads: yield* encodeRows(snapshot.botThreads) };
     if (hasWorked) yield* yieldToHost;
     return yield* encodeEnvelope({
       ...stored,
-      snapshot: { ...snapshot, threads, archivedThreads },
+      snapshot: { ...snapshot, ...botThreads, threads, archivedThreads },
     });
   });
 }

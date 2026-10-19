@@ -219,6 +219,7 @@ export function createThreadFamilyAtoms<R, ER, E>(
       const unchanged =
         previous !== null &&
         previous.snapshot.threads === snapshot.threads &&
+        previous.snapshot.botThreads === snapshot.botThreads &&
         previous.removedAt === state.removedAt &&
         arrayElementsEqual(previous.families, families);
       if (unchanged && previous !== null && previous.snapshot === snapshot) return previous.merged;
@@ -230,7 +231,10 @@ export function createThreadFamilyAtoms<R, ER, E>(
             : { ...snapshot, threads: previous.merged.threads };
       } else {
         const extras = threadFamilyRowsMissingFromShell({
-          shellThreads: snapshot.threads,
+          shellThreads:
+            snapshot.botThreads === undefined
+              ? snapshot.threads
+              : [...snapshot.threads, ...snapshot.botThreads],
           removedAt: state.removedAt,
           families,
         });

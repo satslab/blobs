@@ -981,6 +981,7 @@ export const subscribeOrchestrationV2Shell = Effect.fn("ws.orchestrationV2.subsc
     readonly requestCompletionMarker?: boolean;
     readonly omitIdleSubagents?: boolean;
     readonly omitOlderSettled?: boolean;
+    readonly separateBotThreads?: boolean;
   }) {
     const sql = yield* SqlClient.SqlClient;
     const threadManagement = yield* ThreadManagementService.ThreadManagementService;
@@ -1020,6 +1021,7 @@ export const subscribeOrchestrationV2Shell = Effect.fn("ws.orchestrationV2.subsc
       const forSubscriber = shellSnapshotForSubscriber(base, {
         omitIdleSubagents: input.omitIdleSubagents === true,
         omitOlderSettled: input.omitOlderSettled === true,
+        separateBotThreads: input.separateBotThreads === true,
         now: yield* DateTime.now,
       });
       subagentThreadIds = forSubscriber.subagentThreadIds;
@@ -1068,7 +1070,11 @@ export const subscribeOrchestrationV2Shell = Effect.fn("ws.orchestrationV2.subsc
               return yield* projectItem(stored);
             }
             const shell = yield* threadManagement.getThreadShell(stored.event.threadId);
-            return shellStreamItemFromThreadShell({ stored, shell });
+            return shellStreamItemFromThreadShell({
+              stored,
+              shell,
+              separateBotThreads: input.separateBotThreads === true,
+            });
           }),
         { concurrency: 8 },
       );
@@ -1785,6 +1791,7 @@ export const layerWsRpc = (
           shellResumeCompletionMarker: true,
           shellThreadFamilies: true,
           shellOlderSettled: true,
+          shellBotThreads: true,
           threadResumeCompletionMarker: true,
           threadSnapshotPagination: true,
           threadFind: true,

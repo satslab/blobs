@@ -176,16 +176,24 @@ export function shellSnapshotForSubscriber(
   options: {
     readonly omitIdleSubagents: boolean;
     readonly omitOlderSettled: boolean;
+    readonly separateBotThreads?: boolean;
     readonly now: DateTime.Utc;
   },
 ): {
   readonly snapshot: OrchestrationV2ShellSnapshot;
   readonly subagentThreadIds: Set<string>;
 } {
-  const rows = activeShellRowsForSubscriber(base.threads, options.omitIdleSubagents);
+  const botThreads = options.separateBotThreads
+    ? base.threads.filter((thread) => thread.botId !== undefined)
+    : undefined;
+  const ordinary = options.separateBotThreads
+    ? base.threads.filter((thread) => thread.botId === undefined)
+    : base.threads;
+  const partition = botThreads === undefined ? {} : { botThreads };
+  const rows = activeShellRowsForSubscriber(ordinary, options.omitIdleSubagents);
   if (!options.omitOlderSettled) {
     return {
-      snapshot: { ...base, threads: rows.threads },
+      snapshot: { ...base, ...partition, threads: rows.threads },
       subagentThreadIds: rows.subagentThreadIds,
     };
   }
@@ -195,7 +203,7 @@ export function shellSnapshotForSubscriber(
     now: options.now,
   });
   return {
-    snapshot: { ...base, threads: older.threads, olderSettled: older.olderSettled },
+    snapshot: { ...base, ...partition, threads: older.threads, olderSettled: older.olderSettled },
     subagentThreadIds: rows.subagentThreadIds,
   };
 }
@@ -538,6 +546,7 @@ export function skipUnchangedThreadShells<A extends OrchestrationV2ShellStreamIt
 export function shellStreamItemFromThreadShell(input: {
   readonly stored: Extract<ShellApplicationEvent, { readonly event: unknown }>;
   readonly shell: OrchestrationV2ThreadShell | null;
+  readonly separateBotThreads?: boolean;
 }): Extract<
   OrchestrationV2ShellStreamItem,
   { readonly kind: "thread.updated" | "thread.removed" }
@@ -556,6 +565,7 @@ export function shellStreamItemFromThreadShell(input: {
       sequence: input.stored.sequence,
       location: "active",
       thread: input.shell,
+      ...(input.separateBotThreads && input.shell.botId !== undefined ? { botThread: true } : {}),
     };
   }
 

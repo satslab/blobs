@@ -36,14 +36,14 @@ export function createOptimisticThreadLifecycle(
         byThread.set(update.threadId, updates);
       }
       if (byThread.size === 0) return snapshot;
+      const applyUpdates = (thread: OrchestrationV2ThreadShell) =>
+        (byThread.get(thread.id) ?? []).reduce((current, update) => update.apply(current), thread);
       return {
         ...snapshot,
-        threads: snapshot.threads.map((thread) =>
-          (byThread.get(thread.id) ?? []).reduce(
-            (current, update) => update.apply(current),
-            thread,
-          ),
-        ),
+        threads: snapshot.threads.map(applyUpdates),
+        ...(snapshot.botThreads === undefined
+          ? {}
+          : { botThreads: snapshot.botThreads.map(applyUpdates) }),
       };
     }),
   );

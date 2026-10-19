@@ -1,0 +1,115 @@
+# Use bots
+
+Each bot keeps a continuing conversation while each reply starts a fresh provider session.
+Original messages remain available when older context becomes summarized. Messages sent during a reply steer that reply.
+Steering messages sent while a bot is preparing join the same reply after compaction finishes.
+
+1. Open **Bots** from the sidebar and choose **New bot**.
+2. Choose a provider and model in the composer, then send a message.
+
+Open **Bots** to return to your last selected bot.
+Use the bot sidebar to switch bots, or open **Settings → Bots** to manage them.
+You can also switch bots and open management through **Cmd+K** on macOS or **Ctrl+K** elsewhere.
+Manage bots in **Settings → Bots**. Filter by environment, or choose **All environments**.
+Choose **New bot**, then enter a name and select its environment.
+To move ownership, open a bot's **⋯** menu and choose **Move to another environment**.
+Interrupted moves show **Resume transfer**, with **Cancel transfer** available before ownership is released.
+Bot creation does not require support for threads without a project.
+Each bot has its own conversation and workspace.
+Rename a bot from its context menu. The new name applies to future replies, and the name change is saved in its memory.
+Bots stay separate from project pickers, project search, and ordinary thread lists.
+Codex 0.160.0 or newer, Claude Code, Pi, and local OpenCode support bot replies.
+Each Codex instance keeps its configured home, login, models, and composer options.
+Older Codex instances are disabled for bot chat. If the version cannot be verified, bot turns stop before inference starts.
+Bot replies keep the provider’s native tools and your configured native MCP servers. Other provider integrations do not support bot replies yet.
+Files attached to a message are available through `s3_attachment_read`. Images use the provider's normal image input.
+
+## Coordinate work
+
+A bot handles brief tasks directly and delegates longer work in the background so the conversation stays available.
+Subagents use the bot conversation's workspace and receive its frozen memory view with tools to recall details and read attachments.
+That view stays fixed while the parent conversation continues. Ordinary threads do not inherit memory.
+For work in another project, the bot starts an ordinary thread in that project.
+It uses your configured providers, models, and options, and receives delegated results through T3 Code's existing notifications.
+Launched threads report results back to the bot unless you choose to take over the thread.
+A bot can also show visualizations, inspect browser and device views when enabled, and track pull requests.
+When no reply is needed in Sora, the bot can finish silently; `NO_UPDATES` responses are hidden from the transcript.
+
+## Choose whether replies load instructions and skills
+
+Open a bot's settings and use **Instructions → Load instructions and skills**. It is on by default.
+When on, each reply lets its provider load the global and workspace instruction files
+(`AGENTS.md`, `CLAUDE.md`) and skills it normally would. Codex then runs in the selected Codex home
+instead of the bot's separate copy, and Claude Code still skips MCP servers from its settings.
+When off, replies load none of them.
+Bot messages and tool results can reflect what these files say, and those can enter memory.
+Memory compaction never loads them. A change applies from the next reply.
+
+## Connect a bot to Discord
+
+Open the bot's settings and save its Discord bot token under **Discord**.
+In the Discord Developer Portal, enable **Message Content Intent** for that bot.
+Invite it to your server with permission to view channels, read message history, send messages,
+create public threads, and send messages in threads. Then enable the integration.
+
+Choose mentions only or all messages, an allow or block list of Discord user IDs, and whether
+replies create a thread or reply directly to the message. Both user lists permit everyone when empty.
+Replies to accepted messages and the bot's responses count as follow-ups without another mention.
+Direct messages are ignored. Attachments reach the bot as download links.
+
+The bot posts replies explicitly and can send progress updates before its answer.
+Ask it to read earlier messages, inspect a linked or replied-to message, identify participants,
+or search messages by keyword across the Discord server. It can read only channels its Discord bot can access.
+Member lists may require **Server Members Intent** in the Discord Developer Portal;
+recent message authors remain available without that intent.
+Keep its owning environment online. Discord credentials stay on that environment; after moving
+the bot, configure its token and enable Discord on the destination.
+
+## Choose the compaction model
+
+Set **Settings → Bots → Memory compaction model** on the owning environment.
+Reset this setting to use its text generation model. The reply model remains independent.
+Compaction runs in the background with instructions to call no tools.
+Tools are disabled where the provider supports it, including native MCP servers where possible.
+Compaction continues if tool isolation cannot be confirmed. Codex still requires version 0.160.0 or newer.
+A new reply waits for pending summaries before freezing its memory view.
+New compaction requests for that bot wait until its reply ends. Other bots compact independently.
+**Memory compaction concurrency** defaults to eight requests per provider instance across all bots
+in the owning environment. Choose 2, 4, 6, or 8 requests in the same settings section. Changes apply to
+subsequent requests; requests already running finish normally.
+
+## Move a bot to another environment
+
+Connect both environments, finish or cancel pending turns, then open the bot’s settings, select a destination, and choose **Move**.
+The move keeps the bot's name, identity, root conversation, and memory, including frozen memory views.
+It also carries project model defaults and options, icon, actions, explicit project settings, and the current instruction-loading choice.
+Other settings that inherit environment defaults use the destination's defaults.
+
+Workspace files, attachments, provider credentials, live sessions, and separate subagent or launched-thread histories stay behind.
+The destination creates its own workspace; attachment names remain in the conversation as unavailable.
+It uses its own providers and compaction setting. Select an available provider there if the previous one is unavailable.
+
+The source stops accepting bot turns before the destination takes ownership.
+If the connection breaks, reconnect both environments and choose **Resume transfer**.
+You can cancel a move until the source releases ownership.
+
+Keep the owning environment online to continue its bots from another device.
+Connecting from another device does not move ownership or inference to that device.
+
+## Track follow-ups and check in automatically
+
+Ask a bot to keep track of something, such as a release waiting for CI. Its **Work** panel lists follow-ups with notes and source links. Resolve an item when finished, reopen it if needed, or dismiss it to stop tracking.
+
+Enable **Automatic check-ins** in the bot's **Autonomy** panel or its settings. The timezone defaults to the owning server's system timezone. Choose a frequency, quiet hours, and daily message limit. Changes save automatically. The bot checks open follow-ups while idle and reports developments that need your attention. **Check in now** bypasses quiet hours and the daily limit. Check-ins require the owning environment to be running.
+
+Check-ins use the bot's current chat model. Memory compaction continues to use the global model in **Settings → Bots**.
+
+## Save a bot's skills and secrets
+
+Ask a bot to save a workflow as a skill. Each skill is a Markdown file in that bot's workspace. Delete a skill from the panel to remove its saved entry and file.
+
+To save a credential, ask the bot to request a secret and save it under a key, such as `release-token`. Enter the value in the secret card. The bot can later obtain its file path and use it in a command without copying the value into chat. Saved values use T3's secret storage and filesystem permissions. They are unencrypted on disk and remain until you delete them or the bot.
+
+For browser logins, ask the bot to fill a field using a saved secret. T3 checks the page origin and fills the field without returning the value to the bot or submitting the form.
+
+The **Work** panel lists saved secret keys and lets you delete them. Moving a bot carries its follow-ups, check-in settings, saved skills, and secrets to the destination environment.
