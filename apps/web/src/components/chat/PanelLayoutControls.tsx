@@ -1,5 +1,11 @@
 import { useClientSettings } from "../../hooks/useSettings";
-import { FolderGit2Icon, PanelBottomIcon, PanelRightIcon, SquareMenuIcon } from "lucide-react";
+import {
+  BotIcon,
+  FolderGit2Icon,
+  PanelBottomIcon,
+  PanelRightIcon,
+  SquareMenuIcon,
+} from "lucide-react";
 import { useRouter } from "@tanstack/react-router";
 import { Maximize2, Minimize2 } from "lucide";
 import { MorphIcon } from "~/components/MorphIcon";
@@ -14,6 +20,7 @@ import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 
 export interface PanelLayoutControlsProps {
   showThreadPanelControl?: boolean;
+  botPanel?: boolean;
   showTerminalControl?: boolean;
   showRightPanelControl?: boolean;
   terminalAvailable: boolean;
@@ -34,6 +41,7 @@ export interface PanelLayoutControlsProps {
 
 export const PanelLayoutControls = memo(function PanelLayoutControls({
   showThreadPanelControl = true,
+  botPanel = false,
   showTerminalControl = true,
   showRightPanelControl = true,
   terminalAvailable,
@@ -53,15 +61,16 @@ export const PanelLayoutControls = memo(function PanelLayoutControls({
 }: PanelLayoutControlsProps) {
   const router = useRouter();
   const alternateLayoutEnabled = useClientSettings((settings) => settings.alternateLayoutEnabled);
-  const ThreadDetailsIcon =
-    alternateLayoutEnabled || router.options.basepath === "/layout"
+  const ThreadDetailsIcon = botPanel
+    ? BotIcon
+    : alternateLayoutEnabled || router.options.basepath === "/layout"
       ? FolderGit2Icon
       : SquareMenuIcon;
   const threadPanelToggle = (
     <Toggle
       className="relative shrink-0 [-webkit-app-region:no-drag]"
       pressed={threadPanelOpen}
-      aria-label="Toggle thread details panel"
+      aria-label={botPanel ? "Toggle bot panel" : "Toggle thread details panel"}
       variant="ghost"
       size="sm"
     >
@@ -75,7 +84,7 @@ export const PanelLayoutControls = memo(function PanelLayoutControls({
         {...(threadPanelPresentation === "popover" ? {} : { onClick: onToggleThreadPanel })}
       />
       <TooltipPopup side="bottom">
-        Toggle thread details
+        {botPanel ? "Toggle bot panel" : "Toggle thread details"}
         {threadPanelShortcutLabel ? ` (${threadPanelShortcutLabel})` : ""}
       </TooltipPopup>
     </Tooltip>
@@ -86,7 +95,7 @@ export const PanelLayoutControls = memo(function PanelLayoutControls({
       className="flex h-full shrink-0 items-center gap-1 [-webkit-app-region:no-drag]"
       data-panel-layout-controls
     >
-      {showThreadPanelControl
+      {showThreadPanelControl && !(botPanel && threadPanelOpen)
         ? threadPanelPresentation === "popover"
           ? threadPanelTooltip(
               <PopoverTrigger handle={threadPanelPopoverHandle} render={threadPanelToggle} />,
@@ -186,6 +195,7 @@ export function ThreadPanelHeaderControl(props: PanelLayoutControlsProps) {
 /** The window's top-right panel controls, with the maximize toggle while the panel is open. */
 export function WorkspaceTitlebarControls(props: {
   readonly showMaximizeControl: boolean;
+  readonly withinChat?: boolean;
   readonly rightPanelOpen: boolean;
   readonly animationsActive: boolean;
   readonly maximized: boolean;
@@ -194,7 +204,12 @@ export function WorkspaceTitlebarControls(props: {
 }) {
   return (
     <div
-      className="pointer-events-none fixed top-[var(--workspace-controls-top)] right-[var(--workspace-controls-right)] z-50 mr-px flex h-[var(--workspace-topbar-height)] items-center gap-1 [-webkit-app-region:no-drag]"
+      className={cn(
+        "pointer-events-none z-50 mr-px flex h-[var(--workspace-topbar-height)] items-center gap-1 [-webkit-app-region:no-drag]",
+        props.withinChat
+          ? "absolute top-0 right-3"
+          : "fixed top-[var(--workspace-controls-top)] right-[var(--workspace-controls-right)]",
+      )}
       data-workspace-titlebar-controls
     >
       {props.showMaximizeControl ? (
