@@ -17,6 +17,34 @@ describe.each([
       createOrchestrationV2TurnItemVisibility(input)(input.item),
   ],
 ] as const)("%s timeline visibility", (_, isVisible) => {
+  it.each([
+    ["NO_UPDATES", true, false],
+    [" \nNO_UPDATES\n", true, false],
+    ["NO_UPDATES", false, true],
+    ["NO_UPDATES: sent", true, true],
+    ["`NO_UPDATES`", true, true],
+    ["Done", true, true],
+  ] as const)("handles silent bot response %j with bot=%s", (text, bot, visible) => {
+    expect(
+      isVisible({
+        item: { type: "assistant_message", runId, nodeId, text },
+        runs: [],
+        attempts: [],
+        items: [],
+        bot,
+      }),
+    ).toBe(visible);
+    expect(
+      isVisible({
+        item: { type: "user_message", runId, nodeId, text },
+        runs: [],
+        attempts: [],
+        items: [],
+        bot,
+      }),
+    ).toBe(true);
+  });
+
   it("hides unpaired interruption results from superseded attempts", () => {
     expect(
       isVisible({

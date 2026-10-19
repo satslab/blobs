@@ -91,6 +91,7 @@ function shouldShowLocalTurnItem(
   item: OrchestrationV2TurnItem,
 ): boolean {
   return isOrchestrationV2TurnItemVisible({
+    bot: projection.thread.botId !== undefined,
     item,
     runs: projection.runs,
     attempts: projection.attempts,
@@ -103,6 +104,7 @@ function activeVisibleTurnItems(
 ): OrchestrationV2ThreadProjection["visibleTurnItems"] {
   const rows = projection.visibleTurnItems;
   const isVisible = createOrchestrationV2TurnItemVisibility({
+    bot: projection.thread.botId !== undefined,
     runs: projection.runs,
     attempts: projection.attempts,
     items: projection.turnItems,

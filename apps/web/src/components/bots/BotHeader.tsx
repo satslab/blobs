@@ -8,8 +8,6 @@ import { useQuietThreadShell } from "../../state/entities";
 import type { useThreadActionMenu } from "../../hooks/useThreadActionMenu";
 import { useThreadActions } from "../../hooks/useThreadActions";
 import { toastManager } from "../ui/toast";
-import { useSidebarVisibility } from "../ui/sidebar";
-import { T3Wordmark } from "../T3Wordmark";
 import { BotAvatar } from "./BotAvatar";
 import {
   WorkspaceBreadcrumb,
@@ -100,16 +98,17 @@ function BotChatHeaderContent({ openMenu, ...props }: BotChatHeaderProps) {
 
 function BotHeader({ bot, environmentId, subagentTitle, onOpenMenu }: BotHeaderProps) {
   const bots = useBots();
-  const botSidebarVisible = useSidebarVisibility();
   const [lastBotId, setLastBotId] = useLastBotId();
   const navigate = useNavigate();
   const current = bots.find((identity) => identity.id === bot.botId);
   const owner = current?.status === "active" ? current.ownerEnvironmentId : undefined;
   const currentThread = current?.threadId;
   const botName = current?.name ?? bot.title;
+  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- persists the displayed bot in local storage for return navigation
   useEffect(() => {
     if (lastBotId !== bot.botId) setLastBotId(bot.botId);
   }, [bot.botId, lastBotId, setLastBotId]);
+  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- keeps the router on the current owning environment after a bot transfer
   useEffect(() => {
     if (owner && currentThread && owner !== environmentId)
       void navigate({
@@ -130,12 +129,6 @@ function BotHeader({ bot, environmentId, subagentTitle, onOpenMenu }: BotHeaderP
           : undefined
       }
     >
-      {!botSidebarVisible ? (
-        <span className="inline-flex shrink-0 items-center gap-2 text-sm font-medium tracking-tight">
-          <T3Wordmark aria-label="Sora" className="size-5 shrink-0 rounded-md" />
-          <span className="text-muted-foreground">Sora</span>
-        </span>
-      ) : null}
       <WorkspaceBreadcrumb ariaLabel="Bot breadcrumb" className="min-w-0 flex-1 overflow-hidden">
         <WorkspaceBreadcrumbItem current={!bot.isSubagent} className="shrink">
           {bot.isSubagent ? (

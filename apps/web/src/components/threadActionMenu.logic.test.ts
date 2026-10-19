@@ -74,4 +74,11 @@ describe("buildThreadActionMenuItems", () => {
     expect(items.find((item) => item.id === "archive")?.disabled).toBe(true);
     expect(items.find((item) => item.id === "turn-into-project")?.disabled).toBe(true);
   });
+
+  it("names the settings item for bots without changing its action", () => {
+    const find = (state: ThreadActionMenuState) =>
+      buildThreadActionMenuItems(state).find((item) => item.id === "project-settings")?.label;
+    expect(find(baseState)).toBe("Project settings");
+    expect(find({ ...baseState, projectSettingsLabel: "Bot settings" })).toBe("Bot settings");
+  });
 });

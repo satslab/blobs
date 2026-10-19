@@ -481,13 +481,13 @@ function resolveTextGenerationProvider(
   settings: ServerSettings,
   isDriverAllowed: DriverAllowed = anyDriver,
 ): ServerSettings {
+  const memory = settings.memoryCompactionModelSelection;
+  if (memory !== null && (!isModelSelectionProviderEnabled(settings, memory) || !selectionSupportsTextGeneration(settings, memory)))
+    settings = { ...settings, memoryCompactionModelSelection: null };
   const selection = settings.textGenerationModelSelection;
   return isModelSelectionProviderEnabled(settings, selection) &&
     selectionSupportsTextGeneration(settings, selection) &&
-    isDriverAllowed(
-      settings.providerInstances[selection.instanceId]?.driver ??
-        ProviderDriverKind.make(selection.instanceId),
-    )
+    isDriverAllowed(settings.providerInstances[selection.instanceId]?.driver ?? ProviderDriverKind.make(selection.instanceId))
     ? settings
     : fallbackTextGenerationProvider(settings, isDriverAllowed);
 }
@@ -517,6 +517,7 @@ const ATOMIC_SETTINGS_KEYS: ReadonlySet<string> = new Set([
   "reviewGuideModelSelection",
   "textGenerationModelSelection",
   "fallbackModelSelection",
+  "memoryCompactionModelSelection",
   "pullRequestMergeMethod",
   // Empty by default, these hold one whole value, which a managed policy can default.
   ...Object.entries(DEFAULT_SERVER_SETTINGS).flatMap(([key, value]) =>

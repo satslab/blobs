@@ -1,4 +1,4 @@
-import { ProviderInstanceId, ThreadId } from "@t3tools/contracts";
+import { ProviderInstanceId, ThreadId, type RunId } from "@t3tools/contracts";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
 import * as Crypto from "effect/Crypto";
@@ -14,6 +14,8 @@ import * as McpProviderSession from "@t3tools/provider-core/server/mcpSession";
 
 export interface McpCredentialRequest {
   readonly threadId: ThreadId;
+  readonly botRunId?: RunId;
+  readonly botThreadId?: ThreadId;
   readonly providerInstanceId: ProviderInstanceId;
   /** False omits the preview capability wherever the token is honored. Defaults to full access. */
   readonly browserToolsAvailable?: boolean;
@@ -104,6 +106,8 @@ const makeWithOptions = Effect.fn("McpSessionRegistry.make")(function* (
         requestNamespace: providerSessionId,
         thread: {
           threadId: ThreadId.make(request.threadId),
+          ...(request.botRunId === undefined ? {} : { botRunId: request.botRunId }),
+          ...(request.botThreadId === undefined ? {} : { botThreadId: request.botThreadId }),
           providerSessionId,
           providerInstanceId: ProviderInstanceId.make(request.providerInstanceId),
           subagent: request.subagent === true,
@@ -128,7 +132,10 @@ const makeWithOptions = Effect.fn("McpSessionRegistry.make")(function* (
           threadId: scope.thread.threadId,
           providerSessionId,
           providerInstanceId: scope.thread.providerInstanceId,
-          endpoint,
+          endpoint:
+            request.botRunId === undefined ? endpoint : endpoint.replace(/\/mcp$/, "/bot-mcp"),
+          ...(request.botRunId === undefined ? {} : { botRunId: request.botRunId }),
+          ...(request.botThreadId === undefined ? {} : { botThreadId: request.botThreadId }),
           authorizationHeader: `Bearer ${rawToken}`,
           browserToolsAvailable: scope.capabilities.has("preview"),
           capabilities: scope.capabilities,
