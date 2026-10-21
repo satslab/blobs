@@ -7,10 +7,10 @@ import type {
   ServerConfig,
   SourceControlDiscoveryResult,
   SourceControlRepositoryInfo,
-} from "@t3tools/contracts";
-import { SourceControlProviderKind } from "@t3tools/contracts";
-import { cloneUrlRepositoryPath } from "@t3tools/shared/cloneUrl";
-import { newProjectFolderName } from "@t3tools/shared/path";
+} from "@satslab/contracts";
+import { SourceControlProviderKind } from "@satslab/contracts";
+import { cloneUrlRepositoryPath } from "@satslab/shared/cloneUrl";
+import { newProjectFolderName } from "@satslab/shared/path";
 import * as Arr from "effect/Array";
 import * as Option from "effect/Option";
 import * as Order from "effect/Order";

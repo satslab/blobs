@@ -1,12 +1,12 @@
-import { PROVIDER_SEND_TURN_MAX_IMAGE_BYTES } from "@t3tools/contracts";
+import { PROVIDER_SEND_TURN_MAX_IMAGE_BYTES } from "@satslab/contracts";
 import {
   downscalableImageMimeType,
   fitImageAttachmentSize,
-} from "@t3tools/client-runtime/image-attachment-size";
+} from "@satslab/client-runtime/image-attachment-size";
 import {
   IMAGE_DIMENSIONS_HEADER_BYTES,
   readImageDimensions,
-} from "@t3tools/shared/imageDimensions";
+} from "@satslab/shared/imageDimensions";
 import { estimateBase64ByteSize } from "./base64";
 
 const PHOTO_JPEG_QUALITY = 0.85;

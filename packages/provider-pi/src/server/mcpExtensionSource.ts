@@ -1,28 +1,28 @@
 // No T3 imports inside the string; resolve Pi and typebox from the user's Pi install.
-import { T3_CODE_ORCHESTRATION_INSTRUCTIONS } from "@t3tools/provider-core/server/orchestrationInstructions";
+import { T3_CODE_ORCHESTRATION_INSTRUCTIONS } from "@satslab/provider-core/server/orchestrationInstructions";
 
-export const PI_T3_MCP_EXTENSION_FILENAME = "pi-t3-mcp-extension.ts";
+export const PI_BLOBS_MCP_EXTENSION_FILENAME = "pi-blobs-mcp-extension.ts";
 
-export const T3_MCP_URL_ENV = "T3_MCP_URL";
-export const T3_MCP_BEARER_ENV = "T3_MCP_BEARER_TOKEN";
-export const T3_PI_MEMORY_CHAT_ENV = "T3_PI_BOT_CHAT";
-export const T3_PI_RUNTIME_MODE_ENV = "T3_PI_RUNTIME_MODE";
-export const T3_PI_MCP_EXTENSION_PATH_ENV = "T3_PI_MCP_EXTENSION_PATH";
+export const BLOBS_MCP_URL_ENV = "BLOBS_MCP_URL";
+export const BLOBS_MCP_BEARER_ENV = "BLOBS_MCP_BEARER_TOKEN";
+export const BLOBS_PI_MEMORY_CHAT_ENV = "BLOBS_PI_BOT_CHAT";
+export const BLOBS_PI_RUNTIME_MODE_ENV = "BLOBS_PI_RUNTIME_MODE";
+export const BLOBS_PI_MCP_EXTENSION_PATH_ENV = "BLOBS_PI_MCP_EXTENSION_PATH";
 
 // These tools trigger file-change approvals, bypassed by Auto-accept edits.
 export const PI_FILE_CHANGE_TOOLS = ["edit", "write"] as const;
 
-export const PI_T3_MCP_EXTENSION_SOURCE = `\
+export const PI_BLOBS_MCP_EXTENSION_SOURCE = `\
 import { stripFrontmatter, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import * as NodeFSP from "node:fs/promises";
 import * as NodePath from "node:path";
 import { Type } from "typebox";
 
-const URL_ENV = ${JSON.stringify(T3_MCP_URL_ENV)};
-const TOKEN_ENV = ${JSON.stringify(T3_MCP_BEARER_ENV)};
-const MEMORY_CHAT_ENV = ${JSON.stringify(T3_PI_MEMORY_CHAT_ENV)};
-const RUNTIME_MODE_ENV = ${JSON.stringify(T3_PI_RUNTIME_MODE_ENV)};
-const EXTENSION_PATH_ENV = ${JSON.stringify(T3_PI_MCP_EXTENSION_PATH_ENV)};
+const URL_ENV = ${JSON.stringify(BLOBS_MCP_URL_ENV)};
+const TOKEN_ENV = ${JSON.stringify(BLOBS_MCP_BEARER_ENV)};
+const MEMORY_CHAT_ENV = ${JSON.stringify(BLOBS_PI_MEMORY_CHAT_ENV)};
+const RUNTIME_MODE_ENV = ${JSON.stringify(BLOBS_PI_RUNTIME_MODE_ENV)};
+const EXTENSION_PATH_ENV = ${JSON.stringify(BLOBS_PI_MCP_EXTENSION_PATH_ENV)};
 const ORCHESTRATION_INSTRUCTIONS = ${JSON.stringify(T3_CODE_ORCHESTRATION_INSTRUCTIONS.trim())};
 const PROTOCOL = "2025-06-18";
 const READ_ONLY_TOOLS = new Set(["read", "grep", "find", "ls"]);
@@ -216,7 +216,7 @@ function createMcpClient(endpoint: string, token: string) {
         {
           protocolVersion: PROTOCOL,
           capabilities: {},
-          clientInfo: { name: "t3-pi-mcp", version: "1.0.0" },
+          clientInfo: { name: "blobs-pi-mcp", version: "1.0.0" },
         },
         signal,
       );
@@ -345,7 +345,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
       { signal: ctx.signal },
     );
     if (!approved) {
-      return { block: true, reason: \`\${event.toolName} was declined in T3 Code.\` };
+      return { block: true, reason: \`\${event.toolName} was declined in Blobs.\` };
     }
   });
 
@@ -354,7 +354,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
   if (endpoint === undefined || token === undefined) {
     pi.on("session_start", async (_event, ctx) => {
       ctx.ui.notify(
-        "t3-code MCP unavailable: T3_MCP_URL or T3_MCP_BEARER_TOKEN is missing.",
+        "blobs MCP unavailable: BLOBS_MCP_URL or BLOBS_MCP_BEARER_TOKEN is missing.",
         "warning",
       );
     });
@@ -397,7 +397,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
             );
             const content = mcpModelContent(result);
             if (isMcpToolError(result) && !content.some((part) => part.type === "text" && part.text.length > 0)) {
-              content.push({ type: "text", text: "MCP tool t3-code/" + name + " returned an error" });
+              content.push({ type: "text", text: "MCP tool blobs/" + name + " returned an error" });
             }
             return {
               content,
@@ -460,7 +460,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
       await ensureStarted();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      ctx.ui.notify(\`t3-code MCP unavailable: \${message}\`, "warning");
+      ctx.ui.notify(\`blobs MCP unavailable: \${message}\`, "warning");
     }
   });
 

@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
-import type { DesktopUpdateState } from "@t3tools/contracts";
+import type { DesktopUpdateState } from "@satslab/contracts";
 
 import {
   canCheckForUpdate,
   getDesktopUpdateButtonTooltip,
   getDesktopUpdateReleaseHistoryUrl,
   getDesktopUpdateReleaseUrl,
+  getManualDesktopUpdateVersion,
   resolveDesktopUpdateButtonAction,
 } from "./desktopUpdate.logic";
 
@@ -65,14 +66,20 @@ describe("desktop update button state", () => {
 });
 
 describe("desktop update UI helpers", () => {
-  it.each(["owner/repo/extra", "owner#notes/repo", "owner/repo?tab=notes"])(
-    "falls back to upstream for an invalid configured repository: %s",
+  it.each([
+    "owner/repo/extra",
+    "owner#notes/repo",
+    "owner/repo#notes",
+    "owner?tab=notes/repo",
+    "owner/repo?tab=notes",
+  ])(
+    "falls back to the Blobs repository for an invalid configured repository: %s",
     (repository) => {
       expect(getDesktopUpdateReleaseHistoryUrl(repository)).toBe(
-        "https://github.com/pingdotgg/t3code/releases",
+        "https://github.com/satslab/blobs/releases",
       );
       expect(getDesktopUpdateReleaseUrl("1.2.3", repository)).toBe(
-        "https://github.com/pingdotgg/t3code/releases/tag/v1.2.3",
+        "https://github.com/satslab/blobs/releases/tag/v1.2.3",
       );
     },
   );
@@ -88,5 +95,24 @@ describe("canCheckForUpdate", () => {
         downloadedVersion: "1.1.0",
       }),
     ).toBe(true);
+  });
+});
+
+describe("getManualDesktopUpdateVersion", () => {
+  const manual = (currentVersion: string, latestVersion: string | null, updaterEnabled = false) =>
+    getManualDesktopUpdateVersion({ updaterEnabled, currentVersion, latestVersion });
+
+  it("offers a newer release when the updater is disabled", () => {
+    expect(manual("1.0.0", "1.0.1")).toBe("1.0.1");
+    expect(manual("1.0.0-nightly.20260101.1", "1.0.0-nightly.20260102.1")).toBe(
+      "1.0.0-nightly.20260102.1",
+    );
+  });
+
+  it("stays hidden when current, ahead, unknown, or handled by the updater", () => {
+    expect(manual("1.0.1", "1.0.1")).toBeNull();
+    expect(manual("1.0.2", "1.0.1")).toBeNull();
+    expect(manual("1.0.0", null)).toBeNull();
+    expect(manual("1.0.0", "1.0.1", true)).toBeNull();
   });
 });

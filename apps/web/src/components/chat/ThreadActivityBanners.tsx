@@ -3,16 +3,16 @@ import type {
   OrchestrationV2PendingBackgroundTask,
   OrchestrationV2ProviderGoal,
   ThreadId,
-} from "@t3tools/contracts";
-import type { EnvironmentThreadShell, ThreadStructure } from "@t3tools/client-runtime/state/shell";
+} from "@satslab/contracts";
+import type { EnvironmentThreadShell, ThreadStructure } from "@satslab/client-runtime/state/shell";
 import {
   presentPendingBackgroundWork,
   presentProviderGoal,
   type RunStopPresentation,
-} from "@t3tools/client-runtime/state/thread-execution";
-import { childThreadInputsTitle } from "@t3tools/client-runtime/state/threads";
-import { commandDisplayText } from "@t3tools/client-runtime/work-log/command-label";
-import { formatDuration } from "@t3tools/shared/orchestrationTiming";
+} from "@satslab/client-runtime/state/thread-execution";
+import { childThreadInputsTitle } from "@satslab/client-runtime/state/threads";
+import { commandDisplayText } from "@satslab/client-runtime/work-log/command-label";
+import { formatDuration } from "@satslab/shared/orchestrationTiming";
 import * as DateTime from "effect/DateTime";
 import {
   CircleDashedIcon,

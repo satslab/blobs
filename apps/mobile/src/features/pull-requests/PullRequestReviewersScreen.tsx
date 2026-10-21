@@ -4,14 +4,14 @@ import { AppActivityIndicator } from "../../components/ui/AppActivityIndicator";
 import { usePullRequestConnected } from "./usePullRequestConnected";
 import { useAtomValue } from "@effect/atom-react";
 import { useNavigation, type StaticScreenProps } from "@react-navigation/native";
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { squashAtomCommandFailure } from "@satslab/client-runtime/state/runtime";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import {
   hostReviewerQuery,
   reviewerCandidateView,
   type ReviewerTruncation,
-} from "@t3tools/client-runtime/pull-request-reviewers";
-import type { PullRequestReviewerCandidate } from "@t3tools/contracts";
+} from "@satslab/client-runtime/pull-request-reviewers";
+import type { PullRequestReviewerCandidate } from "@satslab/contracts";
 import { useRef, useState } from "react";
 import { FlatList, Pressable, ScrollView, View } from "react-native";
 import { NativeScrollView } from "../../native/NativeScrollViewMarker";

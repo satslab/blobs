@@ -4,7 +4,7 @@ import {
   MessageId,
   type BotId,
   type BotResources as Resources,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
@@ -153,6 +153,6 @@ const make = Effect.gen(function* () {
   return { check };
 });
 export class BotCheckIns extends Context.Service<BotCheckIns, Effect.Success<typeof make>>()(
-  "@t3tools/sora/bots/BotCheckIns",
+  "@satslab/blobs/bots/BotCheckIns",
 ) {}
 export const layer = Layer.effect(BotCheckIns, make);

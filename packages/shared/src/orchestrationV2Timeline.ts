@@ -3,7 +3,7 @@ import type {
   OrchestrationV2RunAttempt,
   OrchestrationV2TurnItem,
   OrchestrationV2UserMessageInputIntent,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 type TimelineRun = Pick<OrchestrationV2Run, "id" | "status">;
 type TimelineRunAttempt = Pick<OrchestrationV2RunAttempt, "runId" | "rootNodeId" | "status">;
@@ -95,7 +95,7 @@ export function createOrchestrationV2TurnItemVisibility(input: {
     if (roots === undefined) supersededRoots.set(attempt.runId, (roots = new Set()));
     roots.add(attempt.rootNodeId);
   }
-  if (statuses.size === 0 && supersededRoots.size === 0) return () => true;
+  if (!input.bot && statuses.size === 0 && supersededRoots.size === 0) return () => true;
   const interruptRuns = new Set<TimelineTurnItem["runId"]>();
   if (supersededRoots.size > 0) {
     for (const item of input.items) {

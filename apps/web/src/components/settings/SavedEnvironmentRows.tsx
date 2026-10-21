@@ -14,13 +14,13 @@ import {
   formatConnectReachable,
   managedCapabilityDenial,
   resolveEnvironmentMachineKind,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   connectionRoutes,
   hasSavedBearerRoute,
   connectionStatusText,
   environmentMcpUrl,
-} from "@t3tools/client-runtime/connection";
+} from "@satslab/client-runtime/connection";
 import * as Option from "effect/Option";
 
 import { useCopyToClipboard } from "../../hooks/useCopyToClipboard";
@@ -152,7 +152,7 @@ export function SavedBackendListRow({
       toastManager.add({
         type: "success",
         title: "MCP URL copied",
-        description: `Add it to an agent, e.g. claude mcp add --transport http t3 ${url}`,
+        description: `Add it to an agent, e.g. claude mcp add --transport http blobs ${url}`,
       });
     },
     onError: (error) => {
@@ -687,7 +687,7 @@ function ConfiguredCloudLinkRow({
       ) : linkRevoked ? (
         <SettingsRow
           title={searchableSetting("t3-connect").title}
-          description="This environment was removed from T3 Connect. Run `t3 connect link` on the host to link it again."
+          description="This environment was removed from T3 Connect. Run `blobs connect link` on the host to link it again."
         />
       ) : null}
       {signedOut && isElectron ? null : (

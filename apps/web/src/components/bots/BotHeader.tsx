@@ -104,11 +104,11 @@ function BotHeader({ bot, environmentId, subagentTitle, onOpenMenu }: BotHeaderP
   const owner = current?.status === "active" ? current.ownerEnvironmentId : undefined;
   const currentThread = current?.threadId;
   const botName = current?.name ?? bot.title;
-  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- persists the displayed bot in local storage for return navigation
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- persists the displayed bot in local storage for return navigation
   useEffect(() => {
     if (lastBotId !== bot.botId) setLastBotId(bot.botId);
   }, [bot.botId, lastBotId, setLastBotId]);
-  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- keeps the router on the current owning environment after a bot transfer
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- keeps the router on the current owning environment after a bot transfer
   useEffect(() => {
     if (owner && currentThread && owner !== environmentId)
       void navigate({

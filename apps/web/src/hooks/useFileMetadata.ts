@@ -2,13 +2,13 @@ import {
   AuthFilesystemReadScope,
   type EnvironmentId,
   type ScopedThreadRef,
-} from "@t3tools/contracts";
-import { resolvePathLinkTarget, splitFilePathPosition } from "@t3tools/shared/fileLinks";
+} from "@satslab/contracts";
+import { resolvePathLinkTarget, splitFilePathPosition } from "@satslab/shared/fileLinks";
 import {
   isAbsolutePath,
   isNetworkPath,
   normalizeProjectPathForComparison,
-} from "@t3tools/shared/path";
+} from "@satslab/shared/path";
 import { useContext } from "react";
 
 import { useEnvironmentScope } from "../state/session";

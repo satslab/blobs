@@ -277,8 +277,13 @@ export function SettingsVoiceRouteScreen() {
             </SettingsSection>
             <Text className="px-2 text-sm text-foreground-muted">
               {permission === "ask"
+<<<<<<< HEAD:apps/mobile/src/features/settings/SettingsVoiceRouteScreen.tsx
                 ? "Allow microphone access to record and to see your microphones."
                 : "Turn on microphone access for T3 Code in Settings to use voice input."}
+=======
+                ? "Voice input needs microphone access before it can record or list your microphones."
+                : "Microphone access is off for Blobs. Turn it on in Settings to use voice input."}
+>>>>>>> a710d699e4 (feat(branding): rebrand the app and runtime as Blobs):apps/mobile/src/features/settings/SettingsMicrophoneRouteScreen.tsx
             </Text>
           </>
         ) : null}

@@ -8,7 +8,7 @@ import {
   BotDiscoveryInput,
   BotDiscoveryResult,
   OrchestratorMcpFailure,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Schema from "effect/Schema";
 import { Tool, Toolkit } from "effect/ai";
 import * as BotChat from "../../../bots/BotChat.ts";

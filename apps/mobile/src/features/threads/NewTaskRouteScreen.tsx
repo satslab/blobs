@@ -10,13 +10,14 @@ import {
   type StaticScreenProps,
 } from "@react-navigation/native";
 import { SymbolView } from "../../components/ui/AppSymbol";
-import { pickableProjectGroups } from "@t3tools/client-runtime/state/project-grouping";
-import { isScratchProject } from "@t3tools/client-runtime/state/projects";
+import { availableScratchWorkspaceRoot } from "@satslab/client-runtime/operations/projects";
+import { pickableProjectGroups } from "@satslab/client-runtime/state/project-grouping";
+import { isScratchProject } from "@satslab/client-runtime/state/projects";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+} from "@satslab/client-runtime/state/runtime";
+import type { EnvironmentProject } from "@satslab/client-runtime/state/shell";
 import { useEffect, useRef, useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
