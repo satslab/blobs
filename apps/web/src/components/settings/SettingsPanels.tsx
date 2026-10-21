@@ -1,6 +1,7 @@
 import { useAtomValue } from "@effect/atom-react";
+/* oxlint-disable blobs/no-low-value-comments -- Temporarily keep settings commented out at the user's request. */
 import { NotificationSettings } from "./NotificationSettings";
-import { PRIVACY_POLICY_URL } from "../../legalLinks";
+// import { PRIVACY_POLICY_URL } from "../../legalLinks";
 import { CheckIcon } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
@@ -13,7 +14,7 @@ import {
   ProviderDriverKind,
   type ProviderInstanceId,
   type SidebarProjectGroupingMode,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   DEFAULT_UNIFIED_SETTINGS,
   type DiffLayout,
@@ -22,16 +23,16 @@ import {
   type ResponseStreamingMode,
   type QuitConfirmationMode,
   SidebarProjectSortOrder,
-} from "@t3tools/contracts/settings";
-import { desktopUpdateChannelOf } from "@t3tools/shared/cliRelease";
-import { createModelSelection } from "@t3tools/shared/model";
-import { resolvePastedPath } from "@t3tools/shared/path";
+} from "@satslab/contracts/settings";
+import { desktopUpdateChannelOf } from "@satslab/shared/cliRelease";
+import { createModelSelection } from "@satslab/shared/model";
+import { resolvePastedPath } from "@satslab/shared/path";
 import * as Equal from "effect/Equal";
 import * as Schema from "effect/Schema";
 import { APP_VERSION, HOSTED_APP_CHANNEL, HOSTED_APP_CHANNEL_LABEL } from "../../branding";
 import { AboutVersionTitle } from "./AboutVersionTitle";
 import { CliCommandSettingsRow } from "./CliCommandSettingsRow";
-import { MobileAppSettingsRow } from "./MobileAppSettingsRow";
+// import { MobileAppSettingsRow } from "./MobileAppSettingsRow";
 import {
   canCheckForUpdate,
   getDesktopUpdateButtonTooltip,
@@ -2046,15 +2047,15 @@ export function AboutSettingsPanel() {
             />
           </>
         )}
-        <MobileAppSettingsRow />
+        {/* <MobileAppSettingsRow /> */}
       </SettingsSection>
 
       <SettingsSection id="legal" title="Legal">
-        <SettingsRow
+        {/* <SettingsRow
           {...searchableSetting("privacy-policy")}
           description={
             telemetryOff === undefined
-              ? "How we handle your data, including the anonymous usage data T3 Code collects."
+              ? "How we handle your data, including the anonymous usage data Blobs collects."
               : `How we handle your data. ${telemetryOff}`
           }
           control={
@@ -2066,10 +2067,10 @@ export function AboutSettingsPanel() {
               View policy
             </Button>
           }
-        />
+        /> */}
         <SettingsRow
           {...searchableSetting("open-source-licenses")}
-          description="Notices for dependencies, assets, and optional tools used by T3 Code."
+          description="Notices for dependencies, assets, and optional tools used by Blobs."
           control={
             <Button
               render={<Link to="/settings/open-source-licenses" />}

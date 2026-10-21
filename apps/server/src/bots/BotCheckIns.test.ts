@@ -13,8 +13,8 @@ import {
   type OrchestrationV2AppThread,
   type OrchestrationV2Run,
   type OrchestrationV2ConversationMessage,
-} from "@t3tools/contracts";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+} from "@satslab/contracts";
+import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 import * as BotCheckIns from "./BotCheckIns.ts";
 import * as BotChat from "./BotChat.ts";
 import * as BotStorage from "./BotStorage.ts";
@@ -25,7 +25,7 @@ import botMigration from "../persistence/Migrations/073_BotChat.ts";
 import resourceMigration from "../persistence/Migrations/078_BotResources.ts";
 import * as DateTime from "effect/DateTime";
 import { assert, it } from "@effect/vitest";
-import { DEFAULT_BOT_CHECK_IN, type BotResources } from "@t3tools/contracts";
+import { DEFAULT_BOT_CHECK_IN, type BotResources } from "@satslab/contracts";
 import { checkInDue } from "./BotCheckIns.ts";
 
 it("respects disabled check-ins, overnight quiet hours, timezone and frequency", () => {

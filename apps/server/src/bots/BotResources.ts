@@ -5,7 +5,7 @@ import {
   SecretRef,
   type BotId,
   type ProjectId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 // @effect-diagnostics-next-line nodeBuiltinImport:off -- Transfer secrets need authenticated encryption.
 import * as NodeCrypto from "node:crypto";
 import * as Context from "effect/Context";
@@ -232,6 +232,6 @@ const make = Effect.gen(function* () {
   return { change, secretPath, secretValue, exportResources, importResources, clear };
 });
 export class BotResources extends Context.Service<BotResources, Effect.Success<typeof make>>()(
-  "@t3tools/sora/bots/BotResources",
+  "@satslab/blobs/bots/BotResources",
 ) {}
 export const layer = Layer.effect(BotResources, make);

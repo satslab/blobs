@@ -8,7 +8,7 @@ import {
   type EasDeviceHostConfig,
   type EnvironmentId,
   type SettingsSecretValue,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { XIcon } from "lucide-react";
 
 import { deviceEasAccountCheck, deviceEnvironment } from "../../state/device";

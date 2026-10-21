@@ -1,4 +1,4 @@
-import { makeProviderSettingsSchema, SourceControlProviderKind } from "@t3tools/contracts";
+import { makeProviderSettingsSchema, SourceControlProviderKind } from "@satslab/contracts";
 import {
   buildCommitUrl,
   changeRequestUrlBelow,
@@ -11,7 +11,7 @@ import {
   projectChangeRequestHost,
   remoteWebOrigin,
   type SourceControlAppSignIn,
-} from "@t3tools/source-control-core/shared/definition";
+} from "@satslab/source-control-core/shared/definition";
 
 import { gitHubMediaUrl } from "./gitHubMedia.ts";
 import { icon } from "./icon.ts";

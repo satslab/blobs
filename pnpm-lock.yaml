@@ -360,7 +360,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-EowbsmlBFaoO0Ypufw901RnvdyjKG5dcdk2FRbc7Dr0=
 
-pnpmfileChecksum: sha256-STsbxG7+RxOFI611PrDEj1TonJgqKKllY9hYCFMLYiU=
+pnpmfileChecksum: sha256-Gv39dkjs60ANEDCllv7/6cwyxKW8ayri2BpHi5BzgA8=
 
 patchedDependencies:
   '@alchemy.run/test@2.0.0-beta.85': 29c0539ea71d9cc372f0b16558640599beb9bc609605feb2a493da268d72713e
@@ -437,19 +437,19 @@ importers:
       '@napi-rs/keyring':
         specifier: ^1.3.0
         version: 1.3.0
-      '@t3tools/client-runtime':
+      '@satslab/client-runtime':
         specifier: workspace:*
         version: link:../../packages/client-runtime
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@t3tools/ssh':
+      '@satslab/ssh':
         specifier: workspace:*
         version: link:../../packages/ssh
-      '@t3tools/tailscale':
+      '@satslab/tailscale':
         specifier: workspace:*
         version: link:../../packages/tailscale
       dbus-next:
@@ -510,7 +510,7 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       astro:
@@ -583,25 +583,25 @@ importers:
       '@react-navigation/native-stack':
         specifier: 7.21.0
         version: 7.21.0(patch_hash=990d575444c4af2ce8218b3b7a8280fe244c03abbdb32b822a2e862f791dbf42)(c96dd4885eac0393fe69fdf9aeb7f361)
-      '@t3tools/client-runtime':
+      '@satslab/client-runtime':
         specifier: workspace:*
         version: link:../../packages/client-runtime
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@t3tools/mobile-highlights-native':
+      '@satslab/mobile-highlights-native':
         specifier: file:./modules/t3-highlights
         version: file:apps/mobile/modules/t3-highlights
-      '@t3tools/mobile-review-diff-native':
+      '@satslab/mobile-review-diff-native':
         specifier: file:./modules/t3-review-diff
         version: file:apps/mobile/modules/t3-review-diff
-      '@t3tools/mobile-source-text':
+      '@satslab/mobile-source-text':
         specifier: file:./modules/t3-source-text
         version: file:apps/mobile/modules/t3-source-text(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(bufferutil@4.1.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(@types/react@19.3.0)(bufferutil@4.1.0)(react@19.3.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(react@19.3.0)
-      '@t3tools/mobile-terminal-native':
+      '@satslab/mobile-terminal-native':
         specifier: file:./modules/t3-terminal
         version: file:apps/mobile/modules/t3-terminal
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@tabler/icons-react-native':
@@ -854,58 +854,58 @@ importers:
       '@napi-rs/keyring':
         specifier: ^1.3.0
         version: 1.3.0
-      '@t3tools/provider-acp':
+      '@satslab/provider-acp':
         specifier: workspace:*
         version: link:../../packages/provider-acp
-      '@t3tools/provider-acp-registry':
+      '@satslab/provider-acp-registry':
         specifier: workspace:*
         version: link:../../packages/provider-acp-registry
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../../packages/provider-core
-      '@t3tools/provider-cursor':
+      '@satslab/provider-cursor':
         specifier: workspace:*
         version: link:../../packages/provider-cursor
-      '@t3tools/provider-fx':
+      '@satslab/provider-fx':
         specifier: workspace:*
         version: link:../../packages/provider-fx
-      '@t3tools/provider-grok':
+      '@satslab/provider-grok':
         specifier: workspace:*
         version: link:../../packages/provider-grok
-      '@t3tools/provider-kiro':
+      '@satslab/provider-kiro':
         specifier: workspace:*
         version: link:../../packages/provider-kiro
-      '@t3tools/provider-muse':
+      '@satslab/provider-muse':
         specifier: workspace:*
         version: link:../../packages/provider-muse
-      '@t3tools/provider-opencode':
+      '@satslab/provider-opencode':
         specifier: workspace:*
         version: link:../../packages/provider-opencode
-      '@t3tools/provider-pi':
+      '@satslab/provider-pi':
         specifier: workspace:*
         version: link:../../packages/provider-pi
-      '@t3tools/source-control-azure-devops':
+      '@satslab/source-control-azure-devops':
         specifier: workspace:*
         version: link:../../packages/source-control-azure-devops
-      '@t3tools/source-control-bitbucket':
+      '@satslab/source-control-bitbucket':
         specifier: workspace:*
         version: link:../../packages/source-control-bitbucket
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../../packages/source-control-core
-      '@t3tools/source-control-definitions':
+      '@satslab/source-control-definitions':
         specifier: workspace:*
         version: link:../../packages/source-control-definitions
-      '@t3tools/source-control-forgejo':
+      '@satslab/source-control-forgejo':
         specifier: workspace:*
         version: link:../../packages/source-control-forgejo
-      '@t3tools/source-control-gitcafe':
+      '@satslab/source-control-gitcafe':
         specifier: workspace:*
         version: link:../../packages/source-control-gitcafe
-      '@t3tools/source-control-github':
+      '@satslab/source-control-github':
         specifier: workspace:*
         version: link:../../packages/source-control-github
-      '@t3tools/source-control-gitlab':
+      '@satslab/source-control-gitlab':
         specifier: workspace:*
         version: link:../../packages/source-control-gitlab
       character-entities:
@@ -963,34 +963,34 @@ importers:
       '@opencode-ai/sdk':
         specifier: ^1.3.15
         version: 1.15.13
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@t3tools/provider-testing':
+      '@satslab/provider-testing':
         specifier: workspace:*
         version: link:../../packages/provider-testing
-      '@t3tools/secret-provider-core':
+      '@satslab/secret-provider-core':
         specifier: workspace:*
         version: link:../../packages/secret-provider-core
-      '@t3tools/secret-provider-definitions':
+      '@satslab/secret-provider-definitions':
         specifier: workspace:*
         version: link:../../packages/secret-provider-definitions
-      '@t3tools/secret-provider-onepassword':
+      '@satslab/secret-provider-onepassword':
         specifier: workspace:*
         version: link:../../packages/secret-provider-onepassword
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@t3tools/source-control-testing':
+      '@satslab/source-control-testing':
         specifier: workspace:*
         version: link:../../packages/source-control-testing
-      '@t3tools/ssh':
+      '@satslab/ssh':
         specifier: workspace:*
         version: link:../../packages/ssh
-      '@t3tools/tailscale':
+      '@satslab/tailscale':
         specifier: workspace:*
         version: link:../../packages/tailscale
-      '@t3tools/web':
+      '@satslab/web':
         specifier: workspace:*
         version: link:../web
       '@types/node':
@@ -1080,22 +1080,22 @@ importers:
       '@pierre/trees':
         specifier: 1.0.0-beta.6
         version: 1.0.0-beta.6(@pierre/theme@2.0.0)(@shikijs/themes@4.2.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(shiki@4.2.0)
-      '@t3tools/client-runtime':
+      '@satslab/client-runtime':
         specifier: workspace:*
         version: link:../../packages/client-runtime
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../../packages/provider-core
-      '@t3tools/secret-provider-definitions':
+      '@satslab/secret-provider-definitions':
         specifier: workspace:*
         version: link:../../packages/secret-provider-definitions
-      '@t3tools/secret-provider-onepassword':
+      '@satslab/secret-provider-onepassword':
         specifier: workspace:*
         version: link:../../packages/secret-provider-onepassword
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@tanstack/react-pacer':
@@ -1339,13 +1339,13 @@ importers:
       '@effect/platform-node':
         specifier: 4.1.2
         version: 4.1.2(bufferutil@4.1.0)(effect@4.1.2)(redis@6.2.1)(utf-8-validate@6.0.6)
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../packages/provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../packages/shared
       effect:
@@ -1397,13 +1397,13 @@ importers:
       '@noble/hashes':
         specifier: 'catalog:'
         version: 1.8.0
-      '@t3tools/client-runtime':
+      '@satslab/client-runtime':
         specifier: workspace:*
         version: link:../../packages/client-runtime
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       alchemy:
@@ -1484,7 +1484,7 @@ importers:
         specifier: 1.4.0
         version: 1.4.0(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
 
-  oxlint-plugin-t3code:
+  oxlint-plugin-blobs:
     dependencies:
       '@oxlint/plugins':
         specifier: ^1.63.0
@@ -1508,43 +1508,43 @@ importers:
       '@pierre/diffs':
         specifier: 1.6.1
         version: 1.6.1(patch_hash=322ac5f5db8b5715189c010802047f8235c3a45d8ed5ca0ba60fac266e2eba34)(@shikijs/themes@4.2.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-acp-registry':
+      '@satslab/provider-acp-registry':
         specifier: workspace:*
         version: link:../provider-acp-registry
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/provider-cursor':
+      '@satslab/provider-cursor':
         specifier: workspace:*
         version: link:../provider-cursor
-      '@t3tools/provider-fx':
+      '@satslab/provider-fx':
         specifier: workspace:*
         version: link:../provider-fx
-      '@t3tools/provider-grok':
+      '@satslab/provider-grok':
         specifier: workspace:*
         version: link:../provider-grok
-      '@t3tools/provider-kiro':
+      '@satslab/provider-kiro':
         specifier: workspace:*
         version: link:../provider-kiro
-      '@t3tools/provider-muse':
+      '@satslab/provider-muse':
         specifier: workspace:*
         version: link:../provider-muse
-      '@t3tools/provider-opencode':
+      '@satslab/provider-opencode':
         specifier: workspace:*
         version: link:../provider-opencode
-      '@t3tools/provider-pi':
+      '@satslab/provider-pi':
         specifier: workspace:*
         version: link:../provider-pi
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
-      '@t3tools/source-control-definitions':
+      '@satslab/source-control-definitions':
         specifier: workspace:*
         version: link:../source-control-definitions
       effect:
@@ -1626,13 +1626,13 @@ importers:
 
   packages/provider-acp:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       diff:
@@ -1663,16 +1663,16 @@ importers:
       '@noble/hashes':
         specifier: 'catalog:'
         version: 1.8.0
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-acp':
+      '@satslab/provider-acp':
         specifier: workspace:*
         version: link:../provider-acp
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1685,7 +1685,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/provider-testing':
+      '@satslab/provider-testing':
         specifier: workspace:*
         version: link:../provider-testing
       '@types/node':
@@ -1700,10 +1700,10 @@ importers:
 
   packages/provider-core:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1731,13 +1731,13 @@ importers:
       '@napi-rs/keyring':
         specifier: ^1.3.0
         version: 1.3.0
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1753,7 +1753,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/provider-testing':
+      '@satslab/provider-testing':
         specifier: workspace:*
         version: link:../provider-testing
       '@types/node':
@@ -1765,16 +1765,16 @@ importers:
 
   packages/provider-fx:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-acp':
+      '@satslab/provider-acp':
         specifier: workspace:*
         version: link:../provider-acp
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1799,16 +1799,16 @@ importers:
 
   packages/provider-grok:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-acp':
+      '@satslab/provider-acp':
         specifier: workspace:*
         version: link:../provider-acp
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1821,7 +1821,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/provider-testing':
+      '@satslab/provider-testing':
         specifier: workspace:*
         version: link:../provider-testing
       '@types/node':
@@ -1870,13 +1870,13 @@ importers:
       '@muse-code/sdk':
         specifier: 1.4.6
         version: 1.4.6(patch_hash=7b495b607fc5d76b444c7c4d58821e839726a30e6f3c53564f0d59f2d5b42101)(@types/node@24.12.4)
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1889,7 +1889,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/provider-testing':
+      '@satslab/provider-testing':
         specifier: workspace:*
         version: link:../provider-testing
       '@types/node':
@@ -1913,13 +1913,13 @@ importers:
       '@opencode/schema':
         specifier: 2.0.28
         version: 2.0.28
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1932,7 +1932,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/provider-testing':
+      '@satslab/provider-testing':
         specifier: workspace:*
         version: link:../provider-testing
       '@types/node':
@@ -1944,13 +1944,13 @@ importers:
 
   packages/provider-pi:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1963,7 +1963,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/provider-testing':
+      '@satslab/provider-testing':
         specifier: workspace:*
         version: link:../provider-testing
       '@types/node':
@@ -1978,13 +1978,13 @@ importers:
       '@effect/platform-node':
         specifier: 4.1.2
         version: 4.1.2(bufferutil@4.1.0)(effect@4.1.2)(redis@6.2.1)(utf-8-validate@6.0.6)
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -1997,7 +1997,7 @@ importers:
 
   packages/secret-provider-core:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -2019,25 +2019,25 @@ importers:
 
   packages/secret-provider-definitions:
     dependencies:
-      '@t3tools/secret-provider-core':
+      '@satslab/secret-provider-core':
         specifier: workspace:*
         version: link:../secret-provider-core
-      '@t3tools/secret-provider-onepassword':
+      '@satslab/secret-provider-onepassword':
         specifier: workspace:*
         version: link:../secret-provider-onepassword
 
   packages/secret-provider-onepassword:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/secret-provider-core':
+      '@satslab/secret-provider-core':
         specifier: workspace:*
         version: link:../secret-provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -2065,7 +2065,7 @@ importers:
       '@noble/hashes':
         specifier: 'catalog:'
         version: 1.8.0
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -2141,13 +2141,13 @@ importers:
 
   packages/source-control-azure-devops:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
       diff:
@@ -2163,7 +2163,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/source-control-testing':
+      '@satslab/source-control-testing':
         specifier: workspace:*
         version: link:../source-control-testing
       '@types/node':
@@ -2175,16 +2175,16 @@ importers:
 
   packages/source-control-bitbucket:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
       effect:
@@ -2197,7 +2197,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/source-control-testing':
+      '@satslab/source-control-testing':
         specifier: workspace:*
         version: link:../source-control-testing
       '@types/node':
@@ -2209,10 +2209,10 @@ importers:
 
   packages/source-control-core:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -2231,40 +2231,40 @@ importers:
 
   packages/source-control-definitions:
     dependencies:
-      '@t3tools/source-control-azure-devops':
+      '@satslab/source-control-azure-devops':
         specifier: workspace:*
         version: link:../source-control-azure-devops
-      '@t3tools/source-control-bitbucket':
+      '@satslab/source-control-bitbucket':
         specifier: workspace:*
         version: link:../source-control-bitbucket
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
-      '@t3tools/source-control-forgejo':
+      '@satslab/source-control-forgejo':
         specifier: workspace:*
         version: link:../source-control-forgejo
-      '@t3tools/source-control-gitcafe':
+      '@satslab/source-control-gitcafe':
         specifier: workspace:*
         version: link:../source-control-gitcafe
-      '@t3tools/source-control-github':
+      '@satslab/source-control-github':
         specifier: workspace:*
         version: link:../source-control-github
-      '@t3tools/source-control-gitlab':
+      '@satslab/source-control-gitlab':
         specifier: workspace:*
         version: link:../source-control-gitlab
 
   packages/source-control-forgejo:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
       effect:
@@ -2277,7 +2277,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/source-control-testing':
+      '@satslab/source-control-testing':
         specifier: workspace:*
         version: link:../source-control-testing
       '@types/node':
@@ -2289,16 +2289,16 @@ importers:
 
   packages/source-control-gitcafe:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
       effect:
@@ -2308,7 +2308,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/source-control-testing':
+      '@satslab/source-control-testing':
         specifier: workspace:*
         version: link:../source-control-testing
       '@types/node':
@@ -2320,16 +2320,16 @@ importers:
 
   packages/source-control-github:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
       effect:
@@ -2345,7 +2345,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/source-control-testing':
+      '@satslab/source-control-testing':
         specifier: workspace:*
         version: link:../source-control-testing
       '@types/node':
@@ -2357,13 +2357,13 @@ importers:
 
   packages/source-control-gitlab:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
       effect:
@@ -2373,7 +2373,7 @@ importers:
       '@effect/vitest':
         specifier: 4.1.2
         version: 4.1.2(patch_hash=299510b71c36537a832a67e9d160a5f112a5f326a29e95c41cb45fc8234e47c7)(@astrojs/compiler-rs@0.5.1)(@tsc-rs/typescript@0.8.0)(@types/node@24.12.4)(@vitest/browser-playwright@5.0.5)(@vitest/ui@5.0.5)(@volar/typescript@2.4.28(@tsc-rs/typescript@0.8.0))(bufferutil@4.1.0)(effect@4.1.2)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.0(@noble/hashes@1.8.0))(playwright@1.60.0)(terser@5.48.0)(unrun@0.2.39)(utf-8-validate@6.0.6)(yaml@2.9.0)
-      '@t3tools/source-control-testing':
+      '@satslab/source-control-testing':
         specifier: workspace:*
         version: link:../source-control-testing
       '@types/node':
@@ -2388,13 +2388,13 @@ importers:
       '@effect/platform-node':
         specifier: 4.1.2
         version: 4.1.2(bufferutil@4.1.0)(effect@4.1.2)(redis@6.2.1)(utf-8-validate@6.0.6)
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
-      '@t3tools/source-control-core':
+      '@satslab/source-control-core':
         specifier: workspace:*
         version: link:../source-control-core
       effect:
@@ -2407,10 +2407,10 @@ importers:
 
   packages/ssh:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -2432,7 +2432,7 @@ importers:
 
   packages/tailscale:
     dependencies:
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
@@ -2460,13 +2460,13 @@ importers:
       '@electron/osx-sign':
         specifier: 2.7.0
         version: 2.7.0
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../packages/shared
-      '@t3tools/tailscale':
+      '@satslab/tailscale':
         specifier: workspace:*
         version: link:../packages/tailscale
       agent-device:
@@ -6598,19 +6598,19 @@ packages:
     resolution: {integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==}
     engines: {node: '>=10'}
 
-  '@t3tools/mobile-highlights-native@file:apps/mobile/modules/t3-highlights':
+  '@satslab/mobile-highlights-native@file:apps/mobile/modules/t3-highlights':
     resolution: {directory: apps/mobile/modules/t3-highlights, type: directory}
 
-  '@t3tools/mobile-review-diff-native@file:apps/mobile/modules/t3-review-diff':
+  '@satslab/mobile-review-diff-native@file:apps/mobile/modules/t3-review-diff':
     resolution: {directory: apps/mobile/modules/t3-review-diff, type: directory}
 
-  '@t3tools/mobile-source-text@file:apps/mobile/modules/t3-source-text':
+  '@satslab/mobile-source-text@file:apps/mobile/modules/t3-source-text':
     resolution: {directory: apps/mobile/modules/t3-source-text, type: directory}
     peerDependencies:
       react: '*'
       react-native: '*'
 
-  '@t3tools/mobile-terminal-native@file:apps/mobile/modules/t3-terminal':
+  '@satslab/mobile-terminal-native@file:apps/mobile/modules/t3-terminal':
     resolution: {directory: apps/mobile/modules/t3-terminal, type: directory}
 
   '@tabler/icons-react-native@3.44.0':
@@ -16170,16 +16170,16 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
-  '@t3tools/mobile-highlights-native@file:apps/mobile/modules/t3-highlights': {}
+  '@satslab/mobile-highlights-native@file:apps/mobile/modules/t3-highlights': {}
 
-  '@t3tools/mobile-review-diff-native@file:apps/mobile/modules/t3-review-diff': {}
+  '@satslab/mobile-review-diff-native@file:apps/mobile/modules/t3-review-diff': {}
 
-  '@t3tools/mobile-source-text@file:apps/mobile/modules/t3-source-text(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(bufferutil@4.1.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(@types/react@19.3.0)(bufferutil@4.1.0)(react@19.3.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(react@19.3.0)':
+  '@satslab/mobile-source-text@file:apps/mobile/modules/t3-source-text(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(bufferutil@4.1.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(@types/react@19.3.0)(bufferutil@4.1.0)(react@19.3.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(react@19.3.0)':
     dependencies:
       react: 19.3.0
       react-native: 0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(bufferutil@4.1.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(@types/react@19.3.0)(bufferutil@4.1.0)(react@19.3.0)(supports-color@8.1.1)(utf-8-validate@6.0.6)
 
-  '@t3tools/mobile-terminal-native@file:apps/mobile/modules/t3-terminal': {}
+  '@satslab/mobile-terminal-native@file:apps/mobile/modules/t3-terminal': {}
 
   '@tabler/icons-react-native@3.44.0(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(bufferutil@4.1.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(@types/react@19.3.0)(bufferutil@4.1.0)(react@19.3.0)(supports-color@8.1.1)(utf-8-validate@6.0.6))(react@19.3.0))(react@19.3.0)':
     dependencies:

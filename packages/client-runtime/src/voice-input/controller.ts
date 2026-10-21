@@ -1,4 +1,4 @@
-import { replaceTextRange } from "@t3tools/shared/composerTrigger";
+import { replaceTextRange } from "@satslab/shared/composerTrigger";
 
 import {
   VoiceTranscriptionError,

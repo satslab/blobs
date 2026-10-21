@@ -7,8 +7,8 @@ import {
   type ServerProviderModel,
   type ServerProviderSlashCommand,
   type ServerProviderUsageLimits,
-} from "@t3tools/contracts";
-import { createModelCapabilities } from "@t3tools/shared/model";
+} from "@satslab/contracts";
+import { createModelCapabilities } from "@satslab/shared/model";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -22,19 +22,19 @@ import * as SubscriptionRef from "effect/SubscriptionRef";
 import type * as EffectAcpErrors from "effect-acp/errors";
 import type * as EffectAcpSchema from "effect-acp/compat";
 
-import type * as AcpSessionRuntime from "@t3tools/provider-acp/server/AcpSessionRuntime";
-import { acpProviderOptionDescriptors } from "@t3tools/provider-acp/server/sessionConfig";
-import { makeManagedServerProvider } from "@t3tools/provider-core/server/managedProvider";
+import type * as AcpSessionRuntime from "@satslab/provider-acp/server/AcpSessionRuntime";
+import { acpProviderOptionDescriptors } from "@satslab/provider-acp/server/sessionConfig";
+import { makeManagedServerProvider } from "@satslab/provider-core/server/managedProvider";
 import {
   makeManualOnlyProviderMaintenanceCapabilities,
   type ProviderMaintenanceCapabilities,
-} from "@t3tools/provider-core/server/maintenanceResolver";
+} from "@satslab/provider-core/server/maintenanceResolver";
 import {
   buildServerProvider,
   isCommandMissingCause,
   type ServerProviderDraft,
-} from "@t3tools/provider-core/server/snapshotProbe";
-import { resolveUsageLimitsAfterProbe } from "@t3tools/provider-core/server/usageLimits";
+} from "@satslab/provider-core/server/snapshotProbe";
+import { resolveUsageLimitsAfterProbe } from "@satslab/provider-core/server/usageLimits";
 
 import { antigravityThinkingConfig } from "./acp/AntigravityAcpSupport.ts";
 
@@ -198,7 +198,7 @@ export const makeAntigravityProvider = Effect.fn("makeAntigravityProvider")(func
         auth: { status: "unknown", ...(options.auth ? { type: options.auth.type } : {}) },
         message: settings.enabled
           ? "Checking Antigravity availability."
-          : "Antigravity is disabled in T3 Code settings.",
+          : "Antigravity is disabled in Blobs settings.",
       },
     }),
     setup: { canAuthenticate: true, canInstall: true },

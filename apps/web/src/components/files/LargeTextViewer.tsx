@@ -1,6 +1,6 @@
 import { useEffect, useImperativeHandle, useRef, useState, type RefObject } from "react";
-import { parseDelimitedPreview } from "@t3tools/shared/delimitedPreview";
-import { formatAttachmentSize } from "@t3tools/client-runtime/state/attachments";
+import { parseDelimitedPreview } from "@satslab/shared/delimitedPreview";
+import { formatAttachmentSize } from "@satslab/client-runtime/state/attachments";
 import { useClientSettings } from "~/hooks/useSettings";
 import { FileSurfaceFailure, FileSurfaceLoading, FileSurfaceNotice } from "./fileSurfaceChrome";
 import { PREVIEW_PAGE_ROWS, type TextPreviewResult } from "./largeTextProtocol";

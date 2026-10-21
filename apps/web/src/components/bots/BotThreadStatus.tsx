@@ -6,8 +6,8 @@ import {
   MessageCircleQuestionIcon,
   ShieldQuestionIcon,
 } from "lucide-react";
-import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
-import { scopeThreadRef, scopedThreadKey } from "@t3tools/client-runtime/environment";
+import type { EnvironmentThreadShell } from "@satslab/client-runtime/state/shell";
+import { scopeThreadRef, scopedThreadKey } from "@satslab/client-runtime/environment";
 import { useUiStateStore } from "../../uiStateStore";
 import { cn } from "../../lib/utils";
 import {

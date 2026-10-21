@@ -1,8 +1,8 @@
 import {
   formatProviderSubagentStatus,
   type ProviderSubagentStatus,
-} from "@t3tools/client-runtime/state/thread-execution";
-import { isOrchestrationV2WorkActive, type EnvironmentId, type ThreadId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/state/thread-execution";
+import { isOrchestrationV2WorkActive, type EnvironmentId, type ThreadId } from "@satslab/contracts";
 import { useState } from "react";
 import { View } from "react-native";
 

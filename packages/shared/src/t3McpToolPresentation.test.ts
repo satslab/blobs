@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
-  T3_MCP_TOOL_NAMES,
+  BLOBS_MCP_TOOL_NAMES,
   resolveT3McpSummaryAction,
   resolveT3McpToolDefinition,
   resolveT3McpToolPresentation,
@@ -9,21 +9,21 @@ import {
 
 describe("resolveT3McpToolPresentation", () => {
   it("recognizes every T3 tool across provider prefixes and completion suffixes", () => {
-    for (const tool of T3_MCP_TOOL_NAMES) {
+    for (const tool of BLOBS_MCP_TOOL_NAMES) {
       const presentation = resolveT3McpToolPresentation(tool);
       for (const prefix of [
         "mcp__t3-code__",
         "mcp__t3_code__",
-        "mcp__t3code__",
+        "mcp__t3-code__",
         "T3-code.",
         "t3code.",
         "t3-code-direct.",
         "mcp__t3_code_direct__",
         "t3_code/",
-        "t3code:",
-        "mcp_t3-code_",
-        "T3 Code ",
-        "t3-code · ",
+        "blobs:",
+        "mcp_blobs_",
+        "Blobs ",
+        "blobs · ",
       ]) {
         expect(resolveT3McpToolPresentation(`${prefix}${tool} completed`), tool).toEqual(
           presentation,
@@ -35,9 +35,9 @@ describe("resolveT3McpToolPresentation", () => {
 
   it("matches OpenCode 2's per-thread server names, whose thread ids hold underscores", () => {
     expect(
-      resolveT3McpToolPresentation("t3-code-thread_opencode2-adapter_delegate_task")?.displayName,
+      resolveT3McpToolPresentation("blobs-thread_opencode2-adapter_delegate_task")?.displayName,
     ).toBe("Delegate a child task");
-    expect(resolveT3McpToolPresentation("t3-code-thread_opencode2-adapter_not_a_tool")).toBeNull();
+    expect(resolveT3McpToolPresentation("blobs-thread_opencode2-adapter_not_a_tool")).toBeNull();
   });
 });
 

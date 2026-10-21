@@ -1,4 +1,4 @@
-import { OrchestratorMcpFailure } from "@t3tools/contracts";
+import { OrchestratorMcpFailure } from "@satslab/contracts";
 import { CreateThreadsToolkit, OrchestratorToolkit } from "./tools.ts";
 import * as Effect from "effect/Effect";
 

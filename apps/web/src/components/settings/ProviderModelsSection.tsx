@@ -4,9 +4,9 @@ import {
   ProviderDriverKind,
   type ProviderInstanceId,
   type ServerProviderModel,
-} from "@t3tools/contracts";
-import { isReasoningControl } from "@t3tools/client-runtime/model-traits";
-import { type CustomModelDefinition, normalizeCustomModelSlug } from "@t3tools/shared/model";
+} from "@satslab/contracts";
+import { isReasoningControl } from "@satslab/client-runtime/model-traits";
+import { type CustomModelDefinition, normalizeCustomModelSlug } from "@satslab/shared/model";
 
 import { useStableCallback } from "../../hooks/useStableCallback";
 import { cn } from "../../lib/utils";

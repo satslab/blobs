@@ -35,7 +35,7 @@ export const reconcileForkMigrations = Effect.fn("reconcileForkMigrations")(func
       ) {
         return yield* new Migrator.MigrationError({
           kind: "BadState",
-          message: "Cannot upgrade Sora with unexpected later migrations.",
+          message: "Cannot upgrade Blobs with unexpected later migrations.",
         });
       }
       for (const row of forkHistory) {
