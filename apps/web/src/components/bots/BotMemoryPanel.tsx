@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { BotId, BotMemoryInput, EnvironmentId, ScopedThreadRef } from "@t3tools/contracts";
+import type { BotId, BotMemoryInput, EnvironmentId, ScopedThreadRef } from "@satslab/contracts";
 import { useBotThreadContext } from "../../state/bots";
 import { botMemory } from "../../state/botMemory";
 import { useEnvironmentQuery } from "../../state/query";
