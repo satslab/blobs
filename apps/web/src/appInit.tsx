@@ -1,5 +1,5 @@
-import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
-import type { ClientSettings } from "@t3tools/contracts/settings";
+import { scopedThreadKey, scopeThreadRef } from "@satslab/client-runtime/environment";
+import type { ClientSettings } from "@satslab/contracts/settings";
 import { createBrowserHistory, createHashHistory } from "@tanstack/react-router";
 
 import { applyAppearanceContrast } from "./appearanceContrast";

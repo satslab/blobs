@@ -1,5 +1,5 @@
 /** Reconcile closes removed/replaced scopes before creating replacements: at most one live instance per id. */
-import type { ProviderInstanceConfigMap } from "@t3tools/contracts";
+import type { ProviderInstanceConfigMap } from "@satslab/contracts";
 import * as Context from "effect/Context";
 import type * as Effect from "effect/Effect";
 
@@ -10,4 +10,4 @@ export interface ProviderInstanceRegistryMutatorShape {
 export class ProviderInstanceRegistryMutator extends Context.Service<
   ProviderInstanceRegistryMutator,
   ProviderInstanceRegistryMutatorShape
->()("t3/provider/ProviderInstanceRegistryMutator") {}
+>()("@satslab/blobs/provider/ProviderInstanceRegistryMutator") {}

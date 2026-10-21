@@ -2,9 +2,9 @@ import {
   DEFAULT_SERVER_SETTINGS,
   type ModelSelection,
   type WorktreeSubmodules,
-} from "@t3tools/contracts";
-import { createModelSelection } from "@t3tools/shared/model";
-import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
+} from "@satslab/contracts";
+import { createModelSelection } from "@satslab/shared/model";
+import { resolveProjectSettings } from "@satslab/shared/projectSettings";
 import { useNavigate } from "@tanstack/react-router";
 
 import {
@@ -187,7 +187,7 @@ export function ProjectDefaultsSettings({ category }: { category: ProjectSetting
       description={
         isProjectScope
           ? "Where new threads in this project start."
-          : "Where new threads start. Projects and their t3.json can override it."
+          : "Where new threads start. Projects and their blobs.json can override it."
       }
       resetAction={
         !isProjectScope && settings.defaultThreadEnvMode !== null ? (

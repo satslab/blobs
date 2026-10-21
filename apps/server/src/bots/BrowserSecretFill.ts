@@ -1,4 +1,4 @@
-import { PreviewTabId } from "@t3tools/contracts";
+import { PreviewTabId } from "@satslab/contracts";
 import * as Schema from "effect/Schema";
 
 export const BrowserSecretFillInput = Schema.Struct({

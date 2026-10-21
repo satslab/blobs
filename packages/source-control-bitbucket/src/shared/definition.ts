@@ -2,7 +2,7 @@ import {
   makeProviderSettingsSchema,
   SourceControlProviderKind,
   TrimmedString,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import {
@@ -12,7 +12,7 @@ import {
   isChangeRequestOnProjectHost,
   parseChangeRequestPath,
   projectChangeRequestHost,
-} from "@t3tools/source-control-core/shared/definition";
+} from "@satslab/source-control-core/shared/definition";
 import { icon } from "./icon.ts";
 
 const safeShellArgument = /^[A-Za-z0-9._/@+=,-]+$/;
@@ -96,7 +96,7 @@ export const definition = defineSourceControl({
     headRepositoryNameWithOwner &&
     repositoryName.test(headRepositoryNameWithOwner) &&
     safeShellArgument.test(headBranch)
-      ? `git clone --single-branch --branch ${headBranch} https://bitbucket.org/${headRepositoryNameWithOwner}.git t3code-pr-${number}`
+      ? `git clone --single-branch --branch ${headBranch} https://bitbucket.org/${headRepositoryNameWithOwner}.git blobs-pr-${number}`
       : null,
   authorProfileUrl: () => null,
   reviewSummaryRequired: () => false,

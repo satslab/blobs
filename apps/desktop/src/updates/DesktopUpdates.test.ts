@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { DESKTOP_UPDATE_RESTART_MARKER_FILE } from "@t3tools/contracts";
+import { DESKTOP_UPDATE_RESTART_MARKER_FILE } from "@satslab/contracts";
 import * as Cause from "effect/Cause";
 import * as Deferred from "effect/Deferred";
 import * as Duration from "effect/Duration";
@@ -22,6 +22,29 @@ import * as DesktopUpdates from "./DesktopUpdates.ts";
 import { flushCallbacks, makeHarness } from "./updatesTestHarness.ts";
 
 describe("DesktopUpdates", () => {
+  it.effect("keeps unsigned Blobs installs out of every self-update path", () => {
+    const harness = makeHarness({
+      env: { BLOBS_DESKTOP_MOCK_UPDATES: "false", BLOBS_DISABLE_AUTO_UPDATE: "false" },
+      updateFeed: "provider: github\nowner: satslab\nrepo: blobs\n",
+    });
+    return Effect.gen(function* () {
+      const updates = yield* DesktopUpdates.DesktopUpdates;
+      yield* updates.configure;
+      const state = yield* updates.getState;
+      assert.equal(state.status, "disabled");
+      assert.isFalse(state.enabled);
+      assert.isFalse((yield* updates.check("manual")).checked);
+      assert.isFalse((yield* updates.download).accepted);
+      assert.isFalse((yield* updates.install).accepted);
+      assert.isFalse((yield* updates.installPrepared("0.0.3")).accepted);
+      assert.equal((yield* updates.setChannel("nightly")).status, "disabled");
+      assert.equal(harness.checkCount(), 0);
+      assert.equal(harness.downloadCount(), 0);
+      assert.equal(harness.quitAndInstalls(), 0);
+      assert.equal(harness.listenerCount(), 0);
+    }).pipe(Effect.provide(harness.layer));
+  });
+
   it.effect("updates Linux .deb installs and leaves other non-AppImage installs off", () =>
     Effect.gen(function* () {
       const linuxState = (packageType: string | undefined) =>
@@ -42,8 +65,8 @@ describe("DesktopUpdates", () => {
   );
 
   it.effect("keeps the disabled reason available after configuration and channel changes", () => {
-    const harness = makeHarness({ env: { T3CODE_DISABLE_AUTO_UPDATE: "true" } });
-    const reason = "Automatic updates are disabled by the T3CODE_DISABLE_AUTO_UPDATE setting.";
+    const harness = makeHarness({ env: { BLOBS_DISABLE_AUTO_UPDATE: "true" } });
+    const reason = "Automatic updates are disabled by the BLOBS_DISABLE_AUTO_UPDATE setting.";
 
     return Effect.scoped(
       Effect.gen(function* () {

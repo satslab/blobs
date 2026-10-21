@@ -8,8 +8,8 @@ import {
   createOlderSettledThreadAtoms,
   createThreadEnvironmentAtoms,
   createThreadFamilyAtoms,
-} from "@t3tools/client-runtime/state/threads";
-import type { EnvironmentId, ThreadId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/state/threads";
+import type { EnvironmentId, ThreadId } from "@satslab/contracts";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useEffect } from "react";
 
@@ -50,7 +50,7 @@ export function useThreadFamily(
   environmentId: EnvironmentId | null,
   rootThreadId: ThreadId | null,
 ): void {
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- mounts the subagent tree under the root thread into the shared thread registry while the caller shows it
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- mounts the subagent tree under the root thread into the shared thread registry while the caller shows it
   useEffect(() => {
     if (environmentId === null || rootThreadId === null) return;
     return threadFamilies.mount(appAtomRegistry, environmentId, rootThreadId);

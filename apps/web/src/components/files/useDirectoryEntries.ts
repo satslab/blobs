@@ -1,6 +1,6 @@
-import type { EnvironmentId, ProjectEntry } from "@t3tools/contracts";
+import type { EnvironmentId, ProjectEntry } from "@satslab/contracts";
 import { useAtomMount, useAtomSubscribe } from "@effect/atom-react";
-import { executeAtomQuery } from "@t3tools/client-runtime/state/runtime";
+import { executeAtomQuery } from "@satslab/client-runtime/state/runtime";
 import * as Cause from "effect/Cause";
 import { useEffect, useRef, useState } from "react";
 
@@ -94,7 +94,7 @@ export function useDirectoryEntries(environmentId: EnvironmentId, cwd: string) {
     return startRequest(directoryPath, refresh);
   };
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- starts the root directory read on mount and marks the hook inactive so late reads are ignored
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- starts the root directory read on mount and marks the hook inactive so late reads are ignored
   useEffect(() => {
     active.current = true;
     if (!requests.current.has("") && !loaded.current.has("")) void startRequest("", false);

@@ -46,7 +46,7 @@ Never reset fork `t3code-main` to upstream merely to make their SHAs match.
 3. Resolve conflicts by retaining the local features and compatible upstream fixes.
    Do not accept entire files with `--ours` or `--theirs` without reviewing the lost changes.
 4. Check automatically merged files for changed APIs, service dependencies, permissions, and test setup.
-   Set `apps/server/package.json`'s `upstreamVersion` to the synchronized upstream server version. Provider compatibility policies use that version, not Sora's independent release version.
+   Set `apps/server/package.json`'s `upstreamVersion` to the synchronized upstream server version. Provider compatibility policies use that version, not Blobs's independent release version.
 5. Check migration IDs against upstream. Renumber collisions and update references.
    If earlier main builds used those IDs, preserve their upgrade path and test it with isolated databases.
    Renumbering alone can reject an existing database or rerun schema creation.

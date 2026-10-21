@@ -1,24 +1,24 @@
-import { type OrchestrationV2ProviderTurn, type RunAttemptId } from "@t3tools/contracts";
+import { type OrchestrationV2ProviderTurn, type RunAttemptId } from "@satslab/contracts";
 import {
   deriveLatestThreadRun,
   deriveThreadRuntime,
-} from "@t3tools/client-runtime/state/thread-execution";
-import { checkpointFileTotals } from "@t3tools/client-runtime/state/thread-checkpoints";
-import { derivePendingBackgroundWork } from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
+} from "@satslab/client-runtime/state/thread-execution";
+import { checkpointFileTotals } from "@satslab/client-runtime/state/thread-checkpoints";
+import { derivePendingBackgroundWork } from "@satslab/shared/orchestrationV2PendingBackgroundWork";
 import {
   latestUnheldRun,
   usageLimitRunPresentedAsLatest,
-} from "@t3tools/shared/orchestrationV2ThreadError";
+} from "@satslab/shared/orchestrationV2ThreadError";
 import * as Option from "effect/Option";
 import type { SetStateAction } from "react";
-import { applyClaudePromptEffortPrefix, resolvePromptInjectedEffort } from "@t3tools/shared/model";
+import { applyClaudePromptEffortPrefix, resolvePromptInjectedEffort } from "@satslab/shared/model";
 import { getProviderModelCapabilities } from "../providerModels";
-import { sanitizeThreadErrorMessage } from "@t3tools/client-runtime/errors";
+import { sanitizeThreadErrorMessage } from "@satslab/client-runtime/errors";
 import type {
   EnvironmentThread,
   ThreadStructure,
   EnvironmentThreadShell,
-} from "@t3tools/client-runtime/state/shell";
+} from "@satslab/client-runtime/state/shell";
 import {
   ANTIGRAVITY_DEFAULT_MODEL,
   PROVIDER_SEND_TURN_MAX_ATTACHMENTS,
@@ -45,21 +45,21 @@ import {
   type ThreadLinkedPullRequest,
   type RunId,
   type WorktreeSetupSnapshot,
-} from "@t3tools/contracts";
-import { worktreeSetupAgentStarted } from "@t3tools/client-runtime/worktree-setup";
+} from "@satslab/contracts";
+import { worktreeSetupAgentStarted } from "@satslab/client-runtime/worktree-setup";
 import * as DateTime from "effect/DateTime";
-import { resolveAssetUrl } from "@t3tools/client-runtime/state/assets";
+import { resolveAssetUrl } from "@satslab/client-runtime/state/assets";
 import {
   squashAtomCommandFailure,
   type AtomCommandResult,
-} from "@t3tools/client-runtime/state/runtime";
-import { videoMimeType } from "@t3tools/shared/video";
+} from "@satslab/client-runtime/state/runtime";
+import { videoMimeType } from "@satslab/shared/video";
 import {
   appendCodexArtifactTemplateUsePrompt,
   codexArtifactTemplateUsePrompt,
   type CodexArtifactTemplate,
-} from "@t3tools/shared/codexArtifactTemplates";
-import { presentThreadShell } from "@t3tools/client-runtime/state/shell";
+} from "@satslab/shared/codexArtifactTemplates";
+import { presentThreadShell } from "@satslab/client-runtime/state/shell";
 import {
   type ChatMessage,
   isImageAttachment,
@@ -91,7 +91,7 @@ import {
   reviewCommentContextLabel,
   terminalContextReference,
 } from "../lib/composerContextRecords";
-import type { ComposerDispatchMode } from "@t3tools/client-runtime/state/composer-dispatch";
+import type { ComposerDispatchMode } from "@satslab/client-runtime/state/composer-dispatch";
 import type { DraftThreadEnvMode } from "../composerDraftStore";
 import { collapseExpandedComposerCursor, type ComposerSubmissionIntent } from "../composer-logic";
 import type { ReviewCommentContext } from "../reviewCommentContext";
@@ -108,7 +108,7 @@ import {
 type ThreadProjection = EnvironmentThread["projection"];
 type ThreadStructureRow = ThreadStructure["visibleTurnItems"][number];
 
-export const LAST_INVOKED_SCRIPT_BY_PROJECT_KEY = "t3code:last-invoked-script-by-project";
+export const LAST_INVOKED_SCRIPT_BY_PROJECT_KEY = "blobs:last-invoked-script-by-project";
 export const MAX_HIDDEN_MOUNTED_TERMINAL_THREADS = 10;
 
 export const ENVIRONMENT_RECONNECT_WARNING_GRACE_MS = 2_000;
@@ -293,7 +293,7 @@ export function shouldReleaseTimelineAnchorForToolActivity(input: {
   });
 }
 
-export { resolveVisibleWorktreeSetup } from "@t3tools/client-runtime/worktree-setup";
+export { resolveVisibleWorktreeSetup } from "@satslab/client-runtime/worktree-setup";
 
 export function resolveWorktreeSetupProgress(input: {
   threadId: ThreadId;
@@ -709,7 +709,7 @@ export function collectUserMessageBlobPreviewUrls(message: ChatMessage): string[
 
 export { readFileAsDataUrl } from "../lib/imageCompression";
 
-export { resolveSendEnvMode } from "@t3tools/shared/projectSettings";
+export { resolveSendEnvMode } from "@satslab/shared/projectSettings";
 
 export function resolveBackgroundDraftWorkspaceOptions(input: {
   envMode: DraftThreadEnvMode;
@@ -1243,7 +1243,7 @@ export function mergeDirectPreviewAnnotation(input: {
   return { images, previewAnnotations };
 }
 
-export { isThreadWokeUnseen } from "@t3tools/client-runtime/state/thread-settled";
+export { isThreadWokeUnseen } from "@satslab/client-runtime/state/thread-settled";
 
 export function formatOutgoingPrompt(params: {
   provider: ProviderDriverKind;

@@ -1,4 +1,4 @@
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentProject } from "@satslab/client-runtime/state/shell";
 import {
   foldSearchQuery,
   PALETTE_SECONDARY_LIMIT,
@@ -10,7 +10,7 @@ import {
   type SearchRange,
   type SearchTermsMatch,
   type ThreadSearchSubject,
-} from "@t3tools/shared/paletteSearch";
+} from "@satslab/shared/paletteSearch";
 
 export interface CommandPaletteItem {
   readonly key: string;

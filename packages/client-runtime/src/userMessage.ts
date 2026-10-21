@@ -4,10 +4,10 @@ import {
   type OrchestrationV2CreationSource,
   type OrchestrationV2IdleCompaction,
   ScheduledTaskId,
-} from "@t3tools/contracts";
-import { isAttachmentOnlyBootstrapPrompt } from "@t3tools/shared/composerContextReferences";
+} from "@satslab/contracts";
+import { isAttachmentOnlyBootstrapPrompt } from "@satslab/shared/composerContextReferences";
 
-/** The working row while T3 Code's own compaction runs. */
+/** The working row while Blobs's own compaction runs. */
 export const IDLE_COMPACTING_LABELS = {
   beforeCacheExpires: "Compacting before the cache expires…",
   onReturn: "Compacting…",
@@ -32,7 +32,7 @@ export function resolveUserMessagePresentation(message: {
   readonly context?: { readonly guest?: GuestMessageAttribution | undefined } | undefined;
 }): {
   readonly text: string;
-  readonly attribution: "automation" | "agent" | "t3code" | "guest" | null;
+  readonly attribution: "automation" | "agent" | "blobs" | "guest" | null;
   readonly scheduledTaskId: ScheduledTaskId | undefined;
   /** Set when `attribution` is "guest". */
   readonly guestName?: string;
@@ -83,7 +83,7 @@ export function resolveUserMessagePresentation(message: {
       message.createdBy !== "agent"
         ? null
         : message.creationSource === "server"
-          ? "t3code"
+          ? "blobs"
           : "agent",
     scheduledTaskId: undefined,
   };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@t3tools/contracts";
+import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@satslab/contracts";
 
 import {
   formatThreadLink,
@@ -117,7 +117,7 @@ describe("thread links", () => {
 
   it("leaves links inside code spans and fences as written", () => {
     const markdown = [
-      "Live [old](t3-thread://v1/t1), literal `[old](t3-thread://v1/t1)`.",
+      "Live [old](blobs-thread://v1/t1), literal `[old](blobs-thread://v1/t1)`.",
       "```md",
       "<t3-thread://v2/local/t1>",
       "```",
@@ -125,7 +125,7 @@ describe("thread links", () => {
     ].join("\n");
     expect(relabelThreadLinks(markdown, local, () => "New")).toBe(
       [
-        "Live [New](t3-thread://v1/t1), literal `[old](t3-thread://v1/t1)`.",
+        "Live [New](blobs-thread://v1/t1), literal `[old](blobs-thread://v1/t1)`.",
         "```md",
         "<t3-thread://v2/local/t1>",
         "```",
@@ -157,4 +157,12 @@ describe("thread links", () => {
     );
     expect(formatThreadLink(ref("e", "t1"), " ] ")).toBe("<t3-thread://v2/e/t1>");
   });
+});
+
+it.each(["blobs-thread", "t3-thread"])("opens and relabels %s links", (scheme) => {
+  const href = `${scheme}://v1/thread:one`;
+  expect(parseThreadLinkHref(href)).toBe("thread:one");
+  expect(relabelThreadLinks(`[old](${href})`, () => "Current title")).toBe(
+    "[Current title](blobs-thread://v1/thread:one)",
+  );
 });
