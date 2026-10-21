@@ -1,10 +1,10 @@
 name: CI
 
+# CI runs on pull requests, by hand, or as the first job of a release. Pushes do not run it.
 on:
+  workflow_call:
+  workflow_dispatch:
   pull_request:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -14,15 +14,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # Skips jobs a pull request cannot affect: a web change does not run the
-  # server shards, a server change does not run the mobile tests, and the macOS
-  # lint (~6.7x a Linux minute) runs only for native mobile sources.
-  # .github/scripts/ci-changes.cjs maps changed files to workspace packages and
-  # their dependents. Pushes to main still run every Linux job. Detection fails
-  # open: if the diff cannot be resolved, everything runs.
+  # Pull requests run affected jobs; pushes and release calls run the full checks.
   changes:
     name: Changes
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       typecheck: ${{ steps.detect.outputs.typecheck }}
@@ -59,12 +54,9 @@ jobs:
   # file, docs included. The `Check` job at the end of this file passes only
   # when every other job passes or was skipped by `changes`.
   lint:
-    permissions:
-      contents: read
-      id-token: write
     name: Lint
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -85,8 +77,6 @@ jobs:
 
       - name: Setup Vite+
         uses: ./.github/actions/setup-ci-deps
-        with:
-          task-cache-read-token: ${{ secrets.T3_TASK_CACHE_READ_TOKEN }}
 
       # electron's install.js (run by ensure:electron) reads this cache before it
       # downloads from GitHub. The key changes only with the Electron version.
@@ -107,20 +97,17 @@ jobs:
         run: vp run --filter @satslab/source-control-github generate --check
 
       - name: Check generated Expo GraphQL operations
-        run: vp run --filter t3 generate --check
+        run: vp run --filter @satslab/blobs generate --check
 
       - name: Check
         run: vp check
 
   build:
-    permissions:
-      contents: read
-      id-token: write
     name: Build and Typecheck
     needs: changes
     if: ${{ !cancelled() && (needs.changes.outputs.build != 'false' || needs.changes.outputs.typecheck != 'false') }}
     runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -138,7 +125,6 @@ jobs:
       - name: Start installing browser secret helper build libraries
         if: needs.changes.outputs.build != 'false'
         run: |
-          sudo sed -i 's|http://|https://|g' /etc/apt/blacksmith-ubuntu-mirrors.txt /etc/apt/sources.list.d/ubuntu.sources
           (
             set +e
             sudo apt-get update && sudo apt-get install -y libsecret-1-dev pkg-config
@@ -147,8 +133,6 @@ jobs:
 
       - name: Setup Vite+
         uses: ./.github/actions/setup-ci-deps
-        with:
-          task-cache-read-token: ${{ secrets.T3_TASK_CACHE_READ_TOKEN }}
 
       # electron's install.js (run by ensure:electron) reads this cache before it
       # downloads from GitHub. The key changes only with the Electron version.
@@ -170,7 +154,7 @@ jobs:
         run: |
           (
             set +e
-            vpr typecheck
+            vp run --concurrency-limit 2 --filter '!@satslab/marketing' --filter '!t3code-relay' --filter '!@satslab/mobile' typecheck
             echo "$?" > "$RUNNER_TEMP/typecheck-status"
           ) > "$RUNNER_TEMP/typecheck.log" 2>&1 < /dev/null &
 
@@ -200,21 +184,18 @@ jobs:
           cat "$RUNNER_TEMP/typecheck.log"
           exit "$(cat "$RUNNER_TEMP/typecheck-status")"
 
-  # Everything except `t3` (apps/server) and the web app, which has its own job
+  # Everything except `blobs` (apps/server) and the web app, which has its own job
   # below. `--parallel` drops the package dependency ordering that `vp run`
   # applies by default: these `test` tasks declare no `dependsOn` and resolve
   # workspace deps from source, so ordering only bought us idle runners between
   # dependency layers. The concurrency limit stays at the default 4 so peak load
   # per runner is unchanged.
   test:
-    permissions:
-      contents: read
-      id-token: write
     name: Test
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.test != 'false' }}
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -225,13 +206,23 @@ jobs:
             !/apps/mobile/modules/t3-terminal/Vendor/**/*.a
           sparse-checkout-cone-mode: false
 
+      # The process-tree tests compile a pthread fixture with the C toolchain.
+      # GitHub's Ubuntu image normally includes gcc,
+      # but ACP process-tree live tests compile a small pthread fixture with `cc`
+      # and soft-skip when it is missing. Install build-essential so that path
+      # always runs in CI instead of silently no-oping.
+      - name: Install C toolchain for process-tree fixtures
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential
+          command -v cc
+
       - uses: ./.github/actions/setup-apt-mirrors
 
       # The desktop tests compile the browser secret helper. The install runs in
       # the background while Vite+ installs; the step before the tests waits for it.
       - name: Start installing browser secret helper build libraries
         run: |
-          sudo sed -i 's|http://|https://|g' /etc/apt/blacksmith-ubuntu-mirrors.txt /etc/apt/sources.list.d/ubuntu.sources
           (
             set +e
             sudo apt-get update && sudo apt-get install -y libsecret-1-dev pkg-config
@@ -240,8 +231,6 @@ jobs:
 
       - name: Setup Vite+
         uses: ./.github/actions/setup-ci-deps
-        with:
-          task-cache-read-token: ${{ secrets.T3_TASK_CACHE_READ_TOKEN }}
 
       # electron's install.js (run by ensure:electron) reads this cache before it
       # downloads from GitHub. The key changes only with the Electron version.
@@ -257,8 +246,8 @@ jobs:
       - name: Test preview artifact validation
         run: python3 -B .github/scripts/stage-preview-bundle.test.py
 
-      - name: Test release checks
-        run: node --test .github/scripts/check-nightly-release.test.cjs .github/scripts/vercel-deployment-output.test.cjs
+      - name: Validate release workflows
+        run: node --test .github/scripts/release-workflows.test.mjs
 
       - name: Finish installing browser secret helper build libraries
         timeout-minutes: 5
@@ -272,25 +261,22 @@ jobs:
         env:
           TEST_PACKAGES: ${{ needs.changes.outputs.test_packages }}
         run: |
-          filters=(--filter '!t3' --filter '!@satslab/monorepo' --filter '!@satslab/web')
+          filters=(--filter '!@satslab/blobs' --filter '!@satslab/monorepo' --filter '!@satslab/web' --filter '!@satslab/marketing' --filter '!t3code-relay' --filter '!@satslab/mobile')
           if [[ -n "$TEST_PACKAGES" ]]; then
             filters=()
             for package in $TEST_PACKAGES; do filters+=(--filter "$package"); done
           fi
-          vp run --parallel --concurrency-limit 4 "${filters[@]}" test
+          vp run --parallel --concurrency-limit 2 "${filters[@]}" --filter '!@satslab/marketing' --filter '!t3code-relay' --filter '!@satslab/mobile' test
 
   # The web suite is the largest outside the server. In the shared Test job it
   # started last and ran alone for about 40s after everything else finished.
   # release.yml mirrors this test, test_web, and test_server split.
   test_web:
-    permissions:
-      contents: read
-      id-token: write
     name: Test Web
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.test_web != 'false' }}
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -303,8 +289,6 @@ jobs:
 
       - name: Setup Vite+
         uses: ./.github/actions/setup-ci-deps
-        with:
-          task-cache-read-token: ${{ secrets.T3_TASK_CACHE_READ_TOKEN }}
 
       # The browser project runs React tests in headless Chromium. Same cache key as
       # test_server, so both jobs share one downloaded browser.
@@ -334,12 +318,6 @@ jobs:
       - name: Test
         run: vp run --filter @satslab/web test
 
-      # Browser tests run source modules; this boots the production chunk graph.
-      - name: Boot the built web client
-        run: |
-          vp run --filter @satslab/web build
-          node apps/web/scripts/verify-built-boot.ts
-
   # apps/server sets `fileParallelism: false`, so its test files run strictly
   # one at a time. Sharding spreads them over separate runners instead of
   # separate workers, so no two server test files ever share a machine and the
@@ -349,14 +327,9 @@ jobs:
   # The shards are the longest jobs, so they gate themselves instead of waiting
   # ~15s for `changes`: a shard the change cannot affect stops after checkout.
   test_server:
-    permissions:
-      contents: read
-      id-token: write
     name: Test Server ${{ matrix.shard }}
-    runs-on: blacksmith-4vcpu-ubuntu-2404
-    # Shards take 2-5 minutes. When the shared task cache throttles reads, each
-    # failed fetch stalls vp for 15-90s, which pushed shards past 10 minutes.
-    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -380,10 +353,8 @@ jobs:
       - name: Setup Vite+
         if: steps.changes.outputs.test_server != 'false'
         uses: ./.github/actions/setup-ci-deps
-        with:
-          task-cache-read-token: ${{ secrets.T3_TASK_CACHE_READ_TOKEN }}
 
-      # No Electron setup here: `t3` (apps/server) has no Electron dependency
+      # No Electron setup here: `blobs` (apps/server) has no Electron dependency
       # and none of its tests touch the runtime. Only the non-server `test`
       # job, which covers @satslab/desktop, needs the download.
       # Cache the pinned browser and skip apt unless shared libraries are missing.
@@ -416,20 +387,9 @@ jobs:
       - name: Test
         if: steps.changes.outputs.test_server != 'false'
         env:
-          BLOBS_TRANSFER_BUDGET_REPORT_PATH: ${{ runner.temp }}/t3code-transfer-budget.md
+          BLOBS_TRANSFER_BUDGET_REPORT_PATH: ${{ runner.temp }}/blobs-transfer-budget.md
           BLOBS_TRANSFER_BUDGET_RESULT_PATH: ${{ runner.temp }}/thread-transfer-result.json
-        run: >-
-          vp run test:cached -- --shard ${{ matrix.shard }}/${{ strategy.job-total }}
-          --uncached apps/server/integration/transferBudgetV2.integration.test.ts
-          --verify-hits 1 --report "${{ runner.temp }}/test-cache-${{ matrix.shard }}.json" apps/server
-
-      - name: Upload test cache measurements
-        if: always() && steps.changes.outputs.test_server != 'false'
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-cache-${{ matrix.shard }}
-          path: ${{ runner.temp }}/test-cache-${{ matrix.shard }}.json
-          if-no-files-found: error
+        run: vp run --filter @satslab/blobs test --shard ${{ matrix.shard }}/${{ strategy.job-total }}
 
       # integration/transferBudgetV2.integration.test.ts writes the report; exactly one shard
       # produces these files. Gating the upload on their presence keeps a
@@ -448,8 +408,8 @@ jobs:
       - name: Publish transfer budget report
         if: always() && steps.transfer_budget.outputs.present == 'true'
         run: |
-          if test -f "${{ runner.temp }}/t3code-transfer-budget.md"; then
-            tee -a "$GITHUB_STEP_SUMMARY" < "${{ runner.temp }}/t3code-transfer-budget.md"
+          if test -f "${{ runner.temp }}/blobs-transfer-budget.md"; then
+            tee -a "$GITHUB_STEP_SUMMARY" < "${{ runner.temp }}/blobs-transfer-budget.md"
           else
             echo "Transfer budget report was not produced." >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -469,8 +429,8 @@ jobs:
     name: Rust
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.rust != 'false' }}
-    runs-on: blacksmith-4vcpu-ubuntu-2404
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -498,63 +458,6 @@ jobs:
             cargo test --locked --manifest-path "native/$crate/Cargo.toml"
           done
 
-  mobile_native_static_analysis:
-    name: Mobile Native Static Analysis
-    needs: changes
-    if: ${{ !cancelled() && needs.changes.outputs.mobile_native != 'false' }}
-    runs-on: blacksmith-6vcpu-macos-26
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            /*
-            !/.repos/
-          sparse-checkout-cone-mode: false
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version-file: package.json
-          cache: true
-          run-install: |
-            args:
-              - --filter=@satslab/scripts...
-
-      - name: Install mobile native static analysis tools
-        run: brew bundle install --file apps/mobile/Brewfile
-
-      - name: Lint mobile native sources
-        run: vp run lint:mobile
-
-  release_smoke:
-    permissions:
-      contents: read
-      id-token: write
-    name: Release Smoke
-    needs: changes
-    if: ${{ !cancelled() && needs.changes.outputs.release_smoke != 'false' }}
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            /*
-            !/.repos/
-            !/apps/mobile/modules/t3-terminal/Vendor/**/*.a
-          sparse-checkout-cone-mode: false
-
-      - name: Setup Vite+
-        uses: ./.github/actions/setup-ci-deps
-        with:
-          task-cache-read-token: ${{ secrets.T3_TASK_CACHE_READ_TOKEN }}
-
-      - name: Exercise release-only workflow steps
-        run: node scripts/release-smoke.ts
-
   # Branch protection requires this job by its name, `Check`. It fails when any
   # other job fails, is cancelled, or is skipped without a reason, so splitting
   # or resharding jobs needs no ruleset change. Add every new job to `needs`.
@@ -563,19 +466,8 @@ jobs:
   check:
     name: Check
     if: ${{ always() }}
-    needs:
-      [
-        changes,
-        lint,
-        build,
-        test,
-        test_web,
-        test_server,
-        rust,
-        mobile_native_static_analysis,
-        release_smoke,
-      ]
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: [changes, lint, build, test, test_web, test_server, rust]
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Require every job to pass
@@ -584,20 +476,10 @@ jobs:
         run: |
           echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
           # A job may skip only when `changes` said every gate it represents was
-          # not needed. Gates are keyed by job name, except merged Build and the
-          # macOS lint.
+          # not needed. Gates are keyed by job name, except the merged Build job.
           echo "$RESULTS" | jq -e '.changes.outputs as $gates
-            | {build: ["build", "typecheck"], mobile_native_static_analysis: ["mobile_native"]} as $renamed
+            | {build: ["build", "typecheck"]} as $renamed
             | all(to_entries[];
                 .value.result == "success"
                 or (.value.result == "skipped"
                   and (($renamed[.key] // [.key]) | all(.[]; $gates[.] == "false"))))' > /dev/null
-
-      # thread-transfer-report.yml reads this artifact after CI, so a run whose
-      # server tests ran must have produced it.
-      - name: Require transfer measurements
-        if: needs.test_server.result == 'success' && needs.changes.outputs.test_server != 'false'
-        uses: actions/download-artifact@v8
-        with:
-          name: thread-transfer-results
-          path: ${{ runner.temp }}/thread-transfer

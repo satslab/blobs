@@ -37,9 +37,7 @@ const packExecutable = packMode === "1" || packMode === "bundle";
 // No linux-arm64: --build-sea output cannot load on 16/64 KiB page kernels, so it builds natively.
 const SEA_TARGETS = {
   "darwin-arm64": { platform: "darwin", arch: "arm64" },
-  "darwin-x64": { platform: "darwin", arch: "x64" },
   "linux-x64": { platform: "linux", arch: "x64" },
-  "win-arm64": { platform: "win", arch: "arm64" },
   "win-x64": { platform: "win", arch: "x64" },
 } as const;
 const packExecutableTarget = process.env.BLOBS_PACK_EXE_TARGET?.trim();
