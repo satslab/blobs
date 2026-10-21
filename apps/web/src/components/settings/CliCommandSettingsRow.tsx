@@ -53,9 +53,9 @@ export function CliCommandSettingsRow() {
   if (!state?.supported) return null;
   const installed = state.installedPath !== null;
   const description = state.shadowedBy
-    ? `Another t3 at ${state.shadowedBy} runs first in a new terminal. Remove it to use T3 Code's.`
+    ? `Another blobs at ${state.shadowedBy} runs first in a new terminal. Remove it to use Blobs's.`
     : !installed
-      ? "Run T3 Code's CLI as `t3` from any terminal."
+      ? "Run Blobs's CLI as `blobs` from any terminal."
       : state.onPath
         ? `Installed at ${state.installedPath}. Open a new terminal to use it.`
         : state.pathSetup?.added

@@ -7,7 +7,7 @@ import {
 } from "./BrowserSecretFill.ts";
 import * as Redacted from "effect/Redacted";
 import * as BotResources from "./BotResources.ts";
-import type { BotMemoryInput } from "@t3tools/contracts";
+import type { BotMemoryInput } from "@satslab/contracts";
 import { planProjectCommand, type ProjectCommand } from "../orchestration-v2/ProjectCommands.ts";
 import * as ServerSettings from "../serverSettings.ts";
 import * as ThreadCommandExecutor from "../orchestration-v2/ThreadCommandExecutor.ts";
@@ -32,7 +32,7 @@ import {
   type OrchestrationV2StoredEvent,
   type OrchestrationV2ConversationMessage,
   type RunId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Cache from "effect/Cache";
 import * as Context from "effect/Context";
 import * as Crypto from "effect/Crypto";
@@ -55,7 +55,7 @@ import * as ServerEnvironment from "../environment/ServerEnvironment.ts";
 import * as EventSink from "../orchestration-v2/EventSink.ts";
 import * as EventStore from "../persistence/OrchestrationEventStore.ts";
 import * as ProjectionStore from "../orchestration-v2/ProjectionStore.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@satslab/provider-core/server/IdAllocator";
 import * as BotStorage from "./BotStorage.ts";
 import * as MemoryCompaction from "./MemoryCompaction.ts";
 import { makeMemory } from "./MemoryWorker.ts";
@@ -996,7 +996,7 @@ const make = Effect.gen(function* () {
   });
   const changeResources = Effect.fn("BotChat.changeResources")(function* (
     id: BotId,
-    action: import("@t3tools/contracts").BotResourceAction,
+    action: import("@satslab/contracts").BotResourceAction,
   ) {
     const bot = yield* assertOwner(id);
     const thread = yield* projections.getThread(bot.threadId);
@@ -1034,6 +1034,6 @@ const make = Effect.gen(function* () {
   };
 });
 export class BotChat extends Context.Service<BotChat, Effect.Success<typeof make>>()(
-  "t3/bots/BotChat",
+  "@satslab/blobs/bots/BotChat",
 ) {}
 export const layer = Layer.effect(BotChat, make).pipe(Layer.provide(ThreadCommandExecutor.layer));

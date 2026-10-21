@@ -1,4 +1,4 @@
-export const GITHUB_REPOSITORY_URL = "https://github.com/pingdotgg/t3code";
+export const GITHUB_REPOSITORY_URL = "https://github.com/satslab/blobs";
 
 export const IOS_APP_STORE_URL =
   "https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824";
@@ -25,6 +25,6 @@ async function fetchGithubStars(): Promise<string> {
 }
 
 export const MARKETING_STATS = {
-  githubStars: await fetchGithubStars(),
-  users: "500,000",
+  githubStars: "24k+",
+  users: "SV",
 } as const;

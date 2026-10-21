@@ -17,9 +17,9 @@ import {
   mcpClientScopes,
   parseMcpApprovalCode,
   type RuntimeMode,
-} from "@t3tools/contracts";
-import { DEFAULT_HOSTED_APP_URL } from "@t3tools/shared/connectAuth";
-import { encodeOAuthScope } from "@t3tools/shared/oauthScope";
+} from "@satslab/contracts";
+import { DEFAULT_HOSTED_APP_URL } from "@satslab/shared/connectAuth";
+import { encodeOAuthScope } from "@satslab/shared/oauthScope";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
 import * as Digest from "effect/crypto/Digest";
@@ -83,7 +83,7 @@ export const protectedResourceMetadata = (
   authorization_servers: [urls.issuer],
   scopes_supported: MCP_OAUTH_SCOPES,
   bearer_methods_supported: ["header"],
-  resource_name: "T3 Code",
+  resource_name: "Blobs",
 });
 
 export const authorizationServerMetadata = (
@@ -230,7 +230,7 @@ export class McpOAuth extends Context.Service<
       readonly token: AuthMcpTokenRequest;
     }) => Effect.Effect<AuthMcpTokenResult, AuthMcpTokenError>;
   }
->()("t3/auth/McpOAuth") {}
+>()("@satslab/blobs/auth/McpOAuth") {}
 
 const redirectWith = (
   redirectUri: string,

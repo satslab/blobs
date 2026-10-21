@@ -13,7 +13,11 @@ import {
 } from "./adaptive-workspace-context";
 import { threadSelectionDeferral } from "./deferred-navigation";
 import { uuidv4 } from "../../lib/uuid";
-import { EnvironmentId, ThreadId, type SidebarProjectGroupingMode } from "@t3tools/contracts";
+import { EnvironmentId, ThreadId, type SidebarProjectGroupingMode } from "@satslab/contracts";
+import type {
+  EnvironmentProject,
+  EnvironmentThreadShell,
+} from "@satslab/client-runtime/state/shell";
 import { useAtomValue } from "@effect/atom-react";
 import { NavigationContext, NavigationRouteContext, useNavigation } from "@react-navigation/native";
 import {

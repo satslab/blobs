@@ -2,7 +2,7 @@ import {
   createVcsActionManager,
   createVcsEnvironmentAtoms,
   createVcsStatusRevalidationAtomFamily,
-} from "@t3tools/client-runtime/state/vcs";
+} from "@satslab/client-runtime/state/vcs";
 import * as Equal from "effect/Equal";
 import { AsyncResult, Atom } from "effect/reactivity";
 

@@ -1,4 +1,4 @@
-import { normalizeSearchQuery, scoreQueryMatch } from "@t3tools/shared/searchRanking";
+import { normalizeSearchQuery, scoreQueryMatch } from "@satslab/shared/searchRanking";
 
 export type ModelPickerSearchableModel = {
   driverKind: string;

@@ -1,4 +1,6 @@
-import { resolveEnvironmentMachineKind } from "@t3tools/contracts";
+import { resolveEnvironmentMachineKind } from "@satslab/contracts";
+import type { NativeStackHeaderItem } from "@react-navigation/native-stack";
+import { Platform, Pressable } from "react-native";
 
 import type { AppBarMenu } from "../../../components/ui/AppBar.types";
 import { ENVIRONMENT_MACHINE_SYMBOLS } from "../../../components/EnvironmentMachineSymbol";

@@ -14,16 +14,16 @@ import {
   resolveProviderInstanceEnabled,
   type RuntimeMode,
   type ServerSettings,
-} from "@t3tools/contracts";
-import { acpRegistryClient } from "@t3tools/provider-acp-registry/client";
-import { cursorClient } from "@t3tools/provider-cursor/client";
-import { fxClient } from "@t3tools/provider-fx/client";
-import { grokClient } from "@t3tools/provider-grok/client";
-import { kiroClient } from "@t3tools/provider-kiro/client";
-import { museClient } from "@t3tools/provider-muse/client";
-import { openCodeClient } from "@t3tools/provider-opencode/client";
-import { piClient } from "@t3tools/provider-pi/client";
-import type { ProviderClientDefinition } from "@t3tools/provider-core/client";
+} from "@satslab/contracts";
+import { acpRegistryClient } from "@satslab/provider-acp-registry/client";
+import { cursorClient } from "@satslab/provider-cursor/client";
+import { fxClient } from "@satslab/provider-fx/client";
+import { grokClient } from "@satslab/provider-grok/client";
+import { kiroClient } from "@satslab/provider-kiro/client";
+import { museClient } from "@satslab/provider-muse/client";
+import { openCodeClient } from "@satslab/provider-opencode/client";
+import { piClient } from "@satslab/provider-pi/client";
+import type { ProviderClientDefinition } from "@satslab/provider-core/client";
 
 interface KnownDriver {
   readonly label: string;

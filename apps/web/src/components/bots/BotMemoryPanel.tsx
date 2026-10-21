@@ -5,7 +5,7 @@ import type {
   BotMemoryView,
   EnvironmentId,
   ScopedThreadRef,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { useBotThreadContext } from "../../state/bots";
 import { botMemory } from "../../state/botMemory";
