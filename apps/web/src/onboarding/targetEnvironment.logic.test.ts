@@ -1,4 +1,10 @@
-import { EnvironmentId } from "@t3tools/contracts";
+import { EnvironmentId } from "@satslab/contracts";
+import {
+  BearerConnectionTarget,
+  PrimaryConnectionTarget,
+  RelayConnectionTarget,
+  SshConnectionTarget,
+} from "@satslab/client-runtime/connection";
 import { describe, expect, it } from "vite-plus/test";
 
 import { resolveOnboardingSetup } from "./targetEnvironment.logic";

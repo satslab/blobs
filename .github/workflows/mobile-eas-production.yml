@@ -134,7 +134,7 @@ jobs:
           cache: true
           run-install: |
             args:
-              - --filter=@t3tools/mobile...
+              - --filter=@satslab/mobile...
 
       - name: Expose pnpm
         if: steps.expo-token.outputs.present == 'true'
@@ -196,10 +196,10 @@ jobs:
             const path = "apps/mobile/app.config.ts";
             const source = fs.readFileSync(path, "utf8");
             const next = source.replace(
-              /^(  version: repoEnv\.T3CODE_MOBILE_VERSION \?\? ")[^"]+(".*)$/m,
+              /^(  version: repoEnv\.BLOBS_MOBILE_VERSION \?\? ")[^"]+(".*)$/m,
               `$1${process.env.RELEASE_VERSION}$2`,
             );
-            if (next === source && !source.includes(`  version: repoEnv.T3CODE_MOBILE_VERSION ?? "${process.env.RELEASE_VERSION}"`)) {
+            if (next === source && !source.includes(`  version: repoEnv.BLOBS_MOBILE_VERSION ?? "${process.env.RELEASE_VERSION}"`)) {
               throw new Error("Could not update app version");
             }
             fs.writeFileSync(path, next);
@@ -227,8 +227,8 @@ jobs:
           MOBILE_BUILD_PROFILE: ${{ inputs.profile || 'production' }}
         run: |
           if [ "$MOBILE_BUILD_PROFILE" = "testflight" ]; then
-            T3CODE_MOBILE_VERSION="$(node -p 'require("./eas.json").build.testflight.env.T3CODE_MOBILE_VERSION')"
-            export T3CODE_MOBILE_VERSION
+            BLOBS_MOBILE_VERSION="$(node -p 'require("./eas.json").build.testflight.env.BLOBS_MOBILE_VERSION')"
+            export BLOBS_MOBILE_VERSION
           fi
           version="$(npx expo config --json --type public | jq -r '.version')"
           {
@@ -280,8 +280,8 @@ jobs:
           OTA_MESSAGE: ${{ inputs.message || format('Production OTA ({0})', github.sha) }}
         run: |
           if [ "$MOBILE_BUILD_PROFILE" = "testflight" ]; then
-            T3CODE_MOBILE_VERSION="$(node -p 'require("./eas.json").build.testflight.env.T3CODE_MOBILE_VERSION')"
-            export T3CODE_MOBILE_VERSION
+            BLOBS_MOBILE_VERSION="$(node -p 'require("./eas.json").build.testflight.env.BLOBS_MOBILE_VERSION')"
+            export BLOBS_MOBILE_VERSION
           fi
           eas update \
             --channel production \
@@ -306,10 +306,10 @@ jobs:
           for target in ios:production ios:testflight android:production; do
             platform="${target%%:*}"
             profile="${target#*:}"
-            unset T3CODE_MOBILE_VERSION
+            unset BLOBS_MOBILE_VERSION
             if [ "$profile" = "testflight" ]; then
-              T3CODE_MOBILE_VERSION="$(node -p 'require("./eas.json").build.testflight.env.T3CODE_MOBILE_VERSION')"
-              export T3CODE_MOBILE_VERSION
+              BLOBS_MOBILE_VERSION="$(node -p 'require("./eas.json").build.testflight.env.BLOBS_MOBILE_VERSION')"
+              export BLOBS_MOBILE_VERSION
             fi
             version="$(npx expo config --json --type public | jq -r '.version')"
             # eas-cli prints an environment-loaded notice to stdout before the

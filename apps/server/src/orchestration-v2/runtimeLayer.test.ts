@@ -1,9 +1,9 @@
 import { PullRequestProviderError } from "@t3tools/source-control-core/server/PullRequestProvider";
 import { CloudManagedEndpointRuntime } from "../cloud/ManagedEndpointRuntime.ts";
-import { SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlProviderKind } from "@satslab/contracts";
 import { limitRecoveryCommand } from "./UsageLimitRecoveryWorker.ts";
-import { createOrchestrationV2TurnItemVisibility } from "@t3tools/shared/orchestrationV2Timeline";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
+import { createOrchestrationV2TurnItemVisibility } from "@satslab/shared/orchestrationV2Timeline";
+import * as McpProviderSessions from "@satslab/provider-core/server/McpProviderSessions";
 import * as SourceControlRepositoryService from "../sourceControl/SourceControlRepositoryService.ts";
 import * as SourceControlProviderRegistry from "../sourceControl/SourceControlProviderRegistry.ts";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
@@ -37,7 +37,7 @@ import {
   RunId,
   ScheduledTaskId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -65,7 +65,7 @@ import * as McpSessionRegistry from "../mcp/McpSessionRegistry.ts";
 import type * as McpInvocationContext from "../mcp/McpInvocationContext.ts";
 import * as McpSessionRegistryTestkit from "../mcp/McpSessionRegistry.testkit.ts";
 import * as ProviderInstanceRegistry from "../provider/ProviderInstanceRegistry.ts";
-import type { ProviderInstance } from "@t3tools/provider-core/server/driver";
+import type { ProviderInstance } from "@satslab/provider-core/server/driver";
 import * as GitVcsDriver from "../vcs/GitVcsDriver.ts";
 import * as VcsDriverRegistry from "../vcs/VcsDriverRegistry.ts";
 import * as VcsProcess from "../vcs/VcsProcess.ts";
@@ -104,7 +104,7 @@ import * as TerminalManager from "../terminal/Manager.ts";
 import * as ResourceCleanupService from "./ResourceCleanupService.ts";
 import * as ThreadLaunchService from "./ThreadLaunchService.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
-import type * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import type * as ProviderAdapter from "@satslab/provider-core/server/ProviderAdapter";
 
 const layerPlatformTest = Layer.merge(
   Layer.mergeAll(
@@ -1038,7 +1038,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive", (it) => {
         runtimeMode: "full-access",
         interactionMode: "default",
         branch: null,
-        worktreePath: `/tmp/sora-${name}`,
+        worktreePath: `/tmp/blobs-${name}`,
       });
       yield* orchestrator.dispatch({
         type: "message.dispatch",
@@ -4650,7 +4650,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           notification: {
             source: { kind: "system" as const },
             outcome: "updated" as const,
-            summary: "Sora restarted and resumed this turn",
+            summary: "Blobs restarted and resumed this turn",
             detail: "Continue where you left off.",
           },
           attachments: [],
@@ -4671,7 +4671,7 @@ it.layer(layerTest)("OrchestrationV2LayerLive lifecycle", (it) => {
           continuationItems.flatMap((item) =>
             item.type === "notification" ? [[item.summary, item.detail]] : [],
           ),
-          ["Sora restarted and resumed this turn", "Continue where you left off."],
+          ["Blobs restarted and resumed this turn", "Continue where you left off."],
         );
         yield* orchestrator.dispatch({
           ...command,

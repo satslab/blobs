@@ -1,4 +1,4 @@
-import type { DesktopBridge, DesktopCliCommandState, DesktopUpdateState } from "@t3tools/contracts";
+import type { DesktopBridge, DesktopCliCommandState, DesktopUpdateState } from "@satslab/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import {

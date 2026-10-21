@@ -1,4 +1,4 @@
-import { BotId, EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { BotId, EnvironmentId, ThreadId } from "@satslab/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {

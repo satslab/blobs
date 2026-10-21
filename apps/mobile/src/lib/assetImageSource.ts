@@ -1,9 +1,9 @@
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import {
   SOURCE_CONTROL_MEDIA_ASSET,
   type AssetResource,
   type EnvironmentId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import type { ImageSource } from "expo-image";
 
 /**

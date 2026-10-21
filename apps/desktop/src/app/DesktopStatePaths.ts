@@ -1,3 +1,5 @@
+// @effect-diagnostics nodeBuiltinImport:off -- Electron resolves its data directory synchronously, before any Effect runtime exists.
+import * as NodeFS from "node:fs";
 import * as Option from "effect/Option";
 
 export type JoinPath = (first: string, ...segments: string[]) => string;
@@ -14,10 +16,15 @@ export function resolveDesktopBaseDir(input: {
   readonly homeDirectory: string;
   readonly joinPath: JoinPath;
   readonly t3Home: Option.Option<string>;
+  readonly exists?: (path: string) => boolean;
 }): string {
-  return Option.getOrElse(normalizeConfiguredBaseDir(input.t3Home), () =>
-    input.joinPath(input.homeDirectory, ".t3"),
-  );
+  return Option.getOrElse(normalizeConfiguredBaseDir(input.t3Home), () => {
+    const exists = input.exists ?? NodeFS.existsSync;
+    // Installs from before the Blobs rename keep using ~/.sora until it is moved.
+    const legacy = input.joinPath(input.homeDirectory, ".sora");
+    const current = input.joinPath(input.homeDirectory, ".blobs");
+    return !exists(current) && exists(legacy) ? legacy : current;
+  });
 }
 
 export function resolveDesktopStateDir(input: {

@@ -17,13 +17,13 @@ import {
   type OrchestrationV2ExecutionNode,
   type OrchestrationV2RunAttempt,
   type OrchestrationV2TurnItem,
-} from "@t3tools/contracts";
-import type { ThreadRuntimeSummary } from "@t3tools/client-runtime/state/shell";
-import { threadRuntimeIsActive } from "@t3tools/client-runtime/state/models";
+} from "@satslab/contracts";
+import type { ThreadRuntimeSummary } from "@satslab/client-runtime/state/shell";
+import { threadRuntimeIsActive } from "@satslab/client-runtime/state/models";
 import {
   deriveLatestThreadRun,
   deriveThreadRuntime,
-} from "@t3tools/client-runtime/state/thread-execution";
+} from "@satslab/client-runtime/state/thread-execution";
 import { deriveMessagesTimelineRows } from "./components/chat/MessagesTimeline.logic";
 import * as DateTime from "effect/DateTime";
 import { describe, expect, it } from "vite-plus/test";

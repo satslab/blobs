@@ -20,8 +20,8 @@ import {
   TurnItemId,
   type OrchestrationV2ProjectedTurnItem,
   type OrchestrationV2ThreadShell,
-} from "@t3tools/contracts";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
+} from "@satslab/contracts";
+import * as McpProviderSessions from "@satslab/provider-core/server/McpProviderSessions";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import * as TestClock from "effect/testing/TestClock";
@@ -71,7 +71,7 @@ const declaredFailure = (result: McpSchema.CallToolResult) => {
   const text = result.content[0];
   return result.isError === true && text?.type === "text" ? JSON.parse(text.text) : undefined;
 };
-import { htmlRenderFromToolItem } from "@t3tools/shared/toolOutput";
+import { htmlRenderFromToolItem } from "@satslab/shared/toolOutput";
 
 const decodeMcpAttachmentInput = Schema.decodeUnknownEffect(McpAttachmentInput);
 const decodeThreadReadResult = Schema.decodeUnknownEffect(OrchestratorMcpThreadReadResult);
@@ -265,7 +265,7 @@ it.effect("returns an HTML render reference that Codex and Claude tool rows both
         Effect.provideService(McpSchema.McpServerClient, client),
       );
     const reference = htmlRenderFromToolItem({
-      toolName: "t3-code.html_render",
+      toolName: "blobs.html_render",
       output: result.structuredContent,
     });
     expect(reference).toMatchObject({ title: "Revenue", height: 240 });

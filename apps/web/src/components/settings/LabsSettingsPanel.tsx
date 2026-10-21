@@ -1,7 +1,7 @@
 import { useAuth } from "@clerk/react";
 import { Link } from "@tanstack/react-router";
-import { managedCapabilityDenial } from "@t3tools/contracts";
-import { ToolCallVisibility } from "@t3tools/contracts/settings";
+import { managedCapabilityDenial } from "@satslab/contracts";
+import { ToolCallVisibility } from "@satslab/contracts/settings";
 import * as Schema from "effect/Schema";
 
 import { hasCloudPublicConfig } from "~/cloud/publicConfig";

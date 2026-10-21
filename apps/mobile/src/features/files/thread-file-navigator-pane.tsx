@@ -1,7 +1,8 @@
-import { resolveFilesystemReadAccess } from "@t3tools/client-runtime/state/filesystem";
+import { resolveFilesystemReadAccess } from "@satslab/client-runtime/state/filesystem";
 import { environmentSession } from "../../state/session";
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@satslab/contracts";
 import { AppBar } from "../../components/ui/AppBar";
+import { SymbolView } from "../../components/ui/AppSymbol";
 import { ScreenContent } from "../../components/ui/ScreenContent";
 import { useState } from "react";
 import { View } from "react-native";

@@ -5,7 +5,9 @@ import {
   replaceDescriptorCurrentValue,
   selectableProviderOptionChoices,
   isReasoningSelect,
-} from "@t3tools/client-runtime/model-traits";
+  REASONING_SELECT_DESCRIPTOR_IDS,
+  ULTRATHINK_PROMPT_PREFIX,
+} from "@satslab/client-runtime/model-traits";
 import {
   type ModelSelection,
   type ProviderDriverKind,
@@ -14,16 +16,17 @@ import {
   type ProviderOptionSelection,
   type ScopedThreadRef,
   type ServerProviderModel,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
+import type { EffortDisplay } from "@satslab/contracts/settings";
 import {
   buildProviderOptionSelectionsFromDescriptors,
   getProviderOptionCurrentLabel,
   getProviderOptionDescriptors,
   isClaudeUltrathinkPrompt,
   normalizeModelSlug,
-} from "@t3tools/shared/model";
-import { memo } from "react";
-import { GaugeIcon } from "lucide-react";
+} from "@satslab/shared/model";
+import { memo, type ReactNode, useRef } from "react";
+import { GaugeIcon, ZapIcon } from "lucide-react";
 import {
   Menu,
   MenuGroup,

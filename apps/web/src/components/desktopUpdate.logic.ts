@@ -1,8 +1,9 @@
-import type { DesktopUpdateActionResult, DesktopUpdateState } from "@t3tools/contracts";
+import type { DesktopUpdateActionResult, DesktopUpdateState } from "@satslab/contracts";
+import { compareSemverVersions } from "@satslab/shared/semver";
 
 export type DesktopUpdateButtonAction = "download" | "install" | "none";
 
-const DEFAULT_DESKTOP_RELEASE_REPOSITORY = "pingdotgg/t3code";
+const DEFAULT_DESKTOP_RELEASE_REPOSITORY = "satslab/blobs";
 const GITHUB_REPOSITORY_SEGMENT = /^[A-Za-z0-9._-]+$/u;
 
 function isValidRepositorySegment(value: string | undefined): value is string {
@@ -28,15 +29,32 @@ export function getDesktopUpdateDownloadedVersion(state: DesktopUpdateState): st
 
 export function getDesktopUpdateReleaseUrl(
   version: string | null,
-  repository: string | undefined = import.meta.env.T3CODE_DESKTOP_UPDATE_REPOSITORY,
+  repository: string | undefined = import.meta.env.BLOBS_DESKTOP_UPDATE_REPOSITORY,
 ): string | null {
   const normalizedVersion = version?.trim();
   if (!normalizedVersion) return null;
   return `${desktopReleaseRepositoryUrl(repository)}/tag/v${encodeURIComponent(normalizedVersion)}`;
 }
 
+/**
+ * With the in-app updater disabled, a newer published release can only be installed by hand.
+ * Returns that version, or null when the app is current or the updater handles it.
+ */
+export function getManualDesktopUpdateVersion({
+  updaterEnabled,
+  currentVersion,
+  latestVersion,
+}: {
+  readonly updaterEnabled: boolean;
+  readonly currentVersion: string;
+  readonly latestVersion: string | null | undefined;
+}): string | null {
+  if (updaterEnabled || !latestVersion) return null;
+  return compareSemverVersions(latestVersion, currentVersion) > 0 ? latestVersion : null;
+}
+
 export function getDesktopUpdateReleaseHistoryUrl(
-  repository: string | undefined = import.meta.env.T3CODE_DESKTOP_UPDATE_REPOSITORY,
+  repository: string | undefined = import.meta.env.BLOBS_DESKTOP_UPDATE_REPOSITORY,
 ): string {
   return desktopReleaseRepositoryUrl(repository);
 }
@@ -78,12 +96,12 @@ export function getArm64IntelBuildWarningDescription(state: DesktopUpdateState):
 
   const action = resolveDesktopUpdateButtonAction(state);
   if (action === "download") {
-    return "This Mac has Apple Silicon, but T3 Code is still running the Intel build under Rosetta. Download the available update to switch to the native Apple Silicon build.";
+    return "This Mac has Apple Silicon, but Blobs is still running the Intel build under Rosetta. Download the available update to switch to the native Apple Silicon build.";
   }
   if (action === "install") {
-    return "This Mac has Apple Silicon, but T3 Code is still running the Intel build under Rosetta. Restart to install the downloaded Apple Silicon build.";
+    return "This Mac has Apple Silicon, but Blobs is still running the Intel build under Rosetta. Restart to install the downloaded Apple Silicon build.";
   }
-  return "This Mac has Apple Silicon, but T3 Code is still running the Intel build under Rosetta. The next app update will replace it with the native Apple Silicon build.";
+  return "This Mac has Apple Silicon, but Blobs is still running the Intel build under Rosetta. The next app update will replace it with the native Apple Silicon build.";
 }
 
 export function getDesktopUpdateButtonTooltip(state: DesktopUpdateState): string {
@@ -124,7 +142,7 @@ export function getDesktopUpdateInstallConfirmationMessage(
   state: Pick<DesktopUpdateState, "availableVersion" | "downloadedVersion">,
 ): string {
   const version = state.downloadedVersion ?? state.availableVersion;
-  return `Install update${version ? ` ${version}` : ""} and restart T3 Code?\n\nAny running tasks will be interrupted. Make sure you're ready before continuing.`;
+  return `Install update${version ? ` ${version}` : ""} and restart Blobs?\n\nAny running tasks will be interrupted. Make sure you're ready before continuing.`;
 }
 
 export function getDesktopUpdateActionError(result: DesktopUpdateActionResult): string | null {

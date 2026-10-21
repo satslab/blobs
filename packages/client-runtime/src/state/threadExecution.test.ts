@@ -12,10 +12,10 @@ import {
   ThreadId,
   type OrchestrationV2ExecutionNode,
   type OrchestrationV2RunStatus,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as DateTime from "effect/DateTime";
-import { createModelCapabilities, createModelSelection } from "@t3tools/shared/model";
-import { usageLimitBlockedRun } from "@t3tools/shared/orchestrationV2ThreadError";
+import { createModelCapabilities, createModelSelection } from "@satslab/shared/model";
+import { usageLimitBlockedRun } from "@satslab/shared/orchestrationV2ThreadError";
 import { describe, expect, it } from "vite-plus/test";
 
 import { v2Projection } from "./orchestrationV2TestFixtures.ts";

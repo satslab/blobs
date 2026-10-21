@@ -9,16 +9,16 @@ import {
   secretRequestSources,
   type SecretRequestItem,
   type SecretRequestReply,
-} from "@t3tools/client-runtime/secret-request";
+} from "@satslab/client-runtime/secret-request";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@satslab/client-runtime/state/runtime";
 import type {
   EnvironmentId,
   OrchestrationV2ProjectedTurnItem,
   SecretProviderId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { useAtomValue } from "@effect/atom-react";
 import { useRef, useState } from "react";
 import { View, type ColorValue } from "react-native";

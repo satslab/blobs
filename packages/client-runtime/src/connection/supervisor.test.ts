@@ -3,7 +3,7 @@ import {
   EnvironmentId,
   type ServerConfig,
   type ServerConfigStreamEvent,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { describe, expect, it } from "@effect/vitest";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -1295,7 +1295,7 @@ describe("EnvironmentSupervisor", () => {
                   policy: "loopback-browser",
                   bootstrapMethods: ["one-time-token"],
                   sessionMethods: ["dpop-access-token"],
-                  sessionCookieName: "t3_session_test",
+                  sessionCookieName: "blobs_session_test",
                 },
                 scopes: AuthStandardClientScopes,
               }),

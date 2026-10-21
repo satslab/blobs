@@ -1,5 +1,5 @@
-import { presentThreadShell } from "@t3tools/client-runtime/state/models";
-import { isThreadWorking as isSidebarThreadWorking } from "@t3tools/client-runtime/state/thread-inbox";
+import { presentThreadShell } from "@satslab/client-runtime/state/models";
+import { isThreadWorking as isSidebarThreadWorking } from "@satslab/client-runtime/state/thread-inbox";
 import * as DateTime from "effect/DateTime";
 import { deriveActiveWorkStartedAt } from "../session-logic.ts";
 import { describe, expect, it } from "vite-plus/test";
@@ -36,13 +36,13 @@ import {
   resolveSidebarFolderDot,
   sidebarFolderExpansionKeys,
 } from "./Sidebar.logic";
-import { scopeThreadRef, scopedThreadKey } from "@t3tools/client-runtime/environment";
+import { scopeThreadRef, scopedThreadKey } from "@satslab/client-runtime/environment";
 import {
   sortActiveThreadsByOrderKey,
   sortPinnedThreadsByOrderKey,
-} from "@t3tools/client-runtime/state/thread-sort";
+} from "@satslab/client-runtime/state/thread-sort";
 import { resolveProjectExpanded } from "../uiStateStore";
-import { threadSearchMatchKey } from "@t3tools/client-runtime/state/thread-search";
+import { threadSearchMatchKey } from "@satslab/client-runtime/state/thread-search";
 import {
   BotId,
   EnvironmentId,
@@ -50,7 +50,7 @@ import {
   ProviderInstanceId,
   RunId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import {
   DEFAULT_INTERACTION_MODE,

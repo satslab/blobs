@@ -1,4 +1,4 @@
-import { processOutput } from "@t3tools/source-control-testing/TestSourceControlHost";
+import { processOutput } from "@satslab/source-control-testing/TestSourceControlHost";
 import { assert, it } from "@effect/vitest";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";

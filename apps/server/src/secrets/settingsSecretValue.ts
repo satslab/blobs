@@ -4,8 +4,8 @@ import {
   SettingsSecretUnresolvedError,
   type SettingsSecretValue,
   withSettingsSecrets,
-} from "@t3tools/contracts";
-import type * as SecretResolver from "@t3tools/secret-provider-core/server/SecretResolver";
+} from "@satslab/contracts";
+import type * as SecretResolver from "@satslab/secret-provider-core/server/SecretResolver";
 import * as Effect from "effect/Effect";
 import type * as Schema from "effect/Schema";
 

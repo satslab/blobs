@@ -1,6 +1,6 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, describe, expect, it } from "@effect/vitest";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@satslab/shared/HostProcess";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
@@ -16,7 +16,7 @@ import * as Schema from "effect/Schema";
 import * as TestClock from "effect/testing/TestClock";
 import { ChildProcessSpawner } from "effect/process";
 
-import { VcsProcessExitError, VcsProcessSpawnError } from "@t3tools/contracts";
+import { VcsProcessExitError, VcsProcessSpawnError } from "@satslab/contracts";
 import * as ProcessRunner from "../processRunner.ts";
 import * as VcsProcess from "./VcsProcess.ts";
 
@@ -526,7 +526,7 @@ describe("VcsProcess.run", () => {
       const secretArgument = "--token=super-secret-token";
       const error = yield* run({
         operation: "test.spawn",
-        command: "definitely-not-a-t3code-executable",
+        command: "definitely-not-a-blobs-executable",
         args: [secretArgument],
         cwd: process.cwd(),
       }).pipe(Effect.flip);
@@ -534,7 +534,7 @@ describe("VcsProcess.run", () => {
       expect(error).toBeInstanceOf(VcsProcessSpawnError);
       expect(error).toMatchObject({
         operation: "test.spawn",
-        command: "definitely-not-a-t3code-executable",
+        command: "definitely-not-a-blobs-executable",
         argumentCount: 1,
       });
       expect(error).toHaveProperty("cause");

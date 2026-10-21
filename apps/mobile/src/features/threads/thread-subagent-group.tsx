@@ -1,18 +1,19 @@
 import { useAtomValue } from "@effect/atom-react";
 import { StackActions, useNavigation } from "@react-navigation/native";
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
+import { scopeThreadRef } from "@satslab/client-runtime/environment";
 import {
   resolveProviderInstanceDisplayName,
   shouldShowInstanceBadge,
-} from "@t3tools/client-runtime/state/provider-instance-display";
-import { summarizeSubagentStatuses } from "@t3tools/client-runtime/state/subagent-display";
-import { isActiveSubagentStatus } from "@t3tools/client-runtime/state/subagentRuntime";
+} from "@satslab/client-runtime/state/provider-instance-display";
+import { summarizeSubagentStatuses } from "@satslab/client-runtime/state/subagent-display";
+import { isActiveSubagentStatus } from "@satslab/client-runtime/state/subagentRuntime";
 import type {
   EnvironmentId,
   OrchestrationV2Subagent,
   OrchestrationV2TurnItem,
   ServerConfig,
-} from "@t3tools/contracts";
+  ServerProvider,
+} from "@satslab/contracts";
 import { Pressable, View, type ColorValue } from "react-native";
 
 import { AppText as Text } from "../../components/ui/AppText";
