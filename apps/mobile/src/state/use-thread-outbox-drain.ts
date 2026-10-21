@@ -1,14 +1,14 @@
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import * as Dialog from "../components/ui/Dialog";
 import { useAtomValue } from "@effect/atom-react";
 import {
   threadRuntimeIsActive,
   type EnvironmentProject,
   type EnvironmentThreadShell,
-} from "@t3tools/client-runtime/state/shell";
-import type { AtomCommandResult } from "@t3tools/client-runtime/state/runtime";
-import { threadFamilyRead, type ThreadFamilyRead } from "@t3tools/client-runtime/state/threads";
-import { deriveThreadTitleSeed } from "@t3tools/client-runtime/operations";
+} from "@satslab/client-runtime/state/shell";
+import type { AtomCommandResult } from "@satslab/client-runtime/state/runtime";
+import { threadFamilyRead, type ThreadFamilyRead } from "@satslab/client-runtime/state/threads";
+import { deriveThreadTitleSeed } from "@satslab/client-runtime/operations";
 import {
   AuthOrchestrationOperateScope,
   CommandId,
@@ -16,8 +16,8 @@ import {
   DEFAULT_RUNTIME_MODE,
   PROVIDER_SEND_TURN_MAX_ATTACHMENTS,
   type MessageId,
-} from "@t3tools/contracts";
-import { buildTemporaryWorktreeBranchName } from "@t3tools/shared/git";
+} from "@satslab/contracts";
+import { buildTemporaryWorktreeBranchName } from "@satslab/shared/git";
 import * as Cause from "effect/Cause";
 import { AsyncResult } from "effect/reactivity";
 import { useCallback, useEffect, useRef, useState } from "react";

@@ -1,14 +1,14 @@
-import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentThreadShell } from "@satslab/client-runtime/state/shell";
 import {
   capitalizeTerm,
   sourceControlClients,
-} from "@t3tools/client-runtime/source-control-clients";
+} from "@satslab/client-runtime/source-control-clients";
 import {
   pullRequestListLines,
   resolveThreadPullRequestChains,
   threadPullRequestKeyOf,
   type PullRequestListLine,
-} from "@t3tools/client-runtime/thread-pull-requests";
+} from "@satslab/client-runtime/thread-pull-requests";
 import { memo, useMemo } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 

@@ -1,11 +1,11 @@
 import {
   composerPullRequestsFromLinks,
   filterComposerPullRequestMatches,
-} from "@t3tools/shared/composerPullRequestMatches";
-import { resolveFilesystemReadAccess } from "@t3tools/client-runtime/state/filesystem";
+} from "@satslab/shared/composerPullRequestMatches";
+import { resolveFilesystemReadAccess } from "@satslab/client-runtime/state/filesystem";
 import { environmentSession } from "./session";
 import { useEnvironmentPresentation } from "./presentation";
-import type { VcsRefTarget } from "@t3tools/client-runtime/state/vcs";
+import type { VcsRefTarget } from "@satslab/client-runtime/state/vcs";
 import type {
   EnvironmentId,
   OrchestrationV2ProjectedTurnItem,
@@ -13,19 +13,19 @@ import type {
   ThreadPullRequestLink,
   VcsListRefsResult,
   VcsRef,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   createThreadSearchResultsAtomFamily,
   makeThreadSearchKey,
   visibleThreadSearch,
   type EnvironmentThreadSearchMatch,
   type SettledThreadSearch,
-} from "@t3tools/client-runtime/state/thread-search";
-import { THREAD_SEARCH_QUERY_MAX_LENGTH } from "@t3tools/contracts";
-import { messageSearchTokens } from "@t3tools/shared/paletteSearch";
+} from "@satslab/client-runtime/state/thread-search";
+import { THREAD_SEARCH_QUERY_MAX_LENGTH } from "@satslab/contracts";
+import { messageSearchTokens } from "@satslab/shared/paletteSearch";
 import { useAtomValue } from "@effect/atom-react";
 import * as Cause from "effect/Cause";
-import { turnItemDetailRevision } from "@t3tools/client-runtime/work-log/item-detail";
+import { turnItemDetailRevision } from "@satslab/client-runtime/work-log/item-detail";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useEffect, useState } from "react";

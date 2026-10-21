@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { GuestMessageId } from "@t3tools/contracts";
+import { GuestMessageId } from "@satslab/contracts";
 
 import { resolveUserMessagePresentation } from "./userMessage.ts";
 
@@ -38,7 +38,7 @@ describe("resolveUserMessagePresentation", () => {
     ).toEqual({ text: "Why?", attribution: "guest", scheduledTaskId: undefined, guestName: "Sam" });
   });
 
-  it("attributes older server-sent restart continuations to T3 Code, not another agent", () => {
+  it("attributes older server-sent restart continuations to Sora, not another agent", () => {
     const text = "Note: the T3 server restarted.";
     expect(
       resolveUserMessagePresentation({
@@ -47,7 +47,7 @@ describe("resolveUserMessagePresentation", () => {
         creationSource: "server",
         text,
       }),
-    ).toMatchObject({ attribution: "t3code" });
+    ).toMatchObject({ attribution: "sora" });
     for (const creationSource of ["mcp", "provider"] as const) {
       expect(
         resolveUserMessagePresentation({ role: "user", createdBy: "agent", creationSource, text }),

@@ -1,11 +1,11 @@
-import { resolvePullRequestDetailChecks } from "@t3tools/client-runtime/pull-request-checks";
+import { resolvePullRequestDetailChecks } from "@satslab/client-runtime/pull-request-checks";
 import {
   AuthSourceControlWriteScope,
   type EnvironmentId,
   type PullRequestDetail,
   type PullRequestListEntry,
   type PullRequestRef,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { useEffect, useEffectEvent, useState } from "react";
 
 import { usePullRequestChecksRefresh } from "~/hooks/usePullRequestChecksRefresh";

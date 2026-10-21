@@ -3,25 +3,25 @@ import type {
   ScopedThreadRef,
   ThreadLinkedPullRequest,
   ThreadPullRequestLink,
-} from "@t3tools/contracts";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+} from "@satslab/contracts";
+import type { EnvironmentProject } from "@satslab/client-runtime/state/shell";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@satslab/client-runtime/state/runtime";
 import {
   planThreadPullRequestMutation,
   threadPullRequestLinkMode,
-} from "@t3tools/client-runtime/thread-pull-request-compatibility";
+} from "@satslab/client-runtime/thread-pull-request-compatibility";
 import {
   threadPullRequestKeysEqual,
   visibleThreadPullRequests,
-} from "@t3tools/client-runtime/thread-pull-requests";
-import { findProjectForChangeRequest } from "@t3tools/client-runtime/change-request-links";
+} from "@satslab/client-runtime/thread-pull-requests";
+import { findProjectForChangeRequest } from "@satslab/client-runtime/change-request-links";
 import {
   sourceControlClients,
   type ChangeRequestLink,
-} from "@t3tools/client-runtime/source-control-clients";
+} from "@satslab/client-runtime/source-control-clients";
 import { useAtomValue } from "@effect/atom-react";
 import { Atom } from "effect/reactivity";
 import { appAtomRegistry } from "~/rpc/atomRegistry";

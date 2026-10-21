@@ -1,4 +1,4 @@
-import { SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlProviderKind } from "@satslab/contracts";
 import * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
@@ -8,7 +8,7 @@ import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
 import * as Schema from "effect/Schema";
 import * as Semaphore from "effect/Semaphore";
-import * as SourceControlRateLimit from "@t3tools/source-control-core/server/SourceControlRateLimit";
+import * as SourceControlRateLimit from "@satslab/source-control-core/server/SourceControlRateLimit";
 
 import * as GitHubCredentials from "./GitHubCredentials.ts";
 import * as GitHubQuota from "./GitHubQuota.ts";
@@ -16,14 +16,14 @@ import * as GitHubQuota from "./GitHubQuota.ts";
 const DEFAULT_TIMEOUT = Duration.seconds(30);
 /** GitHub's secondary limits penalize concurrent bursts. */
 const CONCURRENCY = 8;
-const REQUEST_HEADERS = { "x-github-api-version": "2022-11-28", "user-agent": "t3code" };
+const REQUEST_HEADERS = { "x-github-api-version": "2022-11-28", "user-agent": "sora" };
 
 /** Pin requests to this host's credential across account switches. Keep it out of RPCs/cache keys. */
 export const PinnedGitHubCredential = Context.Reference<{
   readonly host: string;
   readonly token: Redacted.Redacted<string>;
   readonly credentialFingerprint: string;
-} | null>("@t3tools/source-control-github/server/GitHubRequestPolicy/PinnedGitHubCredential", {
+} | null>("@satslab/source-control-github/server/GitHubRequestPolicy/PinnedGitHubCredential", {
   defaultValue: () => null,
 });
 
@@ -198,7 +198,7 @@ export class GitHubRequestPolicy extends Context.Service<
       GitHubApiError
     >;
   }
->()("@t3tools/source-control-github/server/GitHubRequestPolicy") {}
+>()("@satslab/source-control-github/server/GitHubRequestPolicy") {}
 
 /** @public */
 export const make = Effect.gen(function* () {

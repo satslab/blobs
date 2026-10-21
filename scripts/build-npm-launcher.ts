@@ -11,13 +11,13 @@ import * as Schema from "effect/Schema";
 import { Command, Flag } from "effect/cli";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
 
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { fromJsonStringPretty } from "@t3tools/shared/schemaJson";
+import * as HostProcess from "@satslab/shared/HostProcess";
+import { fromJsonStringPretty } from "@satslab/shared/schemaJson";
 import serverPackageJson from "../apps/server/package.json" with { type: "json" };
 
 import { windowsSystemTar } from "./lib/windows-tar.ts";
 
-export const NPM_LAUNCHER_PACKAGE_NAME = "t3";
+export const NPM_LAUNCHER_PACKAGE_NAME = "@satslab/sora";
 
 const encodePackageJson = Schema.encodeEffect(fromJsonStringPretty(Schema.Unknown));
 
@@ -36,10 +36,10 @@ export function npmLauncherPackageManifest(version: string) {
     name: NPM_LAUNCHER_PACKAGE_NAME,
     version,
     description:
-      "T3 Code CLI. Downloads the self-contained executable for this platform from the GitHub Release.",
+      "Sora CLI. Downloads the self-contained executable for this platform from the GitHub Release.",
     license: serverPackageJson.license,
     repository: serverPackageJson.repository,
-    bin: { t3: "./bin/t3.mjs" },
+    bin: { sora: "./bin/sora.mjs" },
     files: ["bin", "dist"],
     engines: { node: ">=20.11" },
   };
@@ -66,16 +66,16 @@ export const buildNpmLauncher = Effect.fn("buildNpmLauncher")(function* (input: 
     path.join(stageDir, "package.json"),
     `${yield* encodePackageJson(npmLauncherPackageManifest(input.version))}\n`,
   );
-  yield* fs.copyFile(path.join(sourceDir, "t3.mjs"), path.join(stageDir, "bin/t3.mjs"));
-  yield* fs.chmod(path.join(stageDir, "bin/t3.mjs"), 0o755);
+  yield* fs.copyFile(path.join(sourceDir, "sora.mjs"), path.join(stageDir, "bin/sora.mjs"));
+  yield* fs.chmod(path.join(stageDir, "bin/sora.mjs"), 0o755);
   yield* fs.copyFile(path.join(sourceDir, "bin.mjs"), path.join(stageDir, "dist/bin.mjs"));
   const readme = yield* path.fromFileUrl(new URL("../apps/server/README.md", import.meta.url));
   if (yield* fs.exists(readme)) {
     yield* fs.copyFile(readme, path.join(stageDir, "README.md"));
   }
 
-  const packageDir = path.join(input.outputDir, NPM_LAUNCHER_PACKAGE_NAME);
-  const tarball = path.join(input.outputDir, `${NPM_LAUNCHER_PACKAGE_NAME}.tgz`);
+  const packageDir = path.join(input.outputDir, "sora");
+  const tarball = path.join(input.outputDir, "satslab-sora.tgz");
   yield* fs.remove(tarball, { force: true });
   const tar = (yield* HostProcess.Platform) === "win32" ? windowsSystemTar() : "tar";
   // npm tarballs root everything under `package/`.
@@ -104,7 +104,7 @@ const command = Command.make(
     outputDir: Flag.String("output-dir").pipe(Flag.withDefault("npm-packages")),
   },
   buildNpmLauncher,
-).pipe(Command.withDescription("Build the t3 npm launcher package."));
+).pipe(Command.withDescription("Build the sora npm launcher package."));
 
 if (import.meta.main) {
   Command.run(command, { version: "0.0.0" }).pipe(

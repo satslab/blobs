@@ -9,9 +9,9 @@ import {
   SOURCE_CONTROL_MEDIA_ASSET,
   ThreadId,
   TurnItemId,
-} from "@t3tools/contracts";
-import { PROJECT_FAVICON_FALLBACK_MARKER } from "@t3tools/shared/projectFavicon";
-import { MCP_APP_MAX_HTML_BYTES } from "@t3tools/shared/mcpApp";
+} from "@satslab/contracts";
+import { PROJECT_FAVICON_FALLBACK_MARKER } from "@satslab/shared/projectFavicon";
+import { MCP_APP_MAX_HTML_BYTES } from "@satslab/shared/mcpApp";
 import { describe, expect, it } from "@effect/vitest";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -33,12 +33,12 @@ import * as WorkspacePaths from "../workspace/WorkspacePaths.ts";
 import { assetFileResponse } from "../http.ts";
 import { ASSET_ROUTE_PREFIX, issueAssetUrl, readMcpAppHtml, resolveAsset } from "./AssetAccess.ts";
 import * as NativeAppIconResolver from "./NativeAppIconResolver.ts";
-import { symlinksSupported } from "@t3tools/shared/testing/symlinks";
-import { fakeSourceControlDriverInstance } from "@t3tools/source-control-testing/fakeSourceControlDriver";
+import { symlinksSupported } from "@satslab/shared/testing/symlinks";
+import { fakeSourceControlDriverInstance } from "@satslab/source-control-testing/fakeSourceControlDriver";
 import * as BuiltInDrivers from "../sourceControl/builtInDrivers.ts";
 import { sourceControlDefinitions } from "../sourceControl/sourceControlDefinitions.ts";
 import { sourceControlMediaResponse } from "./sourceControlMediaResponse.ts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@satslab/shared/HostProcess";
 
 vi.mock("node:fs/promises", async (importOriginal) => {
   const actual = await importOriginal<typeof NodeFSP>();
@@ -67,7 +67,7 @@ const screenshotItem = {
   ordinal: 1,
   status: "completed" as const,
   title: null,
-  toolName: "mcp__t3-code__device_screenshot",
+  toolName: "mcp__sora__device_screenshot",
   input: { deviceId: "phone" },
   output: {
     content: [

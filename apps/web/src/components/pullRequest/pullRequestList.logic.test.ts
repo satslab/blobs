@@ -1,10 +1,10 @@
-import { SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlProviderKind } from "@satslab/contracts";
 import type {
   EnvironmentId,
   ProjectId,
   PullRequestAction,
   PullRequestListEntry,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
@@ -53,7 +53,7 @@ function entry(
     provider: SourceControlProviderKind.make("github"),
     host: "github.com",
     projectId: "project-1",
-    projectTitle: "t3code",
+    projectTitle: "sora",
     repository: "pingdotgg/t3code",
     title: "Add the pull requests page",
     url: `https://github.com/pingdotgg/t3code/pull/${overrides.number}`,

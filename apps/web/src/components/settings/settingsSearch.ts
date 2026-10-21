@@ -1,14 +1,14 @@
 import { HOSTED_APP_CHANNEL } from "~/branding";
 import { isElectron } from "~/env";
 import { isMacPlatform, isWindowsPlatform, normalizeSearchText } from "~/lib/utils";
-import { STATIC_KEYBINDING_COMMANDS, type KeybindingCommand } from "@t3tools/contracts";
-import type { EnvironmentId } from "@t3tools/contracts";
-import type { EnvironmentConnectionPhase } from "@t3tools/client-runtime/connection";
+import { STATIC_KEYBINDING_COMMANDS, type KeybindingCommand } from "@satslab/contracts";
+import type { EnvironmentId } from "@satslab/contracts";
+import type { EnvironmentConnectionPhase } from "@satslab/client-runtime/connection";
 import {
   sourceControlClients,
   type SourceControlDefinition,
-} from "@t3tools/client-runtime/source-control-clients";
-import { DEFAULT_KEYBINDINGS } from "@t3tools/shared/keybindings";
+} from "@satslab/client-runtime/source-control-clients";
+import { DEFAULT_KEYBINDINGS } from "@satslab/shared/keybindings";
 import { commandLabel } from "./KeybindingsSettings.logic";
 import {
   validateSettingsScopeSearch,
@@ -523,7 +523,7 @@ export const SETTINGS_SEARCH_ITEMS = [
     title: "Submodules",
     to: "/settings/general",
     scope: "project-defaults",
-    searchTerms: ["git submodule init recursive top-level none worktree t3.json"],
+    searchTerms: ["git submodule init recursive top-level none worktree sora.json"],
   },
   {
     id: "start-from-origin",
@@ -613,7 +613,7 @@ export const SETTINGS_SEARCH_ITEMS = [
   },
   {
     id: "cli-command",
-    title: "t3 command",
+    title: "sora command",
     to: "/settings/general",
     searchTerms: ["cli terminal shell path install command line"],
     desktopOnly: true,
@@ -840,7 +840,7 @@ export const SETTINGS_SEARCH_ITEMS = [
   },
   {
     id: "pull-request-links-open-in-app",
-    title: "Open pull requests in T3 Code",
+    title: "Open pull requests in Sora",
     to: "/settings/integrations",
     searchTerms: [
       `pr links ${SOURCE_CONTROL_HOST_LABELS} browser external click default pull request view panel`,
@@ -959,7 +959,7 @@ export const SETTINGS_SEARCH_ITEMS = [
     id: "project-actions",
     title: "Actions",
     to: "/settings/projects",
-    searchTerms: ["commands scripts setup run dev server checkout worktree t3.json import"],
+    searchTerms: ["commands scripts setup run dev server checkout worktree sora.json import"],
   },
   {
     id: "environment-icon",
@@ -1021,7 +1021,7 @@ export const SETTINGS_SEARCH_ITEMS = [
     title: "Hold webhooks while offline",
     to: "/settings/connections",
     targetId: "connections-environment",
-    searchTerms: ["webhook automations offline queue mailbox t3 connect"],
+    searchTerms: ["webhook automations offline queue mailbox t3 connect sora connect"],
     cloudOnly: true,
     managedTunnelOnly: true,
   },
@@ -1047,7 +1047,7 @@ export const SETTINGS_SEARCH_ITEMS = [
     title: "Environments",
     to: "/settings/connections",
     searchTerms: [
-      "add pair backend host code ssh config agent tunnel saved t3 connect",
+      "add pair backend host code ssh config agent tunnel saved t3 connect sora connect",
     ],
   },
   {

@@ -3,7 +3,7 @@ import { ProviderInstanceIcon } from "../chat/ProviderInstanceIcon";
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { CheckIcon } from "lucide-react";
 import { useState } from "react";
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { squashAtomCommandFailure } from "@satslab/client-runtime/state/runtime";
 import {
   type AcpRegistrySearchAgent,
   AuthProvidersManageScope,
@@ -12,7 +12,7 @@ import {
   type EnvironmentId,
   type ProviderInstanceConfig,
   type ProviderInstanceEnvironmentVariable,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import {
   useEnvironmentSettings,

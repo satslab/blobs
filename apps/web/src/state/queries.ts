@@ -2,17 +2,17 @@ import { useAtomValue } from "@effect/atom-react";
 import {
   type CheckpointDiffTarget,
   type ComposerPathSearchTarget,
-} from "@t3tools/client-runtime/state/threads";
+} from "@satslab/client-runtime/state/threads";
 import {
   createThreadSearchResultsAtomFamily,
   makeThreadSearchKey,
   visibleThreadSearch,
   type EnvironmentThreadSearchMatch,
   type SettledThreadSearch,
-} from "@t3tools/client-runtime/state/thread-search";
-import { THREAD_SEARCH_QUERY_MAX_LENGTH } from "@t3tools/contracts";
-import { messageSearchTokens } from "@t3tools/shared/paletteSearch";
-import { type VcsRefTarget } from "@t3tools/client-runtime/state/vcs";
+} from "@satslab/client-runtime/state/thread-search";
+import { THREAD_SEARCH_QUERY_MAX_LENGTH } from "@satslab/contracts";
+import { messageSearchTokens } from "@satslab/shared/paletteSearch";
+import { type VcsRefTarget } from "@satslab/client-runtime/state/vcs";
 import type {
   EnvironmentId,
   OrchestrationV2GetTurnItemResult,
@@ -23,7 +23,7 @@ import type {
   TurnItemId,
   VcsListRefsResult,
   VcsRef,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Cause from "effect/Cause";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom } from "effect/reactivity";

@@ -247,7 +247,7 @@ jobs:
         uses: ./.github/actions/setup-ci-deps
 
       - name: Ensure Electron runtime is installed
-        run: vp run --filter @t3tools/desktop ensure:electron
+        run: vp run --filter @satslab/desktop ensure:electron
 
       - name: Check
         run: vp check
@@ -277,7 +277,7 @@ jobs:
         uses: ./.github/actions/setup-ci-deps
 
       - name: Ensure Electron runtime is installed
-        run: vp run --filter @t3tools/desktop ensure:electron
+        run: vp run --filter @satslab/desktop ensure:electron
 
       - uses: ./.github/actions/setup-apt-mirrors
 
@@ -287,7 +287,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y libsecret-1-dev pkg-config build-essential
 
       - name: Test
-        run: vp run --parallel --concurrency-limit 4 --filter '!t3' --filter '!@t3tools/monorepo' --filter '!@t3tools/web' test
+        run: vp run --parallel --concurrency-limit 4 --filter '!t3' --filter '!@satslab/monorepo' --filter '!@satslab/web' test
 
   # Web browser tests time out when they share a runner with the other package
   # suites: Chromium gets too little CPU and diff workers miss their 10s start budget.
@@ -334,7 +334,7 @@ jobs:
           fi
 
       - name: Test
-        run: vp run --filter @t3tools/web test
+        run: vp run --filter @satslab/web test
 
   # Server test files run one at a time, so more small runners beat fewer big ones.
   test_server:
@@ -362,7 +362,7 @@ jobs:
 
       # No Electron setup here: `t3` (apps/server) has no Electron dependency
       # and none of its tests touch the runtime. Only the non-server `test`
-      # job, which covers @t3tools/desktop, needs the download.
+      # job, which covers @satslab/desktop, needs the download.
       - name: Install Chromium for server browser integration tests
         run: node apps/server/node_modules/playwright-core/cli.js install --with-deps --only-shell chromium
 
@@ -434,9 +434,9 @@ jobs:
           token="$(field clientTracingToken)"
           echo "::add-mask::$token"
           {
-            echo "T3CODE_RELAY_CLIENT_OTLP_TRACES_URL=$url"
-            echo "T3CODE_RELAY_CLIENT_OTLP_TRACES_DATASET=$dataset"
-            echo "T3CODE_RELAY_CLIENT_OTLP_TRACES_TOKEN=$token"
+            echo "SORA_RELAY_CLIENT_OTLP_TRACES_URL=$url"
+            echo "SORA_RELAY_CLIENT_OTLP_TRACES_DATASET=$dataset"
+            echo "SORA_RELAY_CLIENT_OTLP_TRACES_TOKEN=$token"
           } > "$RUNNER_TEMP/relay-client-tracing.env"
 
       - name: Upload relay client tracing config
@@ -492,10 +492,10 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     env:
-      T3CODE_CLERK_PUBLISHABLE_KEY: ${{ needs.relay_public_config.outputs.clerk_publishable_key }}
-      T3CODE_CLERK_JWT_TEMPLATE: ${{ needs.relay_public_config.outputs.clerk_jwt_template }}
-      T3CODE_CLERK_CLI_OAUTH_CLIENT_ID: ${{ needs.relay_public_config.outputs.clerk_cli_oauth_client_id }}
-      T3CODE_RELAY_URL: ${{ needs.relay_public_config.outputs.relay_url }}
+      SORA_CLERK_PUBLISHABLE_KEY: ${{ needs.relay_public_config.outputs.clerk_publishable_key }}
+      SORA_CLERK_JWT_TEMPLATE: ${{ needs.relay_public_config.outputs.clerk_jwt_template }}
+      SORA_CLERK_CLI_OAUTH_CLIENT_ID: ${{ needs.relay_public_config.outputs.clerk_cli_oauth_client_id }}
+      SORA_RELAY_URL: ${{ needs.relay_public_config.outputs.relay_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -525,7 +525,7 @@ jobs:
       - name: Install bundle dependencies
         env:
           pnpm_config_cache_dir: ${{ runner.temp }}/pnpm-metadata
-        run: vp install --filter=t3... --filter=@t3tools/web... --filter=@t3tools/desktop... --filter=@t3tools/scripts...
+        run: vp install --filter=t3... --filter=@satslab/web... --filter=@satslab/desktop... --filter=@satslab/scripts...
 
       - name: Download relay client tracing config
         uses: actions/download-artifact@v8
@@ -537,7 +537,7 @@ jobs:
         shell: bash
         run: |
           config_path="$RUNNER_TEMP/relay-client-tracing/relay-client-tracing.env"
-          tracing_token="$(sed -n 's/^T3CODE_RELAY_CLIENT_OTLP_TRACES_TOKEN=//p' "$config_path")"
+          tracing_token="$(sed -n 's/^SORA_RELAY_CLIENT_OTLP_TRACES_TOKEN=//p' "$config_path")"
           echo "::add-mask::$tracing_token"
           cat "$config_path" >> "$GITHUB_ENV"
 
@@ -546,19 +546,19 @@ jobs:
 
       - uses: ./.github/actions/setup-apt-mirrors
 
-      # @t3tools/desktop#build compiles the Linux browser secret helper on a
+      # @satslab/desktop#build compiles the Linux browser secret helper on a
       # Linux host before packing, and that needs libsecret headers.
       - name: Install browser secret helper build libraries
         run: sudo apt-get update && sudo apt-get install -y libsecret-1-dev pkg-config
 
-      # Runs t3#build (which depends on @t3tools/web#build) and
-      # @t3tools/desktop#build, so apps/server/dist holds the server bundle
+      # Runs t3#build (which depends on @satslab/web#build) and
+      # @satslab/desktop#build, so apps/server/dist holds the server bundle
       # plus the web client and apps/desktop/dist-electron the Electron main.
       # The release channel is already stable, nightly, or preview. Builds in
       # other repositories report "dev" telemetry.
       - name: Build JS bundle
         env:
-          T3CODE_TELEMETRY_CHANNEL: ${{ github.repository == 'pingdotgg/t3code' && needs.preflight.outputs.release_channel || 'dev' }}
+          SORA_TELEMETRY_CHANNEL: ${{ github.repository == 'pingdotgg/t3code' && needs.preflight.outputs.release_channel || 'dev' }}
         run: vp run build:desktop
 
       # Two paths under apps/ so the artifact root is apps/; consumers download
@@ -770,7 +770,7 @@ jobs:
           cache: true
           run-install: |
             args:
-              - --filter=@t3tools/scripts...
+              - --filter=@satslab/scripts...
 
       - name: Download all desktop artifacts
         uses: actions/download-artifact@v8
@@ -967,7 +967,7 @@ jobs:
           run-install: |
             args:
               - --filter=t3...
-              - --filter=@t3tools/scripts...
+              - --filter=@satslab/scripts...
 
       - name: Build the npm launcher
         run: node scripts/build-npm-launcher.ts --version "${{ needs.preflight.outputs.version }}" --output-dir npm-packages
@@ -1004,14 +1004,14 @@ jobs:
     outputs:
       deployment_url: ${{ steps.deploy.outputs.deployment_url }}
     env:
-      T3CODE_CLERK_PUBLISHABLE_KEY: ${{ needs.relay_public_config.outputs.clerk_publishable_key }}
-      T3CODE_CLERK_JWT_TEMPLATE: ${{ needs.relay_public_config.outputs.clerk_jwt_template }}
-      T3CODE_CLERK_CLI_OAUTH_CLIENT_ID: ${{ needs.relay_public_config.outputs.clerk_cli_oauth_client_id }}
-      T3CODE_RELAY_URL: ${{ needs.relay_public_config.outputs.relay_url }}
+      SORA_CLERK_PUBLISHABLE_KEY: ${{ needs.relay_public_config.outputs.clerk_publishable_key }}
+      SORA_CLERK_JWT_TEMPLATE: ${{ needs.relay_public_config.outputs.clerk_jwt_template }}
+      SORA_CLERK_CLI_OAUTH_CLIENT_ID: ${{ needs.relay_public_config.outputs.clerk_cli_oauth_client_id }}
+      SORA_RELAY_URL: ${{ needs.relay_public_config.outputs.relay_url }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      T3CODE_WEB_ROUTER_URL: ${{ vars.T3CODE_WEB_ROUTER_URL }}
+      SORA_WEB_ROUTER_URL: ${{ vars.SORA_WEB_ROUTER_URL }}
       VERCEL_TEAM_SLUG: ${{ vars.VERCEL_TEAM_SLUG }}
     steps:
       - name: Checkout
@@ -1030,8 +1030,8 @@ jobs:
           cache: true
           run-install: |
             args:
-              - --filter=@t3tools/scripts...
-              - --filter=@t3tools/web...
+              - --filter=@satslab/scripts...
+              - --filter=@satslab/web...
 
       - name: Download relay client tracing config
         uses: actions/download-artifact@v8
@@ -1043,7 +1043,7 @@ jobs:
         shell: bash
         run: |
           config_path="$RUNNER_TEMP/relay-client-tracing/relay-client-tracing.env"
-          tracing_token="$(sed -n 's/^T3CODE_RELAY_CLIENT_OTLP_TRACES_TOKEN=//p' "$config_path")"
+          tracing_token="$(sed -n 's/^SORA_RELAY_CLIENT_OTLP_TRACES_TOKEN=//p' "$config_path")"
           echo "::add-mask::$tracing_token"
           cat "$config_path" >> "$GITHUB_ENV"
 
@@ -1064,7 +1064,7 @@ jobs:
             exit 1
           fi
 
-          router_url="${T3CODE_WEB_ROUTER_URL:-https://app.t3.codes}"
+          router_url="${SORA_WEB_ROUTER_URL:-https://app.t3.codes}"
           if [[ "${{ needs.preflight.outputs.release_channel }}" == "stable" ]]; then
             channel_name="latest"
           else
@@ -1081,13 +1081,13 @@ jobs:
               --token "$VERCEL_TOKEN" \
               --scope "${VERCEL_TEAM_SLUG:-$VERCEL_ORG_ID}" \
               --build-env "APP_VERSION=${{ needs.preflight.outputs.version }}" \
-              --build-env "T3CODE_CLERK_PUBLISHABLE_KEY=${T3CODE_CLERK_PUBLISHABLE_KEY:-}" \
-              --build-env "T3CODE_CLERK_JWT_TEMPLATE=${T3CODE_CLERK_JWT_TEMPLATE:-}" \
-              --build-env "T3CODE_CLERK_CLI_OAUTH_CLIENT_ID=${T3CODE_CLERK_CLI_OAUTH_CLIENT_ID:-}" \
-              --build-env "T3CODE_RELAY_URL=${T3CODE_RELAY_URL:-}" \
-              --build-env "T3CODE_RELAY_CLIENT_OTLP_TRACES_URL=${T3CODE_RELAY_CLIENT_OTLP_TRACES_URL:-}" \
-              --build-env "T3CODE_RELAY_CLIENT_OTLP_TRACES_DATASET=${T3CODE_RELAY_CLIENT_OTLP_TRACES_DATASET:-}" \
-              --build-env "T3CODE_RELAY_CLIENT_OTLP_TRACES_TOKEN=${T3CODE_RELAY_CLIENT_OTLP_TRACES_TOKEN:-}" \
+              --build-env "SORA_CLERK_PUBLISHABLE_KEY=${SORA_CLERK_PUBLISHABLE_KEY:-}" \
+              --build-env "SORA_CLERK_JWT_TEMPLATE=${SORA_CLERK_JWT_TEMPLATE:-}" \
+              --build-env "SORA_CLERK_CLI_OAUTH_CLIENT_ID=${SORA_CLERK_CLI_OAUTH_CLIENT_ID:-}" \
+              --build-env "SORA_RELAY_URL=${SORA_RELAY_URL:-}" \
+              --build-env "SORA_RELAY_CLIENT_OTLP_TRACES_URL=${SORA_RELAY_CLIENT_OTLP_TRACES_URL:-}" \
+              --build-env "SORA_RELAY_CLIENT_OTLP_TRACES_DATASET=${SORA_RELAY_CLIENT_OTLP_TRACES_DATASET:-}" \
+              --build-env "SORA_RELAY_CLIENT_OTLP_TRACES_TOKEN=${SORA_RELAY_CLIENT_OTLP_TRACES_TOKEN:-}" \
               --build-env "VITE_HOSTED_APP_URL=$router_url" \
               --build-env "VITE_HOSTED_APP_CHANNEL=$channel_name"
           )"
@@ -1112,9 +1112,9 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      T3CODE_WEB_ROUTER_URL: ${{ vars.T3CODE_WEB_ROUTER_URL }}
-      T3CODE_WEB_LATEST_DOMAIN: ${{ vars.T3CODE_WEB_LATEST_DOMAIN }}
-      T3CODE_WEB_NIGHTLY_DOMAIN: ${{ vars.T3CODE_WEB_NIGHTLY_DOMAIN }}
+      SORA_WEB_ROUTER_URL: ${{ vars.SORA_WEB_ROUTER_URL }}
+      SORA_WEB_LATEST_DOMAIN: ${{ vars.SORA_WEB_LATEST_DOMAIN }}
+      SORA_WEB_NIGHTLY_DOMAIN: ${{ vars.SORA_WEB_NIGHTLY_DOMAIN }}
       VERCEL_TEAM_SLUG: ${{ vars.VERCEL_TEAM_SLUG }}
     steps:
       - name: Checkout
@@ -1143,9 +1143,9 @@ jobs:
             exit 1
           fi
 
-          router_url="${T3CODE_WEB_ROUTER_URL:-https://app.t3.codes}"
-          latest_domain="${T3CODE_WEB_LATEST_DOMAIN:-latest.app.t3.codes}"
-          nightly_domain="${T3CODE_WEB_NIGHTLY_DOMAIN:-nightly.app.t3.codes}"
+          router_url="${SORA_WEB_ROUTER_URL:-https://app.t3.codes}"
+          latest_domain="${SORA_WEB_LATEST_DOMAIN:-latest.app.t3.codes}"
+          nightly_domain="${SORA_WEB_NIGHTLY_DOMAIN:-nightly.app.t3.codes}"
           router_domain="${router_url#http://}"
           router_domain="${router_domain#https://}"
           router_domain="${router_domain%%/*}"
@@ -1205,7 +1205,7 @@ jobs:
           cache: true
           run-install: |
             args:
-              - --filter=@t3tools/marketing...
+              - --filter=@satslab/marketing...
 
       - id: deploy
         name: Build staged deployment
@@ -1335,8 +1335,8 @@ jobs:
           cache: true
           run-install: |
             args:
-              - --filter=@t3tools/scripts...
-              - --filter=@t3tools/oxlint-plugin-t3code...
+              - --filter=@satslab/scripts...
+              - --filter=@satslab/oxlint-plugin-t3code...
 
       - id: update_versions
         name: Update version strings
@@ -1400,7 +1400,7 @@ jobs:
           cache: true
           run-install: |
             args:
-              - --filter=@t3tools/scripts...
+              - --filter=@satslab/scripts...
 
       - name: Read published release notes
         if: needs.preflight.outputs.is_prerelease == 'true'

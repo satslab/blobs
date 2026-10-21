@@ -1,9 +1,9 @@
-import type { OrchestrationThreadSearchMatch } from "@t3tools/contracts";
+import type { OrchestrationThreadSearchMatch } from "@satslab/contracts";
 import {
   findSearchTokenRanges,
   messagePhrase,
   messageSearchTokens,
-} from "@t3tools/shared/paletteSearch";
+} from "@satslab/shared/paletteSearch";
 import type { ThreadFindStart } from "./threadFind";
 
 const THREAD_FIND_OPEN_EVENT = "t3:thread-find-open";

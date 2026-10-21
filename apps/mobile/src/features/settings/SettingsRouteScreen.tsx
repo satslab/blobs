@@ -22,7 +22,7 @@ import { Platform, View } from "react-native";
 import { useWorkspaceSurface } from "../workspace/useWorkspaceSurface";
 import { useDeviceType } from "../../native/native-layout-metrics";
 import { useCompactWorkspaceTabs } from "../workspace/useSystemWorkspaceTabBar";
-import { deriveProjectGroupLabel } from "@t3tools/client-runtime/state/project-grouping";
+import { deriveProjectGroupLabel } from "@satslab/client-runtime/state/project-grouping";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { hasCloudPublicConfig } from "../cloud/publicConfig";
@@ -254,7 +254,7 @@ function SettingsIndexSections() {
       </SettingsSection>
 
       <SettingsSection title="App">
-        <SettingsRow icon="info.circle" label="About T3 Code" target="SettingsAbout" />
+        <SettingsRow icon="info.circle" label="About Sora" target="SettingsAbout" />
       </SettingsSection>
     </>
   );

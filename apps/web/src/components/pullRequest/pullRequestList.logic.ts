@@ -1,4 +1,4 @@
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import * as Schema from "effect/Schema";
 
 import {
@@ -7,7 +7,7 @@ import {
   PullRequestListProjectError,
   PullRequestListResult,
   resolvePullRequestAuthorFilter,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import type {
   ProjectId,
   RepositoryIdentity,
@@ -20,7 +20,7 @@ import type {
   PullRequestListFilters,
   PullRequestListState,
   PullRequestState,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import { toSortableTimestamp } from "../../lib/threadSort";
 import type { PullRequestListSort } from "./pullRequestListPreferences";

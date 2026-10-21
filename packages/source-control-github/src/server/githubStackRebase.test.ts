@@ -5,8 +5,8 @@ import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
 
-import * as SourceControlHost from "@t3tools/source-control-core/server/SourceControlHost";
-import * as TestSourceControlHost from "@t3tools/source-control-testing/TestSourceControlHost";
+import * as SourceControlHost from "@satslab/source-control-core/server/SourceControlHost";
+import * as TestSourceControlHost from "@satslab/source-control-testing/TestSourceControlHost";
 
 import * as GitHubRest from "./GitHubRest.ts";
 import { cascadeRebaseStack } from "./githubStackRebase.ts";

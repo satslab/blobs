@@ -1,9 +1,9 @@
 import {
   resolveChangeRequestLinkTarget,
   type ChangeRequestLinkCapabilities,
-} from "@t3tools/client-runtime/change-request-links";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import { EnvironmentId, ProjectId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/change-request-links";
+import type { EnvironmentProject } from "@satslab/client-runtime/state/shell";
+import { EnvironmentId, ProjectId } from "@satslab/contracts";
 
 /** The PullRequest route for a change request link from a project, or null for the browser. */
 export function nativePullRequestDestination(

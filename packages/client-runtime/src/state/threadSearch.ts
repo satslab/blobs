@@ -3,7 +3,7 @@ import {
   OrchestrationSearchThreadsInput,
   type OrchestrationSearchThreadsResult,
   type OrchestrationThreadSearchMatch,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import { AsyncResult, Atom } from "effect/reactivity";
@@ -11,8 +11,8 @@ import {
   foldSearchQuery,
   THREAD_OPEN_DEDUPE_MS,
   type ThreadSearchSubject,
-} from "@t3tools/shared/paletteSearch";
-import { threadSearchPullRequests } from "@t3tools/shared/threadPullRequests";
+} from "@satslab/shared/paletteSearch";
+import { threadSearchPullRequests } from "@satslab/shared/threadPullRequests";
 
 import type { EnvironmentThreadShell } from "./models.ts";
 import { getThreadSortTimestamp } from "./threadSort.ts";

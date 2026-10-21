@@ -1,10 +1,10 @@
 import { useAtomValue } from "@effect/atom-react";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import {
   createLinkedPullRequestSummaryAtomFamily,
   createPullRequestEnvironmentAtoms,
   createPullRequestStackAtomFamily,
-} from "@t3tools/client-runtime/state/pull-requests";
+} from "@satslab/client-runtime/state/pull-requests";
 import type {
   EnvironmentId,
   ProjectId,
@@ -15,11 +15,11 @@ import type {
   PullRequestRef,
   PullRequestSummary,
   ThreadPullRequestLink,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   threadPullRequestKeyOf,
   visibleThreadPullRequests,
-} from "@t3tools/client-runtime/thread-pull-requests";
+} from "@satslab/client-runtime/thread-pull-requests";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useLayoutEffect } from "react";
