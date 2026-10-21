@@ -34,7 +34,7 @@ The orchestration tools share the existing authenticated HTTP MCP endpoint:
 http://127.0.0.1:<server-port>/mcp
 ```
 
-The provider-visible server key is `t3-code`. The endpoint registers both the
+The provider-visible server key is `blobs`. The endpoint registers both the
 preview toolkit and the orchestration toolkit.
 
 Before `ProviderSessionManager` opens a new V2 provider session, it asks
@@ -62,11 +62,11 @@ Codex app-server receives the remote MCP server through command-line config
 overrides:
 
 ```text
--c mcp_servers.t3-code.url=http://127.0.0.1:<port>/mcp
--c mcp_servers.t3-code.bearer_token_env_var="T3_MCP_BEARER_TOKEN"
+-c mcp_servers.blobs.url=http://127.0.0.1:<port>/mcp
+-c mcp_servers.blobs.bearer_token_env_var="BLOBS_MCP_BEARER_TOKEN"
 ```
 
-The provider-session token is placed in `T3_MCP_BEARER_TOKEN`. Both the
+The provider-session token is placed in `BLOBS_MCP_BEARER_TOKEN`. Both the
 production Codex launcher and the injectable test launcher use the same
 projection helper.
 
@@ -77,7 +77,7 @@ Claude receives an HTTP MCP server in its query options:
 ```ts
 {
   mcpServers: {
-    "t3-code": {
+    "blobs": {
       type: "http",
       url: "http://127.0.0.1:<port>/mcp",
       headers: {
@@ -87,7 +87,7 @@ Claude receives an HTTP MCP server in its query options:
   },
   allowedTools: [
     // existing allowed tools
-    "mcp__t3-code__*",
+    "mcp__blobs__*",
   ],
 }
 ```
@@ -155,11 +155,11 @@ extension into the server cache and spawns
 `pi --mode rpc --extension <cache>/pi-t3-mcp-extension.ts` with:
 
 ```text
-T3_MCP_URL=http://127.0.0.1:<port>/mcp
-T3_MCP_BEARER_TOKEN=<provider-session-token>
+BLOBS_MCP_URL=http://127.0.0.1:<port>/mcp
+BLOBS_MCP_BEARER_TOKEN=<provider-session-token>
 ```
 
-The extension preserves public names under `mcp__t3-code__` for saved loadouts
+The extension preserves public names under `mcp__blobs__` for saved loadouts
 and tool selectors. Modern Pi also receives hidden `mcp__t3_code__` aliases,
 which reserve the normalized namespace against configured MCP servers without
 adding declarations or search results. On Pi 0.99+,
@@ -252,14 +252,13 @@ omits it for a provider that offers all of them. When the target lists
 `runtimeModes`, an explicit `runtimeMode` outside that list is refused, and an
 inherited mode steps down to the broadest mode the target offers.
 
-Each independent delegated review round uses a new `delegate_task` call with the
-original brief, prior findings, responses, and unresolved objections. Track each
-round by its own `taskId` and use a distinct `clientRequestId` per round, stable
-across retries of that round.
-A follow-up that needs the same child's conversation goes through `t3_thread_send`
-on its `childThreadId`. After the original task completes, that follow-up runs as a
-fresh task in the child thread; it does not reopen the completed task or change its
-published result.
+Each delegated review round uses a new `delegate_task` call with the original brief,
+prior findings, responses, and unresolved objections. Track each round by its own `taskId` and use
+a distinct `clientRequestId` per round, stable across retries of that round.
+`childThreadId` is backing storage, not a target for another review round through
+`t3_thread_send`. Ordinary thread messaging remains available for user-requested
+conversations; it does not reopen a completed task. There is no task-level follow-up
+API for preserving the same reviewer session.
 
 Delegation requires an active parent run owned by the MCP credential's
 provider session. The request becomes the V2 command

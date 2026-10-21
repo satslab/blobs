@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { ChatAttachmentId } from "@t3tools/contracts";
-import { ATTACHMENT_ONLY_BOOTSTRAP_PROMPT } from "@t3tools/shared/composerContextReferences";
+import { ChatAttachmentId } from "@satslab/contracts";
+import { ATTACHMENT_ONLY_BOOTSTRAP_PROMPT } from "@satslab/shared/composerContextReferences";
 import { formatThreadTitleContext } from "./threadTitleContext.ts";
 
 describe("thread title context", () => {

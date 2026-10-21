@@ -1,12 +1,12 @@
-import * as AzureDevOps from "@t3tools/source-control-azure-devops/shared/definition";
-import * as Bitbucket from "@t3tools/source-control-bitbucket/shared/definition";
-import { makeSourceControlDefinitionRegistry } from "@t3tools/source-control-core/shared/definition";
-import * as Forgejo from "@t3tools/source-control-forgejo/shared/definition";
-import * as GitCafe from "@t3tools/source-control-gitcafe/shared/definition";
-import * as GitHub from "@t3tools/source-control-github/shared/definition";
-import * as GitLab from "@t3tools/source-control-gitlab/shared/definition";
+import * as AzureDevOps from "@satslab/source-control-azure-devops/shared/definition";
+import * as Bitbucket from "@satslab/source-control-bitbucket/shared/definition";
+import { makeSourceControlDefinitionRegistry } from "@satslab/source-control-core/shared/definition";
+import * as Forgejo from "@satslab/source-control-forgejo/shared/definition";
+import * as GitCafe from "@satslab/source-control-gitcafe/shared/definition";
+import * as GitHub from "@satslab/source-control-github/shared/definition";
+import * as GitLab from "@satslab/source-control-gitlab/shared/definition";
 
-export { canonicalizePullRequestUrl as canonicalizeGitCafePullRequestUrl } from "@t3tools/source-control-gitcafe/shared/definition";
+export { canonicalizePullRequestUrl as canonicalizeGitCafePullRequestUrl } from "@satslab/source-control-gitcafe/shared/definition";
 
 /**
  * GitHub comes first to preserve the client default for repositories with an unknown host.

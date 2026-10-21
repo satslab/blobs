@@ -3,7 +3,7 @@ pkg/
 *.AppImage
 *.pkg.tar.zst
 .SRCINFO
-t3code-bin-*.png
-t3code-bin-*-LICENSE
-t3code-nightly-bin-*.png
-t3code-nightly-bin-*-LICENSE
+blobs-bin-*.png
+blobs-bin-*-LICENSE
+blobs-nightly-bin-*.png
+blobs-nightly-bin-*-LICENSE

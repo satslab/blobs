@@ -1,10 +1,10 @@
 import { useOrchestrationCommand } from "../../state/use-orchestration-command";
-import { AuthOrchestrationOperateScope } from "@t3tools/contracts";
+import { AuthOrchestrationOperateScope } from "@satslab/contracts";
 import { useEnvironmentsWithScope } from "../../state/session";
-import { mapAtomCommandResult, settlePromise } from "@t3tools/client-runtime/state/runtime";
-import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { planProjectRemoval } from "@t3tools/client-runtime/state/projects";
-import { type EnvironmentId } from "@t3tools/contracts";
+import { mapAtomCommandResult, settlePromise } from "@satslab/client-runtime/state/runtime";
+import { scopeProjectRef, scopeThreadRef } from "@satslab/client-runtime/environment";
+import { planProjectRemoval } from "@satslab/client-runtime/state/projects";
+import { type EnvironmentId } from "@satslab/contracts";
 import {
   checkProjectAccess,
   reportProjectFailure,

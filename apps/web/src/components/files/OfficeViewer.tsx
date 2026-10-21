@@ -1,6 +1,6 @@
 /* oxlint-disable react/no-array-index-key -- Spreadsheet rows and columns retain their source positions. */
-import { formatAttachmentSize } from "@t3tools/client-runtime/state/attachments";
-import type { OfficePreviewKind } from "@t3tools/shared/filePreview";
+import { formatAttachmentSize } from "@satslab/client-runtime/state/attachments";
+import type { OfficePreviewKind } from "@satslab/shared/filePreview";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 

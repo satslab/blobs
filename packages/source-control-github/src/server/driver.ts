@@ -1,9 +1,9 @@
-import { SourceControlSignInError, type SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlSignInError, type SourceControlProviderKind } from "@satslab/contracts";
 import {
   defineSourceControlDriver,
   withOwnServices,
   type SourceControlSignIn,
-} from "@t3tools/source-control-core/server/driver";
+} from "@satslab/source-control-core/server/driver";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 

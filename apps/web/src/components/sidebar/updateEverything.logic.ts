@@ -1,4 +1,4 @@
-import type { ServerUpdateState } from "@t3tools/client-runtime/state/server";
+import type { ServerUpdateState } from "@satslab/client-runtime/state/server";
 import {
   type DesktopUpdateChannel,
   type EnvironmentId,
@@ -6,9 +6,9 @@ import {
   managedUpdatesDenial,
   type ServerConfig,
   type ServerSelfUpdateCapability,
-} from "@t3tools/contracts";
-import { cliReleaseChannelOf, desktopUpdateChannelOf } from "@t3tools/shared/cliRelease";
-import { compareSemverVersions } from "@t3tools/shared/semver";
+} from "@satslab/contracts";
+import { cliReleaseChannelOf, desktopUpdateChannelOf } from "@satslab/shared/cliRelease";
+import { compareSemverVersions } from "@satslab/shared/semver";
 
 import {
   resolveServerSelfUpdateCapability,

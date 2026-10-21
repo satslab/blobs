@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { upgradeLegacyContextMessage } from "@t3tools/shared/composerContextLegacy";
-import { formatComposerContextReference } from "@t3tools/shared/composerContextReferences";
+import { upgradeLegacyContextMessage } from "@satslab/shared/composerContextLegacy";
+import { formatComposerContextReference } from "@satslab/shared/composerContextReferences";
 
 import { pullRequestComposerContext } from "../../lib/composerContext";
 

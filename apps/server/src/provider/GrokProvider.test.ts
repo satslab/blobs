@@ -15,16 +15,16 @@ import { HttpClient, HttpClientResponse } from "effect/http";
 import * as ChildProcess from "effect/process/ChildProcess";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 import * as TestClock from "effect/testing/TestClock";
-import { GrokSettings } from "@t3tools/provider-grok/settings";
+import { GrokSettings } from "@satslab/provider-grok/settings";
 
 import {
   buildGrokModelCapabilities,
   checkGrokProviderStatus,
   grokSlashCommandsFromInitialize,
   parseGrokModelsCliOutput,
-} from "@t3tools/provider-grok/testing";
-import { execScriptSource, writeFakeCli } from "@t3tools/provider-testing/fakeCli";
-import { grokUsageResponseToLimits, readGrokAccount } from "@t3tools/provider-grok/testing";
+} from "@satslab/provider-grok/testing";
+import { execScriptSource, writeFakeCli } from "@satslab/provider-testing/fakeCli";
+import { grokUsageResponseToLimits, readGrokAccount } from "@satslab/provider-grok/testing";
 
 const decodeGrokSettings = Schema.decodeSync(GrokSettings);
 const __dirname = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
@@ -203,7 +203,7 @@ it.layer(NodeServices.layer)("checkGrokProviderStatus", (it) => {
       const snapshot = yield* Effect.scoped(
         Effect.gen(function* () {
           const fs = yield* FileSystem.FileSystem;
-          const dir = yield* fs.makeTempDirectoryScoped({ prefix: "t3code-grok-version-" });
+          const dir = yield* fs.makeTempDirectoryScoped({ prefix: "blobs-grok-version-" });
           const grokPath = writeFakeCli({
             directory: dir,
             name: "grok",
@@ -300,7 +300,7 @@ it.layer(NodeServices.layer)("checkGrokProviderStatus", (it) => {
   }) =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
-      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "t3code-grok-probe-" });
+      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "blobs-grok-probe-" });
       const mockAgentPath = NodePath.resolve(__dirname, "../../scripts/acp-mock-agent.ts");
       return writeFakeCli({
         directory: dir,
@@ -340,7 +340,7 @@ it.layer(NodeServices.layer)("checkGrokProviderStatus", (it) => {
       const { snapshot, updateRan } = yield* Effect.scoped(
         Effect.gen(function* () {
           const fs = yield* FileSystem.FileSystem;
-          const dir = yield* fs.makeTempDirectoryScoped({ prefix: "t3code-grok-updater-" });
+          const dir = yield* fs.makeTempDirectoryScoped({ prefix: "blobs-grok-updater-" });
           const updateLogPath = NodePath.join(dir, "updates.log");
           const grokPath = yield* writeFakeGrokCli({
             modelsOutput: LOGGED_IN_MODELS_OUTPUT,

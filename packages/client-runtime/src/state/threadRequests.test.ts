@@ -9,7 +9,7 @@ import {
   RuntimeRequestId,
   TurnItemId,
   type OrchestrationV2ThreadProjection,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { Atom, AtomRegistry, AsyncResult } from "effect/reactivity";
 import * as Cause from "effect/Cause";

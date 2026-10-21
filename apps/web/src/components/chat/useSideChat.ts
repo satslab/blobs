@@ -1,11 +1,11 @@
-import type { ScopedThreadRef } from "@t3tools/contracts";
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { deriveThreadTitleSeed } from "@t3tools/client-runtime/operations";
+import type { ScopedThreadRef } from "@satslab/contracts";
+import { scopeThreadRef } from "@satslab/client-runtime/environment";
+import { deriveThreadTitleSeed } from "@satslab/client-runtime/operations";
 import {
   type AtomCommandResult,
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@satslab/client-runtime/state/runtime";
 import { useRef } from "react";
 
 import { newMessageId, newThreadId } from "~/lib/utils";

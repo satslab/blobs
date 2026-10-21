@@ -1,10 +1,12 @@
 import { useAtomValue } from "@effect/atom-react";
-import { PROVIDER_DISPLAY_NAMES } from "@t3tools/contracts";
+import { PROVIDER_DISPLAY_NAMES } from "@satslab/contracts";
 
 import { APP_VERSION } from "~/branding";
 import { isDesktopLocalConnectionTarget } from "~/connection/desktopLocal";
 import { isElectron } from "~/env";
 import { useEnvironments } from "~/state/environments";
+import { cliReleaseChannelOf } from "@satslab/shared/cliRelease";
+import { useLatestCliRelease } from "~/state/cliRelease";
 import { environmentIdsKey } from "~/state/environmentAtomList";
 import { environmentUpdateStatesAtom } from "~/state/server";
 import { environmentSessionStatesAtom } from "~/state/session";
@@ -52,7 +54,8 @@ export function useUpdateEverything(
   localUpdateVersion: string | null,
   channelSwitch?: ChannelSwitchRelease,
 ) {
-  const targetVersion = localUpdateVersion ?? APP_VERSION;
+  const latestRelease = useLatestCliRelease(cliReleaseChannelOf(APP_VERSION));
+  const targetVersion = localUpdateVersion ?? latestRelease.data ?? APP_VERSION;
   const { environments } = useEnvironments();
   const environmentIds = environmentIdsKey(environments.map(({ environmentId }) => environmentId));
   const sessionStates = useAtomValue(environmentSessionStatesAtom(environmentIds));
@@ -92,6 +95,10 @@ export function useUpdateEverything(
   });
 
   return {
+    checkForUpdates: latestRelease.refresh,
+    isChecking: latestRelease.isPending,
+    checkError: latestRelease.error,
+    latestVersion: latestRelease.data ?? null,
     hasUpdates: servers.length > 0 || providers.machines.length > 0,
     ...view,
     restarts,

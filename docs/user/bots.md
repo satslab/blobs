@@ -33,7 +33,7 @@ For work in another project, the bot starts an ordinary thread in that project.
 It uses your configured providers, models, and options, and receives delegated results through T3 Code's existing notifications.
 Launched threads report results back to the bot unless you choose to take over the thread.
 A bot can also show visualizations, inspect browser and device views when enabled, and track pull requests.
-When no reply is needed in Sora, the bot can finish silently; `NO_UPDATES` responses are hidden from the transcript.
+When no reply is needed in Blobs, the bot can finish silently; `NO_UPDATES` responses are hidden from the transcript.
 
 ## Choose whether replies load instructions and skills
 

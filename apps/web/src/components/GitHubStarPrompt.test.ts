@@ -1,4 +1,4 @@
-import { EnvironmentId } from "@t3tools/contracts";
+import { EnvironmentId } from "@satslab/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { toastManager } from "./ui/toast";
@@ -10,7 +10,7 @@ const { add, starred } = vi.hoisted(() => ({
 vi.mock("./ui/toast", () => ({ toastManager: { add, close: vi.fn() } }));
 vi.mock("../rpc/atomRegistry", () => ({ appAtomRegistry: {} }));
 vi.mock("../state/sourceControl", () => ({ sourceControlEnvironment: { checkStarred: {} } }));
-vi.mock("@t3tools/client-runtime/state/runtime", () => ({
+vi.mock("@satslab/client-runtime/state/runtime", () => ({
   runAtomCommand: async () => {
     starred.duringCheck();
     return starred.failed ? { _tag: "Failure" } : { _tag: "Success", value: starred.value };

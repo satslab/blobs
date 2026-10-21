@@ -24,7 +24,7 @@ import {
   ProjectId,
   type OrchestrationV2ThreadProjection,
   OrchestrationV2DomainEvent,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -48,10 +48,10 @@ import * as ServerSettings from "../serverSettings.ts";
 import * as ContextHandoffService from "./ContextHandoffService.ts";
 import { withInlineContext } from "./ContextHandoffDelivery.ts";
 import * as EventSink from "./EventSink.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@satslab/provider-core/server/IdAllocator";
 import { CodexProviderCapabilitiesV2 } from "./Adapters/CodexAdapterV2.ts";
 import * as ProjectionStore from "./ProjectionStore.ts";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import * as ProviderAdapter from "@satslab/provider-core/server/ProviderAdapter";
 import * as ProviderSessionManager from "./ProviderSessionManager.ts";
 import * as ProviderTurnStart from "./ProviderTurnStartService.ts";
 import * as RunExecutionService from "./RunExecutionService.ts";
@@ -1851,7 +1851,7 @@ effectIt.effect.each(["pi", "claudeAgent", "codex"] as const)(
       const delivered = harness.startTurn.mock.calls[0]?.[0];
       expect(delivered?.message.text).toContain("Hello from Polaris");
       expect(delivered?.message.text).toContain("polaris-thread");
-      expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain("s3_thread_send");
+      expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain("t3_thread_send");
       expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain(controls.run.threadId);
     }),
 );

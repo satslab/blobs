@@ -1,4 +1,4 @@
-import { scopedThreadKey } from "@t3tools/client-runtime/environment";
+import { scopedThreadKey } from "@satslab/client-runtime/environment";
 import { Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
@@ -90,7 +90,7 @@ export function ThreadRouteView({
   });
   const environmentHasAnyThreads = environmentThreadRefs.length > 0 || environmentHasDraftThreads;
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- clears pending file drops and navigates the router home once a server thread is confirmed missing
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- clears pending file drops and navigates the router home once a server thread is confirmed missing
   useEffect(() => {
     if (target.kind !== "server" || !bootstrapComplete) {
       return;
@@ -151,13 +151,13 @@ export function ThreadRouteView({
 
   return (
     <BotThreadRouteBoundary threadRef={target.kind === "server" ? target.threadRef : null}>
-    <SidebarInset
-      className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
-      inert={background}
-    >
-      <BackgroundThreadContext value={background}>{view}</BackgroundThreadContext>
-      {background ? null : redirect}
-    </SidebarInset>
+      <SidebarInset
+        className="h-svh min-h-0 overflow-hidden overscroll-y-none md:h-dvh"
+        inert={background}
+      >
+        <BackgroundThreadContext value={background}>{view}</BackgroundThreadContext>
+        {background ? null : redirect}
+      </SidebarInset>
     </BotThreadRouteBoundary>
   );
 }
