@@ -192,7 +192,14 @@ const stageRuntimeExternals = Effect.fn("stageRuntimeExternals")(function* (inpu
     yield* fs.copy(path.join(input.repoRoot, "patches"), path.join(input.stageDir, "patches"));
   }
 
-  const install = yield* resolveSpawnCommand("vp", [...STAGE_INSTALL_ARGS]);
+  const hostPlatform = yield* HostProcess.Platform;
+  const install = yield* resolveSpawnCommand("vp", [
+    ...STAGE_INSTALL_ARGS,
+    ...((input.platform === "mac" && hostPlatform !== "darwin") ||
+    (input.platform === "win" && hostPlatform !== "win32")
+      ? ["--ignore-scripts"]
+      : []),
+  ]);
   yield* runCommand(
     ChildProcess.make(install.command, install.args, {
       cwd: input.stageDir,
@@ -486,6 +493,7 @@ const buildCliArchive = Effect.fn("buildCliArchive")(function* (input: {
   readonly version: string;
   readonly outputDir: string;
   readonly resourceMonitorDir: Option.Option<string>;
+  readonly deferMacSigning: boolean;
 }) {
   const fs = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
@@ -516,7 +524,7 @@ const buildCliArchive = Effect.fn("buildCliArchive")(function* (input: {
     builtExecutable,
     `Run \`node apps/server/scripts/cli.ts build-exe${targetKey === hostKey ? "" : ` --target ${targetKey}`}\` first.`,
   );
-  yield* requireInput(path.join(webClient, "index.html"), "Run `vp run --filter t3 build` first.");
+  yield* requireInput(path.join(webClient, "index.html"), "Run `vp run --filter @satslab/blobs build` first.");
   yield* requireInput(
     resourceMonitorDir,
     "Build the resource monitor or pass --resource-monitor-dir.",
@@ -551,7 +559,7 @@ const buildCliArchive = Effect.fn("buildCliArchive")(function* (input: {
       catch: (cause) => new CliArchiveLinuxArm64PageError({ executablePath, cause }),
     });
   }
-  if (input.platform === "mac") {
+  if (input.platform === "mac" && !input.deferMacSigning) {
     yield* signMacArchiveContents({ repoRoot, contentDir, executablePath });
   } else if (input.platform === "win") {
     yield* signWindowsExecutable(executablePath);
@@ -585,7 +593,7 @@ const buildCliArchive = Effect.fn("buildCliArchive")(function* (input: {
     // npm rejects Linux hardlink entries; macOS pnpm clones and bsdtar lacks this flag.
     yield* runCommand(
       ChildProcess.make("tar", [
-        ...(input.platform === "linux" ? ["--hard-dereference"] : []),
+        ...(hostPlatform === "linux" ? ["--hard-dereference"] : []),
         "-czf",
         archivePath,
         "-C",
@@ -607,6 +615,10 @@ const command = Command.make(
     arch: Flag.Literals("arch", BuildArch.literals),
     version: Flag.String("version").pipe(
       Flag.withDescription("Release version for the archive name."),
+    ),
+    deferMacSigning: Flag.Boolean("defer-mac-signing").pipe(
+      Flag.withDefault(false),
+      Flag.withDescription("Produce an unsigned macOS handoff for the separate signing job."),
     ),
     outputDir: Flag.String("output-dir").pipe(Flag.withDefault("release-cli")),
     resourceMonitorDir: Flag.String("resource-monitor-dir").pipe(
