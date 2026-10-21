@@ -8,15 +8,8 @@ export const CLI_RELEASES_PAGE_URL = `https://github.com/${CLI_RELEASE_REPOSITOR
 export const CLI_RELEASE_CHECKSUMS_FILE = "SHA256SUMS";
 export const CLI_RELEASE_BASE_URL_ENV = "BLOBS_RELEASE_BASE_URL";
 
-// Keep archive keys aligned with the Linux matrix, Windows ARM64 build, and cli_archive rows in release.yml.
-// Node single-executables do not support darwin-x64 and segfault at startup.
-const CLI_ARCHIVE_PLATFORM_KEYS = [
-  "darwin-arm64",
-  "linux-arm64",
-  "linux-x64",
-  "win32-arm64",
-  "win32-x64",
-] as const;
+// These targets match the release workflow and standalone npm launcher.
+const CLI_ARCHIVE_PLATFORM_KEYS = ["darwin-arm64", "linux-x64", "win32-x64"] as const;
 export type CliArchivePlatformKey = (typeof CLI_ARCHIVE_PLATFORM_KEYS)[number];
 
 export function cliArchivePlatformKey(
