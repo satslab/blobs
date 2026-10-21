@@ -7,14 +7,14 @@
   "workspaces": {
     ".": {
       // Keep vendored reference repositories outside the root project.
-      "project": ["*.{js,mjs,cjs,ts,mts,cts}", ".github/**/*.cjs"],
+      "project": ["*.{js,mjs,cjs,ts,mts,cts}", ".github/**/*.{cjs,mjs}"],
       "entry": [
         // CodeRabbit loads its configuration by filename.
         ".coderabbit.config.ts",
         ".github/scripts/thread-transfer-report.cjs",
       ],
-      "vite": { "entry": [".github/**/*.test.cjs"] },
-      "vitest": { "entry": [".github/**/*.test.cjs"] },
+      "vite": { "entry": [".github/**/*.test.{cjs,mjs}"] },
+      "vitest": { "entry": [".github/**/*.test.{cjs,mjs}"] },
     },
     "scripts": {
       // Knip loads its preprocessor through a CLI option; native verification and
@@ -61,7 +61,7 @@
       // The Vite+ web build prerequisite.
       // Native and disk-loaded provider packages stay external to the bundle; the
       // CLI archive and desktop sidecar stage them from this manifest.
-      "ignoreDependencies": ["@effect/platform-node-shared", "@t3tools/web", "@napi-rs/keyring"],
+      "ignoreDependencies": ["@effect/platform-node-shared", "@satslab/web", "@napi-rs/keyring"],
     },
     "apps/desktop": {
       // Electron loads these bundles by filename rather than importing them.
@@ -85,6 +85,8 @@
       "ignoreDependencies": ["playwright-core", "electron-builder"],
     },
     "apps/web": {
+      // Kept while the mobile app settings row is temporarily hidden.
+      "ignore": ["src/components/settings/MobileAppSettingsRow.tsx"],
       // Worktree setup (scripts/setup-worktree.ts) runs this directly, and evidence
       // fixtures run under node.
       "entry": ["scripts/warm-dep-cache.ts", "test/fixtures/**/*.mjs"],
@@ -94,6 +96,9 @@
       "ignoreIssues": { "src/components/ui/*.tsx": ["exports", "nsExports", "duplicates"] },
     },
     "apps/marketing": {
+      "entry": ["alchemy.run.ts!"],
+      // Preserved legal content is outside Astro's routes and must stay out of builds.
+      "ignore": ["src/disabled-pages/**"],
       // `astro check` runs from the typecheck task in vite.config.ts, which knip does not read.
       "ignoreDependencies": ["@astrojs/check"],
     },
@@ -110,9 +115,9 @@
       // Fonts are configured as asset paths; Expo autolinks the native packages.
       "ignoreDependencies": [
         "@expo-google-fonts/dm-sans",
-        "@t3tools/mobile-highlights-native",
-        "@t3tools/mobile-review-diff-native",
-        "@t3tools/mobile-terminal-native",
+        "@satslab/mobile-highlights-native",
+        "@satslab/mobile-review-diff-native",
+        "@satslab/mobile-terminal-native",
       ],
     },
     "apps/mobile/modules/t3-source-text": {

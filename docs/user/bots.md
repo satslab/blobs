@@ -22,7 +22,7 @@ Codex 0.160.0 or newer, Claude Code, Pi, and local OpenCode support bot replies.
 Each Codex instance keeps its configured home, login, models, and composer options.
 Older Codex instances are disabled for bot chat. If the version cannot be verified, bot turns stop before inference starts.
 Bot replies keep the provider’s native tools and your configured native MCP servers. Other provider integrations do not support bot replies yet.
-Files attached to a message are available through `t3_attachment_read`. Images use the provider's normal image input.
+Files attached to a message are available through `s3_attachment_read`. Images use the provider's normal image input.
 
 ## Coordinate work
 
@@ -33,7 +33,7 @@ For work in another project, the bot starts an ordinary thread in that project.
 It uses your configured providers, models, and options, and receives delegated results through T3 Code's existing notifications.
 Launched threads report results back to the bot unless you choose to take over the thread.
 A bot can also show visualizations, inspect browser and device views when enabled, and track pull requests.
-When no reply is needed in Sora, the bot can finish silently; `NO_UPDATES` responses are hidden from the transcript.
+When no reply is needed in Blobs, the bot can finish silently; `NO_UPDATES` responses are hidden from the transcript.
 
 ## Choose whether replies load instructions and skills
 

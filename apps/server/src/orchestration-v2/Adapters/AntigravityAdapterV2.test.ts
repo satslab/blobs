@@ -10,9 +10,9 @@ import {
   RunAttemptId,
   RunId,
   ThreadId,
-} from "@t3tools/contracts";
-import { resolveSelfInvocation } from "@t3tools/shared/nodeRuntime";
-import { htmlRenderFromToolItem } from "@t3tools/shared/toolOutput";
+} from "@satslab/contracts";
+import { resolveSelfInvocation } from "@satslab/shared/nodeRuntime";
+import { htmlRenderFromToolItem } from "@satslab/shared/toolOutput";
 import * as Crypto from "effect/Crypto";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
@@ -25,15 +25,15 @@ import * as Stream from "effect/Stream";
 import { ChildProcessSpawner } from "effect/process";
 import type * as EffectAcpSchema from "effect-acp/compat";
 
-import * as ProviderHost from "@t3tools/provider-core/server/ProviderHost";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
-import * as TestProviderHost from "@t3tools/provider-testing/TestProviderHost";
-import type * as AcpSessionRuntime from "@t3tools/provider-acp/server/AcpSessionRuntime";
+import * as ProviderHost from "@satslab/provider-core/server/ProviderHost";
+import * as McpProviderSessions from "@satslab/provider-core/server/McpProviderSessions";
+import * as TestProviderHost from "@satslab/provider-testing/TestProviderHost";
+import type * as AcpSessionRuntime from "@satslab/provider-acp/server/AcpSessionRuntime";
 import { makeAntigravityAcpRuntime } from "../../provider/acp/AntigravityAcpSupport.ts";
 import { resolveAttachmentPath } from "../../attachmentStore.ts";
 import { normalizeAntigravitySessionUpdate } from "../../provider/acp/AntigravityProtocol.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+import * as IdAllocator from "@satslab/provider-core/server/IdAllocator";
+import * as ProviderAdapter from "@satslab/provider-core/server/ProviderAdapter";
 import {
   makeAntigravityAcpAdapterFlavor,
   makeAntigravityAdapterV2,
@@ -153,7 +153,7 @@ describe("AntigravityAdapterV2 client file system", () => {
               command: process.execPath,
               args: [mockAgentPath],
               cwd: input.cwd,
-              env: { T3_ACP_ANTIGRAVITY: "1" },
+              env: { BLOBS_ACP_ANTIGRAVITY: "1" },
             },
           }).pipe(
             Effect.provideService(Crypto.Crypto, crypto),
@@ -322,7 +322,7 @@ describe("AntigravityAdapterV2 workspace changes", () => {
               command: process.execPath,
               args: [mockAgentPath],
               cwd: input.cwd,
-              env: { T3_ACP_ANTIGRAVITY: "1", T3_ACP_HANG_PROMPT_FOREVER: "1" },
+              env: { BLOBS_ACP_ANTIGRAVITY: "1", BLOBS_ACP_HANG_PROMPT_FOREVER: "1" },
             },
           }).pipe(
             Effect.provideService(Crypto.Crypto, crypto),
@@ -492,7 +492,7 @@ describe("AntigravityAdapterV2 html_render pages", () => {
               command: process.execPath,
               args: [mockAgentPath],
               cwd: input.cwd,
-              env: { T3_ACP_ANTIGRAVITY: "1" },
+              env: { BLOBS_ACP_ANTIGRAVITY: "1" },
             },
           }).pipe(
             Effect.provideService(Crypto.Crypto, crypto),
@@ -690,25 +690,25 @@ describe("AntigravityAdapterV2 html_render pages", () => {
 
       assert.deepEqual(tool("published"), {
         status: "completed",
-        toolName: "t3-code.html_render",
+        toolName: "blobs.html_render",
         page: page("replacement"),
         output: { htmlRender: page("replacement") },
       });
       assert.deepEqual(tool("unpublished"), {
         status: "completed",
-        toolName: "t3-code.html_render",
+        toolName: "blobs.html_render",
         page: undefined,
         output: "Summary of unpublished",
       });
       assert.deepEqual(tool("failed"), {
         status: "failed",
-        toolName: "t3-code.html_render",
+        toolName: "blobs.html_render",
         page: undefined,
         output: "Summary of failed",
       });
       assert.deepEqual(tool("error"), {
         status: "completed",
-        toolName: "t3-code.html_render",
+        toolName: "blobs.html_render",
         page: undefined,
         output: [],
       });
@@ -726,7 +726,7 @@ describe("AntigravityAdapterV2 html_render pages", () => {
       for (const name of ["failed-retry", "error-retry"]) {
         assert.deepEqual(tool(name), {
           status: "completed",
-          toolName: "t3-code.html_render",
+          toolName: "blobs.html_render",
           page: page(name),
           output: { htmlRender: page(name) },
         });

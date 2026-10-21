@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import { EnvironmentId } from "@t3tools/contracts";
+import { EnvironmentId } from "@satslab/contracts";
 import { Atom } from "effect/reactivity";
 import { ChevronRightIcon } from "lucide-react";
 import { Fragment, type RefObject, useRef } from "react";
@@ -14,6 +14,8 @@ import {
   AlertDialogPopup,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
+import { getDesktopUpdateReleaseUrl } from "../desktopUpdate.logic";
+import { openDesktopUpdateReleaseNotes } from "../desktopUpdate.toast";
 import { Button } from "../ui/button";
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "../ui/collapsible";
 import { MiddleTruncate } from "../ui/middle-truncate";
@@ -46,6 +48,7 @@ interface UpdateEverythingDialogProps {
   readonly providerCount: number;
   readonly rows: ReadonlyArray<UpdateEverythingRow>;
   readonly restarts: ReadonlyArray<RestartingMachine>;
+  readonly desktopVersion: string | null;
   readonly onConfirm: () => void;
 }
 
@@ -87,6 +90,7 @@ function UpdateEverythingDialogContent({
   providerCount,
   rows,
   restarts,
+  desktopVersion,
   onConfirm,
   cancelRef,
 }: UpdateEverythingDialogContentProps) {
@@ -205,6 +209,7 @@ function UpdateEverythingDialogContent({
                 : `${threads} will be interrupted. ${continuing} can resume after the restart.`}
           </p>
         ) : null}
+        {desktopVersion !== null ? <DesktopDownloadNotice version={desktopVersion} /> : null}
         <AlertDialogClose ref={cancelRef} render={<Button variant="outline" />}>
           Cancel
         </AlertDialogClose>
@@ -217,4 +222,22 @@ function UpdateEverythingDialogContent({
 function RunningThreads({ environmentId }: { readonly environmentId: EnvironmentId }) {
   const count = useAtomValue(runningThreadCountAtom(environmentId));
   return count > 0 ? <span className="whitespace-nowrap text-warning">{count} running</span> : null;
+}
+
+// Self-updates are disabled, so a newer desktop app is a manual download from its release page.
+function DesktopDownloadNotice({ version }: { readonly version: string }) {
+  const releaseUrl = getDesktopUpdateReleaseUrl(version);
+  if (releaseUrl === null) return null;
+  return (
+    <p className="flex items-center gap-2 pt-2 text-sm">
+      Blobs desktop {version}
+      <Button
+        size="xs"
+        variant="outline"
+        onClick={() => void openDesktopUpdateReleaseNotes(window.desktopBridge, releaseUrl)}
+      >
+        Download
+      </Button>
+    </p>
+  );
 }

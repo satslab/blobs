@@ -1,11 +1,12 @@
 import { useAtomValue } from "@effect/atom-react";
-import { PROVIDER_DISPLAY_NAMES } from "@t3tools/contracts";
+import { PROVIDER_DISPLAY_NAMES } from "@satslab/contracts";
 
 import { APP_VERSION } from "~/branding";
 import { isDesktopLocalConnectionTarget } from "~/connection/desktopLocal";
 import { isElectron } from "~/env";
 import { useEnvironments } from "~/state/environments";
-import { useNpmReleasePublished } from "~/state/npmRelease";
+import { cliReleaseChannelOf } from "@satslab/shared/cliRelease";
+import { useCliReleasePublished, useLatestCliRelease } from "~/state/cliRelease";
 import { environmentIdsKey } from "~/state/environmentAtomList";
 import { environmentUpdateStatesAtom } from "~/state/server";
 import { environmentSessionStatesAtom } from "~/state/session";
@@ -37,7 +38,8 @@ const UPDATE_RESTART_DELAY_MS = 5_000;
 export type ReportLocalUpdateError = (title: string, description: string) => void;
 
 export function useUpdateEverything(localUpdateVersion: string | null) {
-  const targetVersion = localUpdateVersion ?? APP_VERSION;
+  const latestRelease = useLatestCliRelease(cliReleaseChannelOf(APP_VERSION));
+  const targetVersion = localUpdateVersion ?? latestRelease.data ?? APP_VERSION;
   const { environments } = useEnvironments();
   const environmentIds = environmentIdsKey(environments.map(({ environmentId }) => environmentId));
   const sessionStates = useAtomValue(environmentSessionStatesAtom(environmentIds));
@@ -58,9 +60,10 @@ export function useUpdateEverything(localUpdateVersion: string | null) {
     machines,
     targetVersion,
   );
-  // Desktop-managed servers use their app feed; only npm installs need to wait for publication.
-  const needsNpm = behindServers.some((server) => server.selfUpdate !== "desktop-managed");
-  const published = useNpmReleasePublished(needsNpm ? targetVersion : null);
+  // A desktop-managed server installs from its own app's update feed, so only
+  // servers that download the release wait for it to be published.
+  const needsRelease = behindServers.some((server) => server.selfUpdate !== "desktop-managed");
+  const published = useCliReleasePublished(needsRelease ? targetVersion : null);
   const servers = published
     ? behindServers
     : behindServers.filter((server) => server.selfUpdate === "desktop-managed");
@@ -71,7 +74,7 @@ export function useUpdateEverything(localUpdateVersion: string | null) {
       .map((server) => ({
         environmentId: server.environmentId,
         label: server.serverLabel,
-        reason: `t3@${targetVersion} is not on npm yet`,
+        reason: `@satslab/blobs@${targetVersion} is not released yet`,
       })),
   ];
   const restarts = collectRestartingMachines(machines, servers, localUpdateVersion !== null);
@@ -93,6 +96,10 @@ export function useUpdateEverything(localUpdateVersion: string | null) {
   });
 
   return {
+    checkForUpdates: latestRelease.refresh,
+    isChecking: latestRelease.isPending,
+    checkError: latestRelease.error,
+    latestVersion: latestRelease.data ?? null,
     hasUpdates: servers.length > 0 || providers.machines.length > 0,
     ...view,
     restarts,

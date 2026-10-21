@@ -30,9 +30,9 @@ const isRepoRootTestRun = process.cwd() === import.meta.dirname;
 
 const RESTRICTED_IMPORT_PATHS = [
   {
-    name: "@t3tools/client-runtime",
+    name: "@satslab/client-runtime",
     message:
-      "Import from an explicit @t3tools/client-runtime/* subpath. The package has no root export.",
+      "Import from an explicit @satslab/client-runtime/* subpath. The package has no root export.",
   },
   {
     name: "@pierre/diffs/react",
@@ -204,7 +204,7 @@ export default defineConfig({
       "apps/mobile/uniwind-types.d.ts",
     ],
     plugins: ["eslint", "oxc", "react", "unicorn", "typescript"],
-    jsPlugins: ["./oxlint-plugin-t3code/index.ts", "@shadcn/lint"],
+    jsPlugins: ["./oxlint-plugin-blobs/index.ts", "@shadcn/lint"],
     settings: {
       shadcn: { ui: "~/components/ui" },
     },
@@ -276,25 +276,25 @@ export default defineConfig({
         "error",
         { paths: [...RESTRICTED_IMPORT_PATHS, RESTRICTED_PULL_REQUEST_GLYPH_IMPORTS] },
       ],
-      "t3code/no-global-process-runtime": "error",
-      "t3code/no-inline-schema-compile": "error",
-      "t3code/no-low-value-comments": "error",
-      "t3code/no-manual-effect-runtime-in-tests": "error",
-      "t3code/no-native-title-tooltip": "error",
+      "blobs/no-global-process-runtime": "error",
+      "blobs/no-inline-schema-compile": "error",
+      "blobs/no-low-value-comments": "error",
+      "blobs/no-manual-effect-runtime-in-tests": "error",
+      "blobs/no-native-title-tooltip": "error",
       // Test files only (the rule checks the filename).
-      "t3code/no-polling-loop-in-tests": "error",
-      "t3code/no-raw-mcp-registration": "error",
-      "t3code/no-real-time-wait-in-tests": "error",
-      "t3code/no-test-in-loop": "error",
-      "t3code/no-test-timeout-or-unreasoned-skip": "error",
-      "t3code/no-rpc-permission-bypass": ["error", { allowRawClientAccess: true }],
-      "t3code/no-unscoped-has": "error",
-      "t3code/no-wall-clock-in-tests": "error",
-      "t3code/namespace-node-imports": "error",
-      "t3code/prefer-catch-tags": "error",
-      "t3code/prefer-effect-fn": "error",
-      "t3code/require-centered-scroll-gutter": "error",
-      "t3code/require-suppression-reason": "error",
+      "blobs/no-polling-loop-in-tests": "error",
+      "blobs/no-raw-mcp-registration": "error",
+      "blobs/no-real-time-wait-in-tests": "error",
+      "blobs/no-test-in-loop": "error",
+      "blobs/no-test-timeout-or-unreasoned-skip": "error",
+      "blobs/no-rpc-permission-bypass": ["error", { allowRawClientAccess: true }],
+      "blobs/no-unscoped-has": "error",
+      "blobs/no-wall-clock-in-tests": "error",
+      "blobs/namespace-node-imports": "error",
+      "blobs/prefer-catch-tags": "error",
+      "blobs/prefer-effect-fn": "error",
+      "blobs/require-centered-scroll-gutter": "error",
+      "blobs/require-suppression-reason": "error",
     },
     overrides: [
       {
@@ -303,23 +303,23 @@ export default defineConfig({
           "**/{test,tests,testkit,testing,fixtures,integration}/**",
           "packages/provider-testing/**",
         ],
-        rules: { "t3code/prefer-effect-fn": "off" },
+        rules: { "blobs/prefer-effect-fn": "off" },
       },
       {
         files: ["apps/web/**/*.test.{ts,tsx}"],
-        rules: { "t3code/require-disposable-render": "error" },
+        rules: { "blobs/require-disposable-render": "error" },
       },
       {
         files: ["apps/web/src/**/*.browser.test.{ts,tsx}"],
-        rules: { "t3code/no-frame-waits-in-browser-tests": "error" },
+        rules: { "blobs/no-frame-waits-in-browser-tests": "error" },
       },
       {
         files: ["apps/**/src/**", "packages/**/src/**"],
-        rules: { "t3code/no-dom-test-environment": "error" },
+        rules: { "blobs/no-dom-test-environment": "error" },
       },
       {
         files: ["packages/client-runtime/src/state/**", "apps/{web,mobile,desktop}/src/**"],
-        rules: { "t3code/no-rpc-permission-bypass": ["error", { allowRawClientAccess: false }] },
+        rules: { "blobs/no-rpc-permission-bypass": ["error", { allowRawClientAccess: false }] },
       },
       {
         files: [
@@ -327,7 +327,7 @@ export default defineConfig({
           "packages/client-runtime/src/state/vcsAction.ts",
         ],
         rules: {
-          "t3code/no-rpc-permission-bypass": [
+          "blobs/no-rpc-permission-bypass": [
             "error",
             { allowGuardInstallation: true, allowRawClientAccess: false },
           ],
@@ -340,34 +340,34 @@ export default defineConfig({
           "apps/web/src/components/device/DevicePhoneViewport.tsx",
           "apps/web/src/components/device/DeviceDuoViewport.tsx",
         ],
-        rules: { "t3code/no-rpc-permission-bypass": ["error", { allowRawClientAccess: true }] },
+        rules: { "blobs/no-rpc-permission-bypass": ["error", { allowRawClientAccess: true }] },
       },
       {
         files: ["packages/client-runtime/src/connection/outdatedHostUpdate.ts"],
-        rules: { "t3code/no-rpc-permission-bypass": "off" },
+        rules: { "blobs/no-rpc-permission-bypass": "off" },
       },
       {
         files: [
           "packages/client-runtime/src/rpc/**",
           "**/*.{test,spec}.{ts,tsx,js,jsx,mts,cts,mjs,cjs}",
         ],
-        rules: { "t3code/no-rpc-permission-bypass": "off" },
+        rules: { "blobs/no-rpc-permission-bypass": "off" },
       },
       {
         files: ["packages/shared/src/HostProcess.ts"],
-        rules: { "t3code/no-global-process-runtime": "off" },
+        rules: { "blobs/no-global-process-runtime": "off" },
       },
       {
-        // The `t3` npm launcher is published as plain, dependency-free Node.
+        // The `blobs` npm launcher is published as plain, dependency-free Node.
         files: ["scripts/npm-launcher/**"],
         rules: {
-          "t3code/no-global-process-runtime": "off",
-          "t3code/namespace-node-imports": "off",
+          "blobs/no-global-process-runtime": "off",
+          "blobs/namespace-node-imports": "off",
         },
       },
       {
         files: ["apps/server/src/mcp/McpHttpServer.ts"],
-        rules: { "t3code/no-raw-mcp-registration": "off" },
+        rules: { "blobs/no-raw-mcp-registration": "off" },
       },
       {
         files: ["apps/web/src/**"],
@@ -404,16 +404,16 @@ export default defineConfig({
                     "expo",
                     "expo-*",
                     "lucide-react",
-                    "@t3tools/client-runtime",
-                    "@t3tools/client-runtime/*",
+                    "@satslab/client-runtime",
+                    "@satslab/client-runtime/*",
                     "../client/*",
                     "../server/*",
                     "../../client/*",
                     "../../server/*",
                     "../../../client/*",
                     "../../../server/*",
-                    "@t3tools/source-control-*/client/*",
-                    "@t3tools/source-control-*/server/*",
+                    "@satslab/source-control-*/client/*",
+                    "@satslab/source-control-*/server/*",
                   ],
                   message:
                     "Shared forge definitions load on the server and every client; keep UI and server code out.",
@@ -433,7 +433,7 @@ export default defineConfig({
               patterns: [
                 {
                   group: [
-                    "@t3tools/source-control-*/client/*",
+                    "@satslab/source-control-*/client/*",
                     "../client/*",
                     "../../client/*",
                     "../../../client/*",
@@ -449,8 +449,8 @@ export default defineConfig({
       {
         files: ["apps/mobile/src/**"],
         rules: {
-          "t3code/no-mobile-uniwind-theme-escape-hatches": "error",
-          "t3code/require-registered-list-scroll": "error",
+          "blobs/no-mobile-uniwind-theme-escape-hatches": "error",
+          "blobs/require-registered-list-scroll": "error",
         },
       },
       {
@@ -460,12 +460,12 @@ export default defineConfig({
           "apps/mobile/src/components/ui/AppSymbol.ios.tsx",
           "apps/mobile/src/features/pull-requests/pullRequestGlyphs.ts",
         ],
-        rules: { "t3code/no-mobile-pull-request-glyph-literals": "error" },
+        rules: { "blobs/no-mobile-pull-request-glyph-literals": "error" },
       },
       {
         files: ["apps/mobile/src/**"],
         excludeFiles: ["**/*.test.{ts,tsx}"],
-        rules: { "t3code/no-ambiguous-detail-navigation": "error" },
+        rules: { "blobs/no-ambiguous-detail-navigation": "error" },
       },
       {
         // Raw ResizeObserver state commits miss the paint; observeResize flushes derived layout together.
@@ -474,7 +474,7 @@ export default defineConfig({
           "apps/web/src/lib/observeResize.ts",
           "**/*.{test,spec}.{ts,tsx,js,jsx,mts,cts,mjs,cjs}",
         ],
-        rules: { "t3code/no-raw-resize-observer": "error" },
+        rules: { "blobs/no-raw-resize-observer": "error" },
       },
       {
         files: ["apps/web/src/**"],
@@ -482,7 +482,7 @@ export default defineConfig({
       },
       {
         files: ["apps/web/src/**"],
-        rules: { "t3code/no-outset-state-indicators": "error" },
+        rules: { "blobs/no-outset-state-indicators": "error" },
       },
       {
         files: ["apps/*/src/**", "packages/*/src/**"],
@@ -493,7 +493,7 @@ export default defineConfig({
           // Real user quotes stay verbatim.
           "apps/marketing/src/lib/tweets.ts",
         ],
-        rules: { "t3code/no-em-dash-copy": "error" },
+        rules: { "blobs/no-em-dash-copy": "error" },
       },
       {
         files: ["apps/web/src/**"],
@@ -559,7 +559,7 @@ export default defineConfig({
           "react/jsx-no-constructed-context-values": "off",
           "react/memo-dependencies": "error",
           "react/preserve-manual-memoization": "error",
-          // Render-time clock reads use @t3tools/client-runtime/clock or state seeded with the
+          // Render-time clock reads use @satslab/client-runtime/clock or state seeded with the
           // time; any other read carries a suppression that says why. oxlint also flags time reads
           // inside event handlers (oxc#27309); those suppressions cite it.
           "react/purity": "error",
@@ -568,7 +568,7 @@ export default defineConfig({
           "react/set-state-in-render": "error",
           "react/static-components": "error",
           "react/unsupported-syntax": "error",
-          "t3code/no-manual-memo": "error",
+          "blobs/no-manual-memo": "error",
         },
       },
       {
@@ -580,22 +580,22 @@ export default defineConfig({
           "packages/shared/src/**",
         ],
         excludeFiles: ["**/*.test.ts", "**/*.test.tsx"],
-        rules: { "t3code/no-hermes-unsupported-apis": "error" },
+        rules: { "blobs/no-hermes-unsupported-apis": "error" },
       },
       {
         // Directives hide bailouts from mobile's compiler-coverage check; retain hooks until its allowlist is empty.
         files: ["apps/mobile/src/**/*.{ts,tsx}"],
-        rules: { "t3code/no-manual-memo": ["error", { allowMemoHooks: true }] },
+        rules: { "blobs/no-manual-memo": ["error", { allowMemoHooks: true }] },
       },
       {
         files: ["apps/web/src/**", "apps/mobile/src/**", "packages/*/src/**"],
-        rules: { "t3code/no-unreasoned-state-sync": "error" },
+        rules: { "blobs/no-unreasoned-state-sync": "error" },
       },
       {
         // React Compiler caches use* functions only if they call a hook.
         files: ["apps/web/src/**/*.{ts,tsx}", "apps/mobile/src/**/*.{ts,tsx}"],
         excludeFiles: ["**/*.test.ts", "**/*.test.tsx"],
-        rules: { "t3code/no-hookless-use-function": "error" },
+        rules: { "blobs/no-hookless-use-function": "error" },
       },
       {
         files: [
@@ -622,7 +622,7 @@ export default defineConfig({
           "apps/mobile/src/native/useEnrichedLinkVariants.ts",
         ],
         rules: {
-          "t3code/no-mobile-uniwind-theme-escape-hatches": ["error", { allowUniwindTheme: true }],
+          "blobs/no-mobile-uniwind-theme-escape-hatches": ["error", { allowUniwindTheme: true }],
         },
       },
     ],

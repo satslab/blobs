@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/models";
-import type { EnvironmentConnectionPhase } from "@t3tools/client-runtime/connection";
-import { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentProject } from "@satslab/client-runtime/state/models";
+import type { EnvironmentConnectionPhase } from "@satslab/client-runtime/connection";
+import { EnvironmentId } from "@satslab/contracts";
 import { pullRequestFallbackEnvironment } from "./pullRequestEnvironmentFallback";
 
 const project = (environmentId: string, id: string, canonicalKey: string) =>
@@ -12,13 +12,13 @@ const project = (environmentId: string, id: string, canonicalKey: string) =>
   }) as unknown as EnvironmentProject;
 
 const projects = [
-  project("laptop", "t3", "github.com/pingdotgg/t3code"),
+  project("laptop", "blobs", "github.com/pingdotgg/t3code"),
   project("desktop", "other", "github.com/pingdotgg/other"),
   project("server", "t3-copy", "github.com/pingdotgg/t3code"),
 ];
 const target = {
   environmentId: "laptop",
-  projectId: "t3",
+  projectId: "blobs",
   repository: "pingdotgg/t3code",
   host: "github.com",
 };

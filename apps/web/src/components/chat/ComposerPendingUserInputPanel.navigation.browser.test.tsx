@@ -5,8 +5,8 @@ import {
   ThreadId,
   TurnItemId,
   type OrchestrationV2ThreadProjection,
-} from "@t3tools/contracts";
-import { makeThreadRequestsResolvedAnnouncer } from "@t3tools/client-runtime/state/thread-requests";
+} from "@satslab/contracts";
+import { makeThreadRequestsResolvedAnnouncer } from "@satslab/client-runtime/state/thread-requests";
 import { useLayoutEffect, useRef, type ComponentProps } from "react";
 import { expect, it, vi } from "vite-plus/test";
 

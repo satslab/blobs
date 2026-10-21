@@ -1,4 +1,4 @@
-import { SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlProviderKind } from "@satslab/contracts";
 import {
   EnvironmentId,
   ProjectId,
@@ -6,7 +6,7 @@ import {
   type PullRequestListInput,
   type PullRequestListResult,
   type PullRequestSummary,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import {

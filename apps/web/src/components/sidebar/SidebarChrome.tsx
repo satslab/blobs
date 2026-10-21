@@ -130,7 +130,7 @@ function SidebarBrandMark({ onBackdrop }: { onBackdrop: boolean }) {
   const mode = use(SidebarModeContext);
   return (
     <span className="inline-flex min-w-0 items-center gap-2 text-sm font-medium tracking-tight">
-      <T3Wordmark aria-label="Sora" className="size-5 shrink-0 rounded-md" />
+      <T3Wordmark aria-label="Blobs" className="size-5 shrink-0 rounded-md" />
       <span
         className={cn(
           "truncate [text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both_cap_alphabetic]:py-1",

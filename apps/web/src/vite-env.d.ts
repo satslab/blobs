@@ -1,6 +1,6 @@
 /// <reference types="vite-plus/client" />
 
-import type { DesktopBridge, ThreadId } from "@t3tools/contracts";
+import type { DesktopBridge, ThreadId } from "@satslab/contracts";
 
 interface ImportMetaEnv {
   readonly VITE_HTTP_URL: string;
@@ -14,7 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_RELAY_OTLP_TRACES_URL: string;
   readonly VITE_RELAY_OTLP_TRACES_DATASET: string;
   readonly VITE_RELAY_OTLP_TRACES_TOKEN: string;
-  readonly T3CODE_DESKTOP_UPDATE_REPOSITORY: string;
+  readonly BLOBS_DESKTOP_UPDATE_REPOSITORY: string;
   readonly APP_VERSION: string;
 }
 

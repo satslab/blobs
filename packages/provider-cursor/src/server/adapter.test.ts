@@ -11,7 +11,7 @@ import {
   RunAttemptId,
   RunId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
@@ -20,11 +20,11 @@ import * as Option from "effect/Option";
 import * as Path from "effect/Path";
 import * as Stream from "effect/Stream";
 
-import * as TestProviderHost from "@t3tools/provider-testing/TestProviderHost";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
-import { makeProviderFailure } from "@t3tools/provider-core/server/failure";
+import * as TestProviderHost from "@satslab/provider-testing/TestProviderHost";
+import * as IdAllocator from "@satslab/provider-core/server/IdAllocator";
+import * as McpProviderSessions from "@satslab/provider-core/server/McpProviderSessions";
+import * as ProviderAdapter from "@satslab/provider-core/server/ProviderAdapter";
+import { makeProviderFailure } from "@satslab/provider-core/server/failure";
 import {
   cursorMcpServers,
   cursorRuntimeAgentPolicy,
@@ -1637,7 +1637,7 @@ describe("CursorAdapterV2", () => {
     };
 
     assert.deepEqual(cursorMcpServers(mcpSession), {
-      "t3-code": {
+      blobs: {
         type: "http",
         url: "http://127.0.0.1:43123/mcp",
         headers: {

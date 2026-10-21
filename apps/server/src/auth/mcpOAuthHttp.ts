@@ -4,7 +4,7 @@ import {
   AuthMcpClientAccess,
   EnvironmentHttpApi,
   mcpClientScopes,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as Result from "effect/Result";
 import { HttpServerRequest, HttpServerResponse } from "effect/http";

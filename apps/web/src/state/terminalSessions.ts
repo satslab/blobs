@@ -5,7 +5,7 @@ import {
   selectRunningSubprocessTerminalIds,
   type KnownTerminalSession,
   type TerminalSessionState,
-} from "@t3tools/client-runtime/state/terminal";
+} from "@satslab/client-runtime/state/terminal";
 import {
   EnvironmentId,
   ThreadId,
@@ -13,7 +13,7 @@ import {
   AuthTerminalOperateScope,
   TerminalAttachInput,
   type TerminalSummary,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";

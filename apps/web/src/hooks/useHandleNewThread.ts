@@ -2,10 +2,10 @@ import {
   scopedProjectKey,
   scopeProjectRef,
   scopeThreadRef,
-} from "@t3tools/client-runtime/environment";
-import { DEFAULT_SERVER_SETTINGS, type ScopedProjectRef, type ThreadId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/environment";
+import { DEFAULT_SERVER_SETTINGS, type ScopedProjectRef, type ThreadId } from "@satslab/contracts";
 import { type AnyRouter, useRouter } from "@tanstack/react-router";
-import { isBotProject } from "@t3tools/shared/botChat";
+import { isBotProject } from "@satslab/shared/botChat";
 import {
   composerDraftHasUserContent,
   markPromotedDraftThreadByRef,
@@ -20,8 +20,8 @@ import {
   deriveLogicalProjectKeyFromSettings,
   getProjectOrderKey,
   selectProjectGroupingSettings,
-} from "@t3tools/client-runtime/state/project-grouping";
-import { resolveNewThreadEnvMode, resolveProjectSettings } from "@t3tools/shared/projectSettings";
+} from "@satslab/client-runtime/state/project-grouping";
+import { resolveNewThreadEnvMode, resolveProjectSettings } from "@satslab/shared/projectSettings";
 import {
   readProject,
   readProjects,
@@ -35,7 +35,7 @@ import {
   resolveNewDraftStartFromOrigin,
   resolveNewThreadModelSelectionOverride,
 } from "../lib/chatThreadActions";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentProject } from "@satslab/client-runtime/state/shell";
 import { readT3ProjectFile } from "../lib/t3ProjectFileDefaults";
 import { appAtomRegistry } from "../rpc/atomRegistry";
 import { environmentSummaries } from "../state/presentation";

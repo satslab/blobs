@@ -7,8 +7,8 @@ import {
   type ProjectUpdatePayload,
   type ProjectSnapshot,
   type ThreadId,
-} from "@t3tools/contracts";
-import * as KeyedLock from "@t3tools/shared/KeyedLock";
+} from "@satslab/contracts";
+import * as KeyedLock from "@satslab/shared/KeyedLock";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -20,7 +20,7 @@ import * as Schema from "effect/Schema";
 import { withCommandMetrics } from "../observability/Metrics.ts";
 import * as BotChat from "../bots/BotChat.ts";
 import * as EventSink from "../orchestration-v2/EventSink.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@satslab/provider-core/server/IdAllocator";
 import * as LegacyV1ThreadImporter from "../orchestration-v2/legacy/LegacyV1ThreadImporter.ts";
 import * as ProjectionStore from "../orchestration-v2/ProjectionStore.ts";
 import {
@@ -151,7 +151,7 @@ export class ProjectService extends Context.Service<
       readonly projectIds?: ReadonlyArray<ProjectId>;
     }) => Effect.Effect<ReadonlyArray<OrchestrationProjectShell>, ProjectOperationError>;
   }
->()("t3/project/ProjectService") {}
+>()("@satslab/blobs/project/ProjectService") {}
 
 export const make = Effect.gen(function* () {
   const projects = yield* ProjectStore.ProjectStoreV2;
@@ -369,7 +369,7 @@ export const make = Effect.gen(function* () {
         return yield* new ProjectOperationError({
           operation: "dispatch-project-command",
           projectId: input.projectId,
-          cause: "Rename bot projects through a running Sora server.",
+          cause: "Rename bot projects through a running Blobs server.",
         });
       const bot =
         existing.value.isBot && Option.isSome(bots)
@@ -545,7 +545,7 @@ export const make = Effect.gen(function* () {
         return yield* new ProjectOperationError({
           operation: "delete-thread",
           projectId,
-          cause: "Remove bot projects through a running Sora server.",
+          cause: "Remove bot projects through a running Blobs server.",
         });
       if (isFirstDelete && existing.value.isBot && Option.isSome(bots)) {
         const bot = yield* bots.value

@@ -9,17 +9,17 @@ import type {
   OrchestrationV2ThreadProjection,
   OrchestrationV2ThreadStreamItem,
   OrchestrationV2TurnItem,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   dedupeSubagentBodies,
   dedupeTurnItemBodies,
-} from "@t3tools/shared/orchestrationV2DedupedBodies";
+} from "@satslab/shared/orchestrationV2DedupedBodies";
 import {
   compactDynamicToolOutput,
   omitToolOutputImageData,
   toolOutputImages,
   toolOutputIndicatesFailure,
-} from "@t3tools/shared/toolOutput";
+} from "@satslab/shared/toolOutput";
 
 const MAX_DETAIL_STRING_BYTES = 32_768;
 const MAX_DYNAMIC_VALUE_BYTES = 16_384;

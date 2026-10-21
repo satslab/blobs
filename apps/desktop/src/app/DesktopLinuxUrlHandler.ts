@@ -79,7 +79,7 @@ const escapeUrlHandlerExecTarget = (value: string): string =>
 export function renderUrlHandlerDesktopEntry(input: {
   readonly displayName: string;
   readonly execTarget: string;
-  readonly scheme: string;
+  readonly schemes: readonly string[];
   readonly iconPath?: string;
 }): string {
   return [
@@ -91,7 +91,7 @@ export function renderUrlHandlerDesktopEntry(input: {
     "Terminal=false",
     "NoDisplay=true",
     "StartupNotify=false",
-    `MimeType=x-scheme-handler/${input.scheme};`,
+    `MimeType=${input.schemes.map((scheme) => `x-scheme-handler/${scheme};`).join("")}`,
     "",
   ].join("\n");
 }
@@ -112,7 +112,7 @@ export class DesktopLinuxUrlHandler extends Context.Service<
   {
     readonly register: Effect.Effect<void>;
   }
->()("@t3tools/desktop/app/DesktopLinuxUrlHandler") {}
+>()("@satslab/desktop/app/DesktopLinuxUrlHandler") {}
 
 /** @public */
 export const make = Effect.gen(function* () {
@@ -133,7 +133,7 @@ export const make = Effect.gen(function* () {
 
   const writeDesktopEntry = Effect.gen(function* () {
     // Distribution packages that run on a shared Electron set
-    // T3CODE_DESKTOP_LAUNCHER_PATH, because process.execPath is that Electron.
+    // BLOBS_DESKTOP_LAUNCHER_PATH, because process.execPath is that Electron.
     // Inside the mounted AppImage, process.execPath points at a transient
     // /tmp/.mount_* path — the handler must launch the AppImage itself.
     const execTarget = environment.desktopLauncherPath.pipe(
@@ -143,7 +143,7 @@ export const make = Effect.gen(function* () {
     const content = renderUrlHandlerDesktopEntry({
       displayName: environment.displayName,
       execTarget,
-      scheme,
+      schemes: ElectronProtocol.getDesktopLinkSchemes(environment.isDevelopment),
       ...(environment.isPackaged ? { iconPath } : {}),
     });
     // Avoid truncating the pre-ready entry while the portal may be reading it.
@@ -253,23 +253,25 @@ export const make = Effect.gen(function* () {
 
   const setDefaultHandler = Effect.scoped(
     Effect.gen(function* () {
-      const command = ChildProcess.make(
-        "xdg-mime",
-        ["default", environment.linuxDesktopEntryName, `x-scheme-handler/${scheme}`],
-        {
-          stdin: "ignore",
-          stdout: "ignore",
-          stderr: "ignore",
-        },
-      );
-      const handle = yield* spawner.spawn(command);
-      const exitCode = yield* handle.exitCode;
-      if ((exitCode as unknown as number) !== 0) {
-        return yield* new DesktopLinuxUrlHandlerRegistrationError({
-          step: "set-default-handler",
-          scheme,
-          exitCode: Number(exitCode),
-        });
+      for (const scheme of ElectronProtocol.getDesktopLinkSchemes(environment.isDevelopment)) {
+        const command = ChildProcess.make(
+          "xdg-mime",
+          ["default", environment.linuxDesktopEntryName, `x-scheme-handler/${scheme}`],
+          {
+            stdin: "ignore",
+            stdout: "ignore",
+            stderr: "ignore",
+          },
+        );
+        const handle = yield* spawner.spawn(command);
+        const exitCode = yield* handle.exitCode;
+        if ((exitCode as unknown as number) !== 0) {
+          return yield* new DesktopLinuxUrlHandlerRegistrationError({
+            step: "set-default-handler",
+            scheme,
+            exitCode: Number(exitCode),
+          });
+        }
       }
     }),
   ).pipe(

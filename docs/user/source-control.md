@@ -81,15 +81,15 @@ If no credentials are saved, T3 Code falls back to these variables in the server
 Restart the server after changing them:
 
 ```bash
-export T3CODE_BITBUCKET_ACCESS_TOKEN="your-access-token"
+export BLOBS_BITBUCKET_ACCESS_TOKEN="your-access-token"
 # or
-export T3CODE_BITBUCKET_EMAIL="you@example.com"
-export T3CODE_BITBUCKET_API_TOKEN="your-token"
+export BLOBS_BITBUCKET_EMAIL="you@example.com"
+export BLOBS_BITBUCKET_API_TOKEN="your-token"
 ```
 
 For a background service, put these `KEY=VALUE` entries in
 [`service.env`](./background-service.md#configure-the-service-environment)
-under T3 home, then run `t3 service restart`. Service installation and updates
+under Blobs home, then run `blobs service restart`. Service installation and updates
 preserve that file.
 
 ### Azure DevOps

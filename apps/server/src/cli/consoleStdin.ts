@@ -2,10 +2,10 @@
 import * as NodeFS from "node:fs";
 import * as NodeTty from "node:tty";
 
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@satslab/shared/HostProcess";
 
 /**
- * Electron's Windows executable is a GUI program, so `t3.cmd` under
+ * Electron's Windows executable is a GUI program, so `blobs.cmd` under
  * `ELECTRON_RUN_AS_NODE` gets the console for stdout and stderr but no stdin.
  * Piped or redirected input and runs whose output is not a console are left alone.
  */
@@ -18,7 +18,7 @@ function needsConsoleStdin(input: {
   return (
     input.platform === "win32" &&
     // Set only by the launcher (DesktopCliShim), never for the desktop backend.
-    input.env.T3CODE_DESKTOP_CLI_LAUNCHER === "1" &&
+    input.env.BLOBS_DESKTOP_CLI_LAUNCHER === "1" &&
     !input.stdinOpen &&
     input.stdoutIsConsole
   );
@@ -42,7 +42,7 @@ export function attachConsoleStdin(): number | undefined {
     stdoutIsConsole: NodeTty.isatty(1),
   });
   // The launcher marker must not propagate to child shells or t3 processes.
-  delete process.env.T3CODE_DESKTOP_CLI_LAUNCHER;
+  delete process.env.BLOBS_DESKTOP_CLI_LAUNCHER;
   if (!needed) return undefined;
   let fd: number;
   try {
