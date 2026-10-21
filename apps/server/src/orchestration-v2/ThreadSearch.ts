@@ -8,7 +8,7 @@ import {
   type OrchestrationSearchThreadsResult,
   ProjectId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
@@ -17,7 +17,7 @@ import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import * as SqlClient from "effect/sql/SqlClient";
 import * as SqlSchema from "effect/sql/SqlSchema";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 import {
   messageSearchTokens,
   foldSearchQuery,
@@ -26,8 +26,8 @@ import {
   messageMatcher,
   scoreThreadSearch,
   type ThreadSearchSubject,
-} from "@t3tools/shared/paletteSearch";
-import { threadSearchPullRequests } from "@t3tools/shared/threadPullRequests";
+} from "@satslab/shared/paletteSearch";
+import { threadSearchPullRequests } from "@satslab/shared/threadPullRequests";
 import { indexedMessageCondition } from "./messageSearchIndex.ts";
 
 // When the user last wrote in the thread aliased `threads`, as the clients
@@ -253,7 +253,7 @@ export class ThreadSearch extends Context.Service<
       input: OrchestrationSearchThreadsInput & { readonly projectId?: ProjectId | undefined },
     ) => Effect.Effect<{ readonly matches: ReadonlyArray<ThreadSearchHit> }, ThreadSearchError>;
   }
->()("t3/orchestration-v2/ThreadSearch") {}
+>()("@satslab/sora/orchestration-v2/ThreadSearch") {}
 
 /** @public */
 export const make = Effect.gen(function* () {

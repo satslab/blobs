@@ -7,8 +7,8 @@ import {
   type EnvironmentThreadState,
   createThreadEnvironmentAtoms,
   createThreadFamilyAtoms,
-} from "@t3tools/client-runtime/state/threads";
-import type { EnvironmentId, ThreadId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/state/threads";
+import type { EnvironmentId, ThreadId } from "@satslab/contracts";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useEffect } from "react";

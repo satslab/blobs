@@ -1,6 +1,6 @@
-import { normalizeGitRemoteUrl } from "@t3tools/shared/git";
-import { isSshRemoteUrl } from "@t3tools/shared/sourceControl";
-import { parseGitRemoteHost } from "@t3tools/source-control-core/shared/definition";
+import { normalizeGitRemoteUrl } from "@satslab/shared/git";
+import { isSshRemoteUrl } from "@satslab/shared/sourceControl";
+import { parseGitRemoteHost } from "@satslab/source-control-core/shared/definition";
 import { definition } from "../shared/definition.ts";
 
 export interface GitHubRepositoryLocator {

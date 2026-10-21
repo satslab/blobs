@@ -17,9 +17,11 @@ it("stays byte-identical to .github/triage/PLAYBOOK.md", () => {
 
 it("launch prompt stays a single argv-safe line naming the prompt file", () => {
   // Windows .cmd shims cannot carry multiline argv.
-  const launch = buildTriageLaunchPrompt(String.raw`C:\Users\a b\.t3\userdata\triage\x\prompt.md`);
+  const launch = buildTriageLaunchPrompt(
+    String.raw`C:\Users\a b\.sora\userdata\triage\x\prompt.md`,
+  );
   assert.notInclude(launch, "\n");
-  assert.include(launch, String.raw`C:\Users\a b\.t3\userdata\triage\x\prompt.md`);
+  assert.include(launch, String.raw`C:\Users\a b\.sora\userdata\triage\x\prompt.md`);
   assert.isBelow(launch.length, 1_000);
 });
 
@@ -29,7 +31,7 @@ it("context file labels the CLI version as the CLI's, not the user's build", () 
     cliVersion: "0.0.42",
     os: "linux x64 (7.2.0)",
     nodeVersion: "v26.8.2",
-    launchedAs: "npx t3 triage",
+    launchedAs: "npx @satslab/sora triage",
     server: "running (pid 42, http://127.0.0.1:3773, version 0.0.43-nightly.20260923.2173)",
     paths: {
       stateDir: "/home/u/.t3/userdata",

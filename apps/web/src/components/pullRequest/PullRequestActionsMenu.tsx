@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import type { ChangeRequestTerminology } from "@t3tools/client-runtime/source-control-clients";
+import type { ChangeRequestTerminology } from "@satslab/client-runtime/source-control-clients";
 import type {
   EnvironmentId,
   PullRequestAction,
@@ -7,7 +7,7 @@ import type {
   PullRequestMergeMethod,
   PullRequestRef,
   ScopedThreadRef,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   ArrowUpRightIcon,
   BookOpenIcon,

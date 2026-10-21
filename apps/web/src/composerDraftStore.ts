@@ -25,7 +25,7 @@ import {
   type ScopedThreadRef,
   ThreadId,
   SnapShotSource,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   parseScopedProjectKey,
   parseScopedThreadKey,
@@ -33,7 +33,7 @@ import {
   scopeProjectRef,
   scopedThreadKey,
   scopeThreadRef,
-} from "@t3tools/client-runtime/environment";
+} from "@satslab/client-runtime/environment";
 import * as Schema from "effect/Schema";
 import * as Equal from "effect/Equal";
 import * as Effect from "effect/Effect";
@@ -42,13 +42,13 @@ import {
   createModelSelection,
   draftModelPickMatchesThread,
   normalizeModelSlug,
-} from "@t3tools/shared/model";
+} from "@satslab/shared/model";
 import { AsyncResult, Atom, type AtomRegistry } from "effect/reactivity";
 import * as Option from "effect/Option";
 import type {
   EnvironmentShellState,
   EnvironmentThreadShell,
-} from "@t3tools/client-runtime/state/shell";
+} from "@satslab/client-runtime/state/shell";
 import { getLocalStorageItem } from "./hooks/useLocalStorage";
 import { readThreadPreviewState } from "./previewStateStore";
 import { resolveAppModelSelection, resolveAppModelSelectionForInstance } from "./modelSelection";
@@ -89,8 +89,8 @@ import {
   replaceComposerContextReferences,
   toComposerContextId,
   toKindScopedComposerContextId,
-} from "@t3tools/shared/composerContextReferences";
-import { UnifiedSettings } from "@t3tools/contracts/settings";
+} from "@satslab/shared/composerContextReferences";
+import { UnifiedSettings } from "@satslab/contracts/settings";
 
 const isElementContextDetails = Schema.is(ElementContextDetails);
 import { ReviewCommentContextSchema, type ReviewCommentContext } from "./reviewCommentContext";
@@ -101,7 +101,7 @@ const isThreadContextRecord = Schema.is(ThreadContextRecord);
 const isSnapShotSource = Schema.is(SnapShotSource);
 const isPreviewAnnotationPayload = Schema.is(PreviewAnnotationPayloadSchema);
 
-export const COMPOSER_DRAFT_STORAGE_KEY = "t3code:composer-drafts:v1";
+export const COMPOSER_DRAFT_STORAGE_KEY = "sora:composer-drafts:v1";
 const COMPOSER_DRAFT_STORAGE_VERSION = 9;
 const DraftThreadEnvModeSchema = Schema.Literals(["local", "worktree"]);
 export type DraftThreadEnvMode = typeof DraftThreadEnvModeSchema.Type;

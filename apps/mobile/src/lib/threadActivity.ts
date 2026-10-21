@@ -2,21 +2,21 @@ import type {
   ThreadPendingApproval,
   ThreadPendingUserInput,
   ThreadUserInputQuestion,
-} from "@t3tools/client-runtime/state/thread-requests";
-import { turnItemIsWorkspacePreparation } from "@t3tools/client-runtime/state/turn-item-presentation";
-import type { ThreadCheckpointSummary } from "@t3tools/client-runtime/state/thread-checkpoints";
-import { formatSubagentDisplayTitle } from "@t3tools/client-runtime/state/subagent-display";
-import { isLiveSubagentTurnItem } from "@t3tools/client-runtime/state/subagentRuntime";
-import { extractToolActivityPresentation } from "@t3tools/client-runtime/work-log/tool-presentation";
+} from "@satslab/client-runtime/state/thread-requests";
+import { turnItemIsWorkspacePreparation } from "@satslab/client-runtime/state/turn-item-presentation";
+import type { ThreadCheckpointSummary } from "@satslab/client-runtime/state/thread-checkpoints";
+import { formatSubagentDisplayTitle } from "@satslab/client-runtime/state/subagent-display";
+import { isLiveSubagentTurnItem } from "@satslab/client-runtime/state/subagentRuntime";
+import { extractToolActivityPresentation } from "@satslab/client-runtime/work-log/tool-presentation";
 import {
   turnItemDetailRevision,
   turnItemHasDetail,
   turnItemNeedsDetailFetch,
-} from "@t3tools/client-runtime/work-log/item-detail";
+} from "@satslab/client-runtime/work-log/item-detail";
 import {
   commandDisplayText,
   commandProgramName,
-} from "@t3tools/client-runtime/work-log/command-label";
+} from "@satslab/client-runtime/work-log/command-label";
 import {
   contextCompactionLabel,
   liveThoughtLine,
@@ -30,13 +30,13 @@ import {
   type ToolGroupSummaryKind,
   type WorkLogPresentationEntry,
   type WorkLogToolLifecycleStatus,
-} from "@t3tools/client-runtime/work-log/presentation";
+} from "@satslab/client-runtime/work-log/presentation";
 import {
   resolveT3McpToolDefinition,
   resolveT3McpToolPresentation,
   type T3McpToolLogo,
   type T3McpToolPresentation,
-} from "@t3tools/shared/t3McpToolPresentation";
+} from "@satslab/shared/t3McpToolPresentation";
 import type {
   ChatAttachment,
   MessageId,
@@ -52,8 +52,8 @@ import type {
   RunAttemptId,
   ScheduledTaskId,
   TurnItemId,
-} from "@t3tools/contracts";
-import { idleCompactionOf, isCompactionCommandMessage, RunId, ThreadId } from "@t3tools/contracts";
+} from "@satslab/contracts";
+import { idleCompactionOf, isCompactionCommandMessage, RunId, ThreadId } from "@satslab/contracts";
 import {
   classifyToolActivity,
   collectToolFilePaths,
@@ -61,22 +61,22 @@ import {
   isJavaScriptReplTool,
   formatReadToolLabel,
   formatSearchToolLabel,
-} from "@t3tools/shared/toolActivity";
-import { claudeResumeCompactionAge } from "@t3tools/shared/claudeCompaction";
-import { formatDuration } from "@t3tools/shared/orchestrationTiming";
-import { truncate } from "@t3tools/shared/String";
-import type { HtmlRenderReference } from "@t3tools/shared/htmlRender";
-import type { McpAppReference } from "@t3tools/shared/mcpApp";
+} from "@satslab/shared/toolActivity";
+import { claudeResumeCompactionAge } from "@satslab/shared/claudeCompaction";
+import { formatDuration } from "@satslab/shared/orchestrationTiming";
+import { truncate } from "@satslab/shared/String";
+import type { HtmlRenderReference } from "@satslab/shared/htmlRender";
+import type { McpAppReference } from "@satslab/shared/mcpApp";
 import {
   compactDynamicToolOutput,
   htmlRenderFromToolItem,
   mcpAppFromToolItem,
-} from "@t3tools/shared/toolOutput";
+} from "@satslab/shared/toolOutput";
 import * as DateTime from "effect/DateTime";
 import {
   IDLE_COMPACTION_TITLES,
   IDLE_COMPACTING_LABELS,
-} from "@t3tools/client-runtime/user-message";
+} from "@satslab/client-runtime/user-message";
 
 export type PendingApproval = ThreadPendingApproval;
 export type PendingUserInput = ThreadPendingUserInput;
@@ -131,7 +131,7 @@ export interface ThreadFeedActivity {
 }
 
 export interface ThreadFeedMessage {
-  readonly context?: import("@t3tools/contracts").OrchestrationMessageContext | undefined;
+  readonly context?: import("@satslab/contracts").OrchestrationMessageContext | undefined;
   readonly id: MessageId;
   readonly role: "user" | "assistant";
   readonly text: string;
@@ -143,7 +143,7 @@ export interface ThreadFeedMessage {
   readonly creationSource?: OrchestrationV2CreationSource;
   readonly scheduledTaskId?: ScheduledTaskId;
   readonly senderThreadId?: ThreadId;
-  readonly idleCompaction?: import("@t3tools/contracts").OrchestrationV2IdleCompaction;
+  readonly idleCompaction?: import("@satslab/contracts").OrchestrationV2IdleCompaction;
   readonly visibility: OrchestrationV2ProjectedTurnItem["visibility"];
   readonly sourceThreadId: ThreadId;
   readonly createdAt: string;
@@ -222,7 +222,7 @@ type ThreadFeedEntryContent =
       readonly summaryKind: ToolGroupSummaryKind;
       readonly toolSurface?: WorkLogPresentationEntry["toolSurface"];
       readonly toolIcon?: WorkLogPresentationEntry["toolIcon"];
-      readonly summaryToolIcon?: "browser" | "device" | "t3-code" | "pull-request";
+      readonly summaryToolIcon?: "browser" | "device" | "sora" | "pull-request";
       readonly hasFailure: boolean;
       readonly live: boolean;
       readonly shimmer: boolean;

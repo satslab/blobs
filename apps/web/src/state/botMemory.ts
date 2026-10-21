@@ -1,5 +1,5 @@
-import { WS_METHODS } from "@t3tools/contracts";
-import { createEnvironmentRpcQueryAtomFamily } from "@t3tools/client-runtime/state/runtime";
+import { WS_METHODS } from "@satslab/contracts";
+import { createEnvironmentRpcQueryAtomFamily } from "@satslab/client-runtime/state/runtime";
 import { connectionAtomRuntime } from "../connection/runtime";
 
 export const botMemory = createEnvironmentRpcQueryAtomFamily(connectionAtomRuntime, {

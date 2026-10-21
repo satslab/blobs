@@ -1,18 +1,18 @@
-import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
+import { scopedThreadKey, scopeThreadRef } from "@satslab/client-runtime/environment";
 import { findForMessageMatch, requestThreadFindQuery } from "./chat/threadFindActionBus";
 import {
   claimThreadOpen,
   nextShownOrder,
   type EnvironmentThreadSearchMatch,
   type ShownOrder,
-} from "@t3tools/client-runtime/state/thread-search";
+} from "@satslab/client-runtime/state/thread-search";
 import {
   foldSearchQuery,
   PALETTE_MESSAGE_LIMIT,
   pickedQuery,
   rankMessageMatches,
-} from "@t3tools/shared/paletteSearch";
-import type { EnvironmentId, ThreadId } from "@t3tools/contracts";
+} from "@satslab/shared/paletteSearch";
+import type { EnvironmentId, ThreadId } from "@satslab/contracts";
 import { useAtomValue } from "@effect/atom-react";
 import { useNavigate } from "@tanstack/react-router";
 import { MessageSquareIcon } from "lucide-react";

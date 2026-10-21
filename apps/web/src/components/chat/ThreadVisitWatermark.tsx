@@ -1,7 +1,7 @@
-import { type ScopedThreadRef } from "@t3tools/contracts";
+import { type ScopedThreadRef } from "@satslab/contracts";
 import { resolveThreadLastVisitedAt } from "../Sidebar.logic";
-import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { claimThreadOpen } from "@t3tools/client-runtime/state/thread-search";
+import { scopedThreadKey, scopeThreadRef } from "@satslab/client-runtime/environment";
+import { claimThreadOpen } from "@satslab/client-runtime/state/thread-search";
 import { useEffect, useRef } from "react";
 import { useUiStateStore } from "../../uiStateStore";
 import { threadEnvironment } from "../../state/threads";

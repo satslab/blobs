@@ -1,4 +1,4 @@
-import { BotId, EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { BotId, EnvironmentId, ThreadId } from "@satslab/contracts";
 import { expect, it } from "vite-plus/test";
 
 import { matchComposerThreadItems, type ComposerThreadCandidate } from "./composerThreadItems.ts";

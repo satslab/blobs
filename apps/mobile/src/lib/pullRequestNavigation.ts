@@ -1,6 +1,6 @@
-import { findProjectForChangeRequest } from "@t3tools/client-runtime/change-request-links";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { findProjectForChangeRequest } from "@satslab/client-runtime/change-request-links";
+import type { EnvironmentProject } from "@satslab/client-runtime/state/shell";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 
 /**
  * Opens a change request in the app only under a project of the link's environment whose own

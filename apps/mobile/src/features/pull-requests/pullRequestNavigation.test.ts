@@ -1,4 +1,4 @@
-import { EnvironmentId, ProjectId, SourceControlProviderKind } from "@t3tools/contracts";
+import { EnvironmentId, ProjectId, SourceControlProviderKind } from "@satslab/contracts";
 import { describe, expect, it } from "vite-plus/test";
 import { nativePullRequestDestination } from "../../lib/pullRequestNavigation";
 

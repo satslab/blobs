@@ -1,5 +1,5 @@
 import { useAuth } from "@clerk/react";
-import { DEFAULT_UNIFIED_SETTINGS } from "@t3tools/contracts/settings";
+import { DEFAULT_UNIFIED_SETTINGS } from "@satslab/contracts/settings";
 import { Link } from "@tanstack/react-router";
 
 import { hasCloudPublicConfig } from "~/cloud/publicConfig";

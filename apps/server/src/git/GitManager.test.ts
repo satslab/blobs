@@ -1,4 +1,4 @@
-import { SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlProviderKind } from "@satslab/contracts";
 // @effect-diagnostics nodeBuiltinImport:off
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
@@ -24,7 +24,7 @@ import type {
   GitActionProgressEvent,
   GitPreparePullRequestThreadInput,
   ModelSelection,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import {
   DEFAULT_SERVER_SETTINGS,
@@ -39,19 +39,19 @@ import {
   TextGenerationError,
   ThreadId,
   TurnItemId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as DateTime from "effect/DateTime";
 import * as TextGeneration from "../textGeneration/TextGeneration.ts";
 import {
   fromRunner,
   decodeJsonReply,
-} from "@t3tools/provider-core/server/textGenerationOperations";
+} from "@satslab/provider-core/server/textGenerationOperations";
 import * as GitVcsDriver from "../vcs/GitVcsDriver.ts";
 import * as VcsProcess from "../vcs/VcsProcess.ts";
 import * as VcsDriverRegistry from "../vcs/VcsDriverRegistry.ts";
 import * as VcsProjectConfig from "../vcs/VcsProjectConfig.ts";
 import * as GitWorkflowService from "./GitWorkflowService.ts";
-import type { SourceControlProvider } from "@t3tools/source-control-core/server/SourceControlProvider";
+import type { SourceControlProvider } from "@satslab/source-control-core/server/SourceControlProvider";
 import * as SourceControlProviderRegistry from "../sourceControl/SourceControlProviderRegistry.ts";
 import * as ServerConfig from "../config.ts";
 import * as ProjectionStore from "../orchestration-v2/ProjectionStore.ts";
@@ -1879,7 +1879,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
       yield* runGit(repoDir, ["add", "fork-pr.txt"]);
       yield* runGit(repoDir, ["commit", "-m", "Fork PR branch"]);
       yield* runGit(repoDir, ["push", "-u", "fork-seed", "statemachine"]);
-      yield* runGit(repoDir, ["checkout", "-b", "t3code/pr-488/statemachine"]);
+      yield* runGit(repoDir, ["checkout", "-b", "sora/pr-488/statemachine"]);
       yield* runGit(repoDir, ["branch", "--set-upstream-to", "fork-seed/statemachine"]);
       yield* configureVisibleRemoteUrlWithLocalRewrite(
         repoDir,
@@ -1910,7 +1910,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
       });
 
       const status = yield* manager.status({ cwd: repoDir });
-      expect(status.refName).toBe("t3code/pr-488/statemachine");
+      expect(status.refName).toBe("sora/pr-488/statemachine");
       expect(status.pr).toEqual({
         number: 488,
         title: "Rebase this PR on latest main",
@@ -1940,7 +1940,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
       yield* runGit(repoDir, ["remote", "set-head", "origin", "main"]);
       yield* runGit(repoDir, ["remote", "add", "fork-seed", forkDir]);
       yield* runGit(repoDir, ["push", "fork-seed", "main"]);
-      yield* runGit(repoDir, ["checkout", "-b", "t3code/pr-777/main"]);
+      yield* runGit(repoDir, ["checkout", "-b", "sora/pr-777/main"]);
       yield* runGit(repoDir, ["branch", "--set-upstream-to", "fork-seed/main"]);
       yield* configureVisibleRemoteUrlWithLocalRewrite(
         repoDir,
@@ -1971,7 +1971,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
       });
 
       const status = yield* manager.status({ cwd: repoDir });
-      expect(status.refName).toBe("t3code/pr-777/main");
+      expect(status.refName).toBe("sora/pr-777/main");
       expect(status.pr).toEqual({
         number: 777,
         title: "Fork PR from main",
@@ -3681,7 +3681,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
       yield* runGit(repoDir, ["add", "changes.txt"]);
       yield* runGit(repoDir, ["commit", "-m", "Feature commit"]);
       yield* runGit(repoDir, ["push", "-u", "fork-seed", "statemachine"]);
-      yield* runGit(repoDir, ["checkout", "-b", "t3code/pr-91/statemachine"]);
+      yield* runGit(repoDir, ["checkout", "-b", "sora/pr-91/statemachine"]);
       yield* runGit(repoDir, ["branch", "--set-upstream-to", "fork-seed/statemachine"]);
       yield* configureVisibleRemoteUrlWithLocalRewrite(
         repoDir,
@@ -4636,7 +4636,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
           yield* runGit(repoDir, ["push", "fork-seed", "main:pr-pagination"]);
         }
         const headBranch = "pr-pagination";
-        const localBranch = isCrossRepository ? "t3code/pr-78/pr-pagination" : headBranch;
+        const localBranch = isCrossRepository ? "sora/pr-78/pr-pagination" : headBranch;
         yield* runGit(repoDir, ["branch", localBranch]);
         yield* runGit(repoDir, ["push", "origin", `${localBranch}:refs/pull/78/head`]);
         const worktreePath = NodePath.join(repoDir, "existing-pr");
@@ -4879,7 +4879,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
           "@{upstream}",
         ])).stdout.trim(),
       ).toBe("origin/main");
-      expect(result.branch).toBe("t3code/pr-94/main");
+      expect(result.branch).toBe("sora/pr-94/main");
       expect(result.worktreePath && NodeFS.realpathSync.native(result.worktreePath)).toBe(
         NodeFS.realpathSync.native(mainWorktreePath),
       );
@@ -4927,7 +4927,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
         "worktree",
         "add",
         "-b",
-        "t3code/pr-83/feature/pr-reused-fork",
+        "sora/pr-83/feature/pr-reused-fork",
         worktreePath,
         "feature/pr-reused-fork",
       ]);
@@ -4964,7 +4964,7 @@ it.layer(layerGitManagerTest)("GitManager", (it) => {
       expect(result.worktreePath && NodeFS.realpathSync.native(result.worktreePath)).toBe(
         NodeFS.realpathSync.native(worktreePath),
       );
-      expect(result.branch).toBe("t3code/pr-83/feature/pr-reused-fork");
+      expect(result.branch).toBe("sora/pr-83/feature/pr-reused-fork");
       expect((yield* runGit(worktreePath, ["branch", "--show-current"])).stdout.trim()).toBe(
         result.branch,
       );
