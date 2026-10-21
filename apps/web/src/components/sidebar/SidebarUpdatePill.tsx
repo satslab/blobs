@@ -1,8 +1,9 @@
-import type { DesktopBridge, DesktopUpdateState } from "@t3tools/contracts";
+import type { DesktopBridge, DesktopUpdateState } from "@satslab/contracts";
 import { TriangleAlertIcon } from "lucide-react";
 import { type ComponentProps, useId, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { settlePromise, squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { settlePromise, squashAtomCommandFailure } from "@satslab/client-runtime/state/runtime";
+import { APP_VERSION } from "../../branding";
 import { isElectron } from "../../env";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { cn } from "../../lib/utils";
@@ -16,6 +17,7 @@ import {
   getDesktopUpdateButtonTooltip,
   getDesktopUpdateDownloadedVersion,
   getDesktopUpdateIdleTooltip,
+  getManualDesktopUpdateVersion,
   getDesktopUpdateInstallConfirmationMessage,
   isDesktopUpdateButtonDisabled,
   resolveDesktopUpdateButtonAction,
@@ -224,6 +226,15 @@ function SidebarUpdateControl() {
     state && action !== "none" ? getDesktopUpdateDownloadedVersion(state) : null;
   const everything = useUpdateEverything(localUpdateVersion);
   const runsEverything = everything.hasUpdates && !isDownloading;
+  // Server-only mode (updater disabled) never installs the app, so surface it as a manual download.
+  const desktopVersion =
+    isElectron && state
+      ? getManualDesktopUpdateVersion({
+          updaterEnabled: state.enabled,
+          currentVersion: APP_VERSION,
+          latestVersion: everything.latestVersion,
+        })
+      : null;
   const run = useUpdateEverythingRun();
   const isRunningEverything = run !== null;
   const showCheckIcon = shouldShowDesktopUpdateCheckIcon({
@@ -238,8 +249,18 @@ function SidebarUpdateControl() {
     isDownloading,
     showCheckIcon,
   });
+  const serverUpdatesOnly = !state?.enabled;
   const idleTooltip =
-    !showUpdateDetails && !showCheckIcon ? getDesktopUpdateIdleTooltip(state) : null;
+    !showUpdateDetails && !showCheckIcon
+      ? serverUpdatesOnly
+        ? {
+            title: everything.isChecking
+              ? "Checking for server updates…"
+              : "Check for server updates",
+            detail: everything.checkError,
+          }
+        : getDesktopUpdateIdleTooltip(state)
+      : null;
   const tooltip = runsEverything
     ? everything.summary
     : showUpdateDetails
@@ -255,7 +276,9 @@ function SidebarUpdateControl() {
       ? false
       : showUpdateDetails
         ? isDesktopUpdateButtonDisabled(state)
-        : !canCheckForUpdate(state);
+        : serverUpdatesOnly
+          ? everything.isChecking
+          : !canCheckForUpdate(state);
   const isInteractionDisabled = disabled || isActionPending || isRunningEverything;
   const showReleaseNotesPopover =
     !isRunningEverything && shouldUseSidebarUpdateReleaseNotesPopover(showUpdateDetails, state);
@@ -276,6 +299,11 @@ function SidebarUpdateControl() {
 
     if (runsEverything) {
       setIsConfirmingEverything(true);
+      return;
+    }
+
+    if (serverUpdatesOnly) {
+      everything.checkForUpdates();
       return;
     }
 
@@ -401,6 +429,7 @@ function SidebarUpdateControl() {
       providerCount={everything.providerCount}
       rows={everything.rows}
       restarts={everything.restarts}
+      desktopVersion={desktopVersion}
       onConfirm={() => void runEverything()}
     />
   );

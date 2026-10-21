@@ -1,5 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 import * as Effect from "effect/Effect";
 import * as Migrator from "effect/sql/Migrator";
 import * as SqlClient from "effect/sql/SqlClient";
@@ -8,7 +8,7 @@ import { migrationManifest, runMigrations } from "./Migrations.ts";
 import BotChat from "./Migrations/073_BotChat.ts";
 import BotProjects from "./Migrations/074_BotProjects.ts";
 
-it.effect.each([68, 69])("upgrades shipped Sora migration history through %s", (lastId) =>
+it.effect.each([68, 69])("upgrades shipped Blobs migration history through %s", (lastId) =>
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient;
     yield* runMigrations({ toMigrationInclusive: 67 });
@@ -33,7 +33,10 @@ it.effect.each([68, 69])("upgrades shipped Sora migration history through %s", (
     const history = yield* sql<{ readonly migration_id: number; readonly name: string }>`
       SELECT migration_id, name FROM effect_sql_migrations ORDER BY migration_id
     `;
-    assert.deepStrictEqual(history.map((row) => [row.migration_id, row.name]), migrationManifest);
+    assert.deepStrictEqual(
+      history.map((row) => [row.migration_id, row.name]),
+      migrationManifest,
+    );
     assert.deepStrictEqual(
       yield* sql`SELECT created_at FROM effect_sql_migrations WHERE migration_id = 70`,
       [{ created_at: "2026-10-20 00:00:00" }],
@@ -56,7 +59,8 @@ it.effect("rejects unknown later fork history without changing data or history",
     const error = yield* runMigrations().pipe(Effect.flip);
     assert.strictEqual(error._tag, "MigrationError");
     assert.deepStrictEqual(
-      yield* sql`SELECT * FROM effect_sql_migrations ORDER BY migration_id`, before,
+      yield* sql`SELECT * FROM effect_sql_migrations ORDER BY migration_id`,
+      before,
     );
   }).pipe(Effect.provide(NodeSqliteClient.layer({ filename: ":memory:" }))),
 );

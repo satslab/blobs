@@ -1,5 +1,5 @@
-import type { OlderSettledScope } from "@t3tools/client-runtime/state/threads";
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { OlderSettledScope } from "@satslab/client-runtime/state/threads";
+import type { EnvironmentId } from "@satslab/contracts";
 import { useMemo, useSyncExternalStore } from "react";
 
 import { scopedProjectKey } from "../../lib/scopedEntities";

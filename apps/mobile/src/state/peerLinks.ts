@@ -3,9 +3,9 @@ import {
   linkableMachines,
   linkedEnvironmentNames,
   offersLinkedEnvironments,
-} from "@t3tools/client-runtime/link-request";
-import { createPeerLinkEnvironmentAtoms } from "@t3tools/client-runtime/state/peerLinks";
-import type { EnvironmentId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/link-request";
+import { createPeerLinkEnvironmentAtoms } from "@satslab/client-runtime/state/peerLinks";
+import type { EnvironmentId } from "@satslab/contracts";
 import { useEffect, useEffectEvent, useMemo } from "react";
 
 import { connectionAtomRuntime } from "../connection/runtime";

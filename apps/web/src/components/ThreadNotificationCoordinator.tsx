@@ -2,11 +2,11 @@ import {
   type EnvironmentThreadShell,
   type PendingSubagentRequest,
   presentThreadShell,
-} from "@t3tools/client-runtime/state/models";
-import { isShownUnderParent } from "@t3tools/client-runtime/state/threads";
+} from "@satslab/client-runtime/state/models";
+import { isShownUnderParent } from "@satslab/client-runtime/state/threads";
 import type { AnyRouter } from "@tanstack/react-router";
-import type { EnvironmentId, OrchestrationV2ThreadShell, ThreadId } from "@t3tools/contracts";
-import type { ClientSettings } from "@t3tools/contracts/settings";
+import type { EnvironmentId, OrchestrationV2ThreadShell, ThreadId } from "@satslab/contracts";
+import type { ClientSettings } from "@satslab/contracts/settings";
 import * as Option from "effect/Option";
 import type { AtomRegistry } from "effect/reactivity";
 import {

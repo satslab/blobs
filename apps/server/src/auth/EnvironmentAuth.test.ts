@@ -2,12 +2,12 @@
 import * as NodeCrypto from "node:crypto";
 
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { authScopeResponse, AuthStandardClientScopes } from "@t3tools/contracts";
+import { authScopeResponse, AuthStandardClientScopes } from "@satslab/contracts";
 import {
   computeDpopAccessTokenHash,
   computeDpopJwkThumbprint,
   type DpopPublicJwk,
-} from "@t3tools/shared/dpop";
+} from "@satslab/shared/dpop";
 import { expect, it } from "@effect/vitest";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -130,7 +130,7 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
       >[0];
 
       const authenticated = yield* serverAuth.authenticateHttpRequest(request);
-      expect(devExchange.cookieName).toMatch(/^t3_dev_session_/);
+      expect(devExchange.cookieName).toMatch(/^sora_dev_session_/);
       expect(devExchange.expireNormalCookie).toBe(true);
       expect(devExchange.response).toMatchObject(authScopeResponse(AuthStandardClientScopes));
       expect(authenticated.scopes).toEqual(["orchestration:read"]);
@@ -300,7 +300,7 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
       const sessions = yield* SessionStore.SessionStore;
       const bearer = yield* serverAuth.issueSession();
       const verified = yield* serverAuth.authenticateHttpRequest({
-        cookies: { [sessions.legacyCookieName ?? "t3_session"]: "stale" },
+        cookies: { [sessions.legacyCookieName ?? "sora_session"]: "stale" },
         headers: { authorization: `Bearer ${bearer.token}` },
       } as never);
 
@@ -443,7 +443,7 @@ it.layer(NodeServices.layer)("EnvironmentAuth.layer", (it) => {
       const paired = yield* serverAuth.exchangeBootstrapCredentialForAccessToken(
         pairing.credential,
         undefined,
-        { ...requestMetadata, label: "T3 Code Desktop" },
+        { ...requestMetadata, label: "Blobs Desktop" },
       );
       const first = yield* serverAuth.exchangeBootstrapCredentialForAccessToken(
         "desktop-bootstrap-token",

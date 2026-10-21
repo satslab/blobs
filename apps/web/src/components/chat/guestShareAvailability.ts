@@ -1,4 +1,4 @@
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@satslab/contracts";
 import { Atom } from "effect/reactivity";
 
 import { environmentPresentations } from "~/state/presentation";

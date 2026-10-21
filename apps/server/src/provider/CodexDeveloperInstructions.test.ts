@@ -1,6 +1,6 @@
 import * as NodeAssert from "node:assert/strict";
 
-import { T3_CODE_DEVICE_TOOL_INSTRUCTIONS } from "@t3tools/provider-core/server/orchestrationInstructions";
+import { T3_CODE_DEVICE_TOOL_INSTRUCTIONS } from "@satslab/provider-core/server/orchestrationInstructions";
 import { describe, it } from "vite-plus/test";
 
 import {
@@ -90,5 +90,5 @@ describe("Codex device context", () => {
 });
 
 function runtimeInstructions(runtime: Parameters<typeof buildCodexAdditionalContext>[0]) {
-  return buildCodexAdditionalContext(runtime).t3_code_runtime!.value;
+  return buildCodexAdditionalContext(runtime).sora_code_runtime!.value;
 }

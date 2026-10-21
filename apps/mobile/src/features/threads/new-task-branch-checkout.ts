@@ -1,6 +1,6 @@
-import type { AtomCommandResult } from "@t3tools/client-runtime/state/runtime";
-import type { VcsRef } from "@t3tools/client-runtime/state/vcs";
-import { EnvironmentId } from "@t3tools/contracts";
+import type { AtomCommandResult } from "@satslab/client-runtime/state/runtime";
+import type { VcsRef } from "@satslab/client-runtime/state/vcs";
+import { EnvironmentId } from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import { Atom } from "effect/reactivity";

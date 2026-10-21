@@ -1,6 +1,6 @@
 import { useAtomRefresh } from "@effect/atom-react";
-import { type EnvironmentId, type ProviderInstanceId } from "@t3tools/contracts";
-import { createProviderWorkspaceSnapshotRefreshAtomFamily } from "@t3tools/client-runtime/providerSkills";
+import { type EnvironmentId, type ProviderInstanceId } from "@satslab/contracts";
+import { createProviderWorkspaceSnapshotRefreshAtomFamily } from "@satslab/client-runtime/providerSkills";
 import { Atom } from "effect/reactivity";
 
 import { serverEnvironment } from "../../state/server";

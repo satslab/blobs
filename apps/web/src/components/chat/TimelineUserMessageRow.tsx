@@ -1,5 +1,5 @@
 import { InlineAudioPreview } from "../files/InlineAudioPreview";
-import { filePreviewKind } from "@t3tools/shared/filePreview";
+import { filePreviewKind } from "@satslab/shared/filePreview";
 import { findRevealRef } from "./markdownFindContext";
 import {
   type EnvironmentId,
@@ -7,13 +7,13 @@ import {
   type ScheduledTaskId,
   type ServerProviderSkill,
   ThreadId,
-} from "@t3tools/contracts";
-import { resolveUserMessagePresentation } from "@t3tools/client-runtime/user-message";
+} from "@satslab/contracts";
+import { resolveUserMessagePresentation } from "@satslab/client-runtime/user-message";
 import { Link } from "@tanstack/react-router";
 import { useQuietThreadShell } from "../../state/entities";
 import { useEnvironmentQuery } from "../../state/query";
 import { serverEnvironment } from "../../state/server";
-import { replaceComposerContextReferences } from "@t3tools/shared/composerContextReferences";
+import { replaceComposerContextReferences } from "@satslab/shared/composerContextReferences";
 import { memo, use, useState, type ReactNode } from "react";
 import {
   createMessageAttachmentPreviewProjector,
@@ -65,12 +65,12 @@ import {
 import {
   collectComposerContextReferences,
   formatComposerContextReference,
-} from "@t3tools/shared/composerContextReferences";
+} from "@satslab/shared/composerContextReferences";
 import {
   COMPOSER_CONTEXT_CLIPBOARD_MIME,
   encodeComposerContextClipboardHtml,
   encodeComposerContextFragment,
-} from "@t3tools/shared/composerContextClipboard";
+} from "@satslab/shared/composerContextClipboard";
 import { chatMarkdownClipboardPayload } from "../../markdown-clipboard";
 import type { ChatMarkdownContextReference } from "../ChatMarkdown";
 import { cn } from "~/lib/utils";
@@ -744,12 +744,9 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
       )}
       data-user-message-attribution={folded ? "agent" : undefined}
     >
-      {userMessage.attribution === "t3code" ? (
-        <p
-          className="me-1 text-2xs text-muted-foreground/70"
-          data-user-message-attribution="t3code"
-        >
-          Sent by T3 Code
+      {userMessage.attribution === "blobs" ? (
+        <p className="me-1 text-2xs text-muted-foreground/70" data-user-message-attribution="blobs">
+          Sent by Blobs
         </p>
       ) : null}
       {/* The row's heading already names the guest for screen readers. */}

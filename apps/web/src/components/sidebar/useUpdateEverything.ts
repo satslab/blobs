@@ -1,11 +1,12 @@
 import { useAtomValue } from "@effect/atom-react";
-import { PROVIDER_DISPLAY_NAMES } from "@t3tools/contracts";
+import { PROVIDER_DISPLAY_NAMES } from "@satslab/contracts";
 
 import { APP_VERSION } from "~/branding";
 import { isDesktopLocalConnectionTarget } from "~/connection/desktopLocal";
 import { isElectron } from "~/env";
 import { useEnvironments } from "~/state/environments";
-import { useNpmReleasePublished } from "~/state/npmRelease";
+import { cliReleaseChannelOf } from "@satslab/shared/cliRelease";
+import { useCliReleasePublished, useLatestCliRelease } from "~/state/cliRelease";
 import { environmentIdsKey } from "~/state/environmentAtomList";
 import { environmentUpdateStatesAtom } from "~/state/server";
 import { environmentSessionStatesAtom } from "~/state/session";
@@ -54,7 +55,8 @@ export function useUpdateEverything(
   localUpdateVersion: string | null,
   channelSwitch?: ChannelSwitchRelease,
 ) {
-  const targetVersion = localUpdateVersion ?? APP_VERSION;
+  const latestRelease = useLatestCliRelease(cliReleaseChannelOf(APP_VERSION));
+  const targetVersion = localUpdateVersion ?? latestRelease.data ?? APP_VERSION;
   const { environments } = useEnvironments();
   const environmentIds = environmentIdsKey(environments.map(({ environmentId }) => environmentId));
   const sessionStates = useAtomValue(environmentSessionStatesAtom(environmentIds));
@@ -68,7 +70,7 @@ export function useUpdateEverything(
     canMaintain: canUpdateServer(sessionStates[index]!),
     updateState: updateStates[index]!,
   }));
-  // A track switch's target came from npm already.
+  // A track switch's target came from GitHub already.
   const {
     targets: behindServers,
     skipped: unreachable,
@@ -76,7 +78,7 @@ export function useUpdateEverything(
   } = channelSwitch
     ? { ...collectChannelSwitchTargets(machines, channelSwitch), waitForNpm: [] }
     : collectServerUpdateTargets(machines, targetVersion, localUpdateVersion !== null);
-  const published = useNpmReleasePublished(waitForNpm.length > 0 ? targetVersion : null);
+  const published = useCliReleasePublished(waitForNpm.length > 0 ? targetVersion : null);
   const servers = published
     ? behindServers
     : behindServers.filter((server) => !waitForNpm.includes(server));
@@ -87,7 +89,7 @@ export function useUpdateEverything(
       .map((server) => ({
         environmentId: server.environmentId,
         label: server.serverLabel,
-        reason: `t3@${targetVersion} is not on npm yet`,
+        reason: `@satslab/blobs@${targetVersion} is not released yet`,
       })),
   ];
   // Track-only hosts save a setting and restart nothing, so they are neither listed nor counted.
@@ -113,6 +115,10 @@ export function useUpdateEverything(
   });
 
   return {
+    checkForUpdates: latestRelease.refresh,
+    isChecking: latestRelease.isPending,
+    checkError: latestRelease.error,
+    latestVersion: latestRelease.data ?? null,
     hasUpdates: servers.length > 0 || providers.machines.length > 0,
     ...view,
     restarts,

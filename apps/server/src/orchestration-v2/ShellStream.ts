@@ -10,14 +10,14 @@ import type {
   OrchestrationV2StoredEvent,
   ProjectId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   isLiveSubagentShell,
   isOlderSettledThreadShell,
   OrchestrationProjectShell as ProjectShellSchema,
   OrchestrationV2ThreadShell as ThreadShellSchema,
-} from "@t3tools/contracts";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+} from "@satslab/contracts";
+import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 import type * as Arr from "effect/Array";
 import type * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";

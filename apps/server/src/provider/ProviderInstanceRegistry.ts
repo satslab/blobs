@@ -9,7 +9,7 @@ import {
   type SecretReference,
   secretReferencesInSettings,
   type ServerProvider,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Equal from "effect/Equal";
@@ -27,7 +27,7 @@ import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretReso
 
 import { buildUnavailableProviderSnapshot } from "./unavailableProviderSnapshot.ts";
 import * as ProviderInstanceRegistryMutator from "./ProviderInstanceRegistryMutator.ts";
-import type { AnyProviderDriver, ProviderInstance } from "@t3tools/provider-core/server/driver";
+import type { AnyProviderDriver, ProviderInstance } from "@satslab/provider-core/server/driver";
 
 export class ProviderInstanceRegistry extends Context.Service<
   ProviderInstanceRegistry,
@@ -41,7 +41,7 @@ export class ProviderInstanceRegistry extends Context.Service<
     readonly streamChanges: Stream.Stream<void>;
     readonly subscribeChanges: Effect.Effect<PubSub.Subscription<void>, never, Scope.Scope>;
   }
->()("t3/provider/ProviderInstanceRegistry") {}
+>()("@satslab/blobs/provider/ProviderInstanceRegistry") {}
 
 interface InstanceSecrets {
   readonly environment: ResolvedProviderInstanceEnvironment;

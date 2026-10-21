@@ -1,4 +1,4 @@
-import { SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlProviderKind } from "@satslab/contracts";
 import { assert, it, vi } from "@effect/vitest";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import * as ConfigProvider from "effect/ConfigProvider";
@@ -15,9 +15,9 @@ import * as Schema from "effect/Schema";
 import * as TestClock from "effect/testing/TestClock";
 import { HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/http";
 
-import * as SourceControlRateLimit from "@t3tools/source-control-core/server/SourceControlRateLimit";
-import type * as SourceControlHost from "@t3tools/source-control-core/server/SourceControlHost";
-import * as TestSourceControlHost from "@t3tools/source-control-testing/TestSourceControlHost";
+import * as SourceControlRateLimit from "@satslab/source-control-core/server/SourceControlRateLimit";
+import type * as SourceControlHost from "@satslab/source-control-core/server/SourceControlHost";
+import * as TestSourceControlHost from "@satslab/source-control-testing/TestSourceControlHost";
 
 import * as BitbucketApi from "./BitbucketApi.ts";
 
@@ -137,9 +137,9 @@ function makeLayer(input: {
       ConfigProvider.layer(
         ConfigProvider.fromEnv({
           env: input.env ?? {
-            T3CODE_BITBUCKET_API_BASE_URL: "https://api.test.local/2.0",
-            T3CODE_BITBUCKET_EMAIL: "user@example.com",
-            T3CODE_BITBUCKET_API_TOKEN: "token",
+            BLOBS_BITBUCKET_API_BASE_URL: "https://api.test.local/2.0",
+            BLOBS_BITBUCKET_EMAIL: "user@example.com",
+            BLOBS_BITBUCKET_API_TOKEN: "token",
           },
         }),
       ),
@@ -697,7 +697,7 @@ it.effect("never puts a saved token that is unsafe for an HTTP header on the wir
 it.effect("reports saved credentials as configured when Bitbucket cannot confirm them", () => {
   const { execute, layer } = makeLayer({
     response: () => new Response(null, { status: 401 }),
-    env: { T3CODE_BITBUCKET_API_BASE_URL: "https://api.test.local/2.0" },
+    env: { BLOBS_BITBUCKET_API_BASE_URL: "https://api.test.local/2.0" },
   });
 
   return Effect.gen(function* () {
@@ -790,17 +790,17 @@ it.effect("checks out fork pull requests through an ensured fork remote", () => 
       cwd: "/repo",
       remoteName: "octocat",
       remoteBranch: "main",
-      localBranch: "t3code/pr-42/main",
+      localBranch: "blobs/pr-42/main",
     });
     assert.deepStrictEqual(git.setBranchUpstream.mock.calls[0]?.[0], {
       cwd: "/repo",
-      branch: "t3code/pr-42/main",
+      branch: "blobs/pr-42/main",
       remoteName: "octocat",
       remoteBranch: "main",
     });
     assert.deepStrictEqual(git.switchRef.mock.calls[0]?.[0], {
       cwd: "/repo",
-      refName: "t3code/pr-42/main",
+      refName: "blobs/pr-42/main",
     });
   }).pipe(Effect.provide(layer));
 });

@@ -1,9 +1,9 @@
-import type { ServerDirectEndpoint } from "@t3tools/contracts";
+import type { ServerDirectEndpoint } from "@satslab/contracts";
 import {
   buildTailscaleHttpsBaseUrl,
   probeTailscaleHttpsEndpoint,
   readTailscaleStatus,
-} from "@t3tools/tailscale";
+} from "@satslab/tailscale";
 import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
@@ -14,7 +14,7 @@ import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 import * as NodeNet from "node:net";
 import * as NodeOS from "node:os";
 
-import { isTailnetHost } from "@t3tools/shared/hostClassification";
+import { isTailnetHost } from "@satslab/shared/hostClassification";
 
 import * as ServerConfig from "../config.ts";
 import {
@@ -35,7 +35,7 @@ export class DirectEndpoints extends Context.Service<
   {
     readonly resolve: () => Effect.Effect<ReadonlyArray<ServerDirectEndpoint>>;
   }
->()("t3/environment/DirectEndpoints") {}
+>()("@satslab/blobs/environment/DirectEndpoints") {}
 
 // Credentials travel over HTTP; public IPs leak them and hostnames can resolve differently per client.
 const isAdvertisableAddress = (address: string): boolean =>

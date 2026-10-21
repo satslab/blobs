@@ -155,7 +155,9 @@ const CHAT_MARKDOWN_SANITIZE_SCHEMA = {
     href: [
       ...(defaultSchema.protocols?.href ?? []),
       "file",
+      "blobs-citation",
       "t3-citation",
+      "t3-thread",
       "t3-context",
       THREAD_LINK_PROTOCOL,
     ],

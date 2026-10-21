@@ -1,4 +1,4 @@
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@satslab/shared/HostProcess";
 import {
   listLoginShellCandidates,
   mergePathEntries,
@@ -6,7 +6,7 @@ import {
   readPathFromLaunchctl,
   resolveWindowsEnvironment,
   setWindowsPath,
-} from "@t3tools/shared/shell";
+} from "@satslab/shared/shell";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
@@ -123,7 +123,12 @@ export const expandHomePath = Effect.fn(function* (input: string) {
 export const resolveBaseDir = Effect.fn(function* (raw: string | undefined) {
   const { join, resolve } = yield* Path.Path;
   if (!raw || raw.trim().length === 0) {
-    return join(yield* HostProcess.HomeDirectory, ".t3");
+    const home = yield* HostProcess.HomeDirectory;
+    const fs = yield* FileSystem.FileSystem;
+    // Installs from before the Blobs rename keep using ~/.sora until it is moved.
+    const legacy = join(home, ".sora");
+    const current = join(home, ".blobs");
+    return !(yield* fs.exists(current)) && (yield* fs.exists(legacy)) ? legacy : current;
   }
   return resolve(yield* expandHomePath(raw.trim()));
 });

@@ -3,14 +3,14 @@ import { useSelectedSettingsBot } from "./bots/useSelectedSettingsBot";
 import { validateSettingsScopeSearch } from "./settings/settingsScope";
 import { useBotThreadContext, useBots } from "../state/bots";
 
-import { threadPullRequestLinkMode } from "@t3tools/client-runtime/thread-pull-request-compatibility";
-import { visibleThreadPullRequests } from "@t3tools/shared/threadPullRequests";
+import { threadPullRequestLinkMode } from "@satslab/client-runtime/thread-pull-request-compatibility";
+import { visibleThreadPullRequests } from "@satslab/shared/threadPullRequests";
 
 import {
   scopedThreadKey,
   scopeProjectRef,
   scopeThreadRef,
-} from "@t3tools/client-runtime/environment";
+} from "@satslab/client-runtime/environment";
 import {
   canCreateProjectInEnvironment,
   getCloneDestinationBrowsePath,
@@ -28,21 +28,21 @@ import {
   sortAddProjectProviderSources,
   type AddProjectRemoteSource,
   type AddProjectRemoteSourceReadiness,
-} from "@t3tools/client-runtime/operations/projects";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
-import { connectionStatusText } from "@t3tools/client-runtime/connection";
-import { resolveThreadReferenceCopyTarget } from "@t3tools/client-runtime/thread-reference";
+} from "@satslab/client-runtime/operations/projects";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
+import { connectionStatusText } from "@satslab/client-runtime/connection";
+import { resolveThreadReferenceCopyTarget } from "@satslab/client-runtime/thread-reference";
 import {
   canPreloadBrowsePath,
   createBrowseNavigationCoordinator,
   filterFilesystemBrowseEntries,
   getFilesystemBrowsePath,
-} from "@t3tools/client-runtime/state/filesystem";
+} from "@satslab/client-runtime/state/filesystem";
 import {
   isAtomCommandInterrupted,
   settlePromise,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@satslab/client-runtime/state/runtime";
 import {
   AuthOrchestrationOperateScope,
   AuthSourceControlWriteScope,
@@ -53,7 +53,7 @@ import {
   SourceControlProviderKind,
   PRIMARY_LOCAL_ENVIRONMENT_ID,
   resolveEnvironmentMachineKind,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import {
   ArrowLeftIcon,
@@ -139,7 +139,7 @@ import {
   isScratchProject,
   isUnsupportedWindowsProjectPath,
   resolveProjectPathForDispatch,
-} from "@t3tools/client-runtime/state/projects";
+} from "@satslab/client-runtime/state/projects";
 import {
   dispatchCommandPalette,
   getCommandPaletteReturnFocus,
@@ -147,7 +147,7 @@ import {
   useCommandPaletteStore,
 } from "../commandPaletteStore";
 import { PULL_REQUESTS_PANEL_REF, useRightPanelStore } from "../rightPanelStore";
-import { getLatestThreadForProject, sortThreads } from "@t3tools/client-runtime/state/thread-sort";
+import { getLatestThreadForProject, sortThreads } from "@satslab/client-runtime/state/thread-sort";
 import {
   cn,
   getLocalFileManagerName,
@@ -245,7 +245,7 @@ import { buildSidebarProjectPickerEntries } from "../sidebarProjectGrouping";
 import { PullRequestGlyph } from "~/components/pullRequest/pullRequestIcons";
 import { readPullRequestListPreferences } from "~/components/pullRequest/pullRequestListPreferences";
 import { useThreadRouteTarget } from "../hooks/useThreadRouteTarget";
-import { threadRecentUse } from "@t3tools/shared/paletteSearch";
+import { threadRecentUse } from "@satslab/shared/paletteSearch";
 
 const EMPTY_BROWSE_ENTRIES: FilesystemBrowseResult["entries"] = [];
 const ADD_PROJECT_ENTRY_GROUP = "add-project";
@@ -728,7 +728,7 @@ function OpenCommandPaletteDialog(props: {
     });
   };
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- invalidates the browse navigation coordinator and in-flight clone lookups when the palette session unmounts
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- invalidates the browse navigation coordinator and in-flight clone lookups when the palette session unmounts
   useEffect(
     () => () => {
       browseNavigation.invalidate();
@@ -1594,7 +1594,7 @@ function OpenCommandPaletteDialog(props: {
         "grouping",
         "checkout",
         "remove",
-        "t3.json",
+        "blobs.json",
       ],
       title: "Project settings",
       description: contextualProjectGroup.displayName,

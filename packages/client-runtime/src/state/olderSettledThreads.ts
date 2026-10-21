@@ -9,7 +9,7 @@ import {
   type OrchestrationV2ThreadShell,
   type ProjectId,
   type ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";

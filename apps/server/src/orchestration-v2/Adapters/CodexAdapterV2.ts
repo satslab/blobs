@@ -1,9 +1,9 @@
 import { pipe } from "effect/Function";
 import * as DocumentText from "../../provider/DocumentText.ts";
-import { buildBotSystemPrompt } from "@t3tools/provider-core/server/botInstructions";
+import { buildBotSystemPrompt } from "@satslab/provider-core/server/botInstructions";
 import * as CodexBotPolicy from "../../provider/CodexBotPolicy.ts";
 import { revertCodexThread } from "../../provider/CodexThreadRevert.ts";
-import { historyResponseItems } from "@t3tools/provider-core/server/handoffBudget";
+import { historyResponseItems } from "@satslab/provider-core/server/handoffBudget";
 import { makeProviderTextDeltaCoalescer } from "./ProviderTextDeltaCoalescer.ts";
 import {
   mcpToolPresentation,
@@ -16,7 +16,7 @@ import {
   completeCodexTurnTokenUsage,
   type CodexTurnTokenUsageState,
 } from "../../provider/CodexTurnTokenUsage.ts";
-import type { ManagedServerProvider } from "@t3tools/provider-core/server/snapshot";
+import type { ManagedServerProvider } from "@satslab/provider-core/server/snapshot";
 import type { CodexEffectiveRuntime } from "../../provider/CodexManagedRuntime.ts";
 import { classifyCodexManagedError } from "../../provider/CodexManagedErrors.ts";
 import {
@@ -40,18 +40,18 @@ import {
   ProviderDriverKind,
   ProviderSetupError,
   type ServerProviderCompatibilityAdvisory,
-} from "@t3tools/contracts";
-import { SKILL_MENTION_PATTERN } from "@t3tools/shared/composerInlineTokens";
-import { AgentScope } from "@t3tools/shared/AgentScope";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+} from "@satslab/contracts";
+import { SKILL_MENTION_PATTERN } from "@satslab/shared/composerInlineTokens";
+import { AgentScope } from "@satslab/shared/AgentScope";
+import * as HostProcess from "@satslab/shared/HostProcess";
 import {
   COMPUTER_USE_TOOL_SOURCE,
   dynamicToolSurface,
   dynamicToolTitle,
-} from "@t3tools/shared/toolActivity";
-import { getModelSelectionStringOptionValue, modelSelectionsEqual } from "@t3tools/shared/model";
-import { appendGeneratedImageEmbeds } from "@t3tools/shared/generatedImageMarkdown";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
+} from "@satslab/shared/toolActivity";
+import { getModelSelectionStringOptionValue, modelSelectionsEqual } from "@satslab/shared/model";
+import { appendGeneratedImageEmbeds } from "@satslab/shared/generatedImageMarkdown";
+import { resolveSpawnCommand } from "@satslab/shared/shell";
 import type {
   ChatAttachment,
   OrchestrationV2AppThread,
@@ -78,7 +78,7 @@ import type {
   ProviderInstanceId,
   RuntimeMode,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as CodexClient from "effect-codex-app-server/client";
 import * as CodexErrors from "effect-codex-app-server/errors";
 import * as CodexSchema from "effect-codex-app-server/schema";
@@ -105,7 +105,7 @@ import { ChildProcess, ChildProcessSpawner } from "effect/process";
 import { resolveAttachmentPath, resolveAttachmentPathById } from "../../attachmentStore.ts";
 import { getCodexServiceTierOptionValue } from "../../codexModelOptions.ts";
 import { ServerConfig } from "../../config.ts";
-import { expandHomePath } from "@t3tools/provider-core/server/pathExpansion";
+import { expandHomePath } from "@satslab/provider-core/server/pathExpansion";
 import { buildCodexAdditionalContext } from "../../provider/CodexDeveloperInstructions.ts";
 import {
   describeMcpElicitation,
@@ -119,44 +119,41 @@ import {
   boundProviderEventForLogging,
   shouldPersistProviderEvent,
 } from "../../provider/EventNdjsonLogger.ts";
-import * as ProviderEventLoggers from "@t3tools/provider-core/server/ProviderEventLoggers";
-import {
-  codexAppServerArgs,
-  resolveCodexLaunchArgs,
-} from "../../provider/codexLaunchArgs.ts";
-import { mergeProviderInstanceEnvironment } from "@t3tools/provider-core/server/instanceEnvironment";
-import * as McpProviderSession from "@t3tools/provider-core/server/mcpSession";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
+import * as ProviderEventLoggers from "@satslab/provider-core/server/ProviderEventLoggers";
+import { codexAppServerArgs, resolveCodexLaunchArgs } from "../../provider/codexLaunchArgs.ts";
+import { mergeProviderInstanceEnvironment } from "@satslab/provider-core/server/instanceEnvironment";
+import * as McpProviderSession from "@satslab/provider-core/server/mcpSession";
+import * as McpProviderSessions from "@satslab/provider-core/server/McpProviderSessions";
 import {
   MCP_APP_EXTENSION_ID,
   MCP_APP_MIME_TYPE,
   MCP_APP_OUTPUT_KEY,
   MCP_APP_RESOURCE_SCHEME,
-} from "@t3tools/shared/mcpApp";
+} from "@satslab/shared/mcpApp";
 import { snapshotMcpApp } from "../../mcpApps/McpAppSnapshot.ts";
 import {
   ProviderAdapterDriverCreateError,
   type ProviderAdapterDriverCreateInput,
-} from "@t3tools/provider-core/server/adapterDriver";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
-import { backgroundWorkNotification } from "@t3tools/provider-core/server/notification";
+} from "@satslab/provider-core/server/adapterDriver";
+import * as ProviderContinuationRequests from "@satslab/provider-core/server/ProviderContinuationRequests";
+import { backgroundWorkNotification } from "@satslab/provider-core/server/notification";
 import {
   makeProviderFailure,
   makeProviderFailureTurnItem,
   makeProviderRetryTurnItem,
-} from "@t3tools/provider-core/server/failure";
-import { turnScopedSelectionTransition } from "@t3tools/provider-core/server/selectionTransition";
+} from "@satslab/provider-core/server/failure";
+import { turnScopedSelectionTransition } from "@satslab/provider-core/server/selectionTransition";
 import {
   isProviderNativeImageAttachment,
   providerMessageTextWithAttachmentPaths,
-} from "@t3tools/provider-core/server/attachmentPrompt";
+} from "@satslab/provider-core/server/attachmentPrompt";
 import {
   makeSubagentChildThread,
   makeSubagentConversationArtifacts,
   subagentThreadTitle,
-} from "@t3tools/provider-core/server/subagentProjection";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
+} from "@satslab/provider-core/server/subagentProjection";
+import * as IdAllocator from "@satslab/provider-core/server/IdAllocator";
+import * as ProviderAdapter from "@satslab/provider-core/server/ProviderAdapter";
 
 const CODEX_PROVIDER = ProviderDriverKind.make("codex");
 const CODEX_CAPACITY_MAX_RETRIES = 5;
@@ -1318,7 +1315,7 @@ export interface CodexAppServerClientFactoryShape {
 export class CodexAppServerClientFactory extends Context.Service<
   CodexAppServerClientFactory,
   CodexAppServerClientFactoryShape
->()("t3/orchestration-v2/Adapters/CodexAdapterV2/CodexAppServerClientFactory") {}
+>()("@satslab/blobs/orchestration-v2/Adapters/CodexAdapterV2/CodexAppServerClientFactory") {}
 
 /** MCP startup grace in milliseconds; the 1 s default excludes cold npx/uvx servers from the first model request. */
 export const CODEX_THREAD_CONFIG = {
@@ -1327,7 +1324,7 @@ export const CODEX_THREAD_CONFIG = {
 } as const;
 
 // T3 waits can block for an hour; keep Codex's MCP timeout above that.
-const CODEX_T3_MCP_TOOL_TIMEOUT_SEC = 65 * 60;
+const CODEX_BLOBS_MCP_TOOL_TIMEOUT_SEC = 65 * 60;
 
 export function codexThreadRuntimeParams(input: {
   readonly mcpSession: McpProviderSession.McpProviderSessionConfig | undefined;
@@ -1364,9 +1361,9 @@ export function codexThreadRuntimeParams(input: {
         ? {}
         : {
             // Override only T3's server so launch-argument MCP servers survive.
-            "mcp_servers.t3-code": {
+            "mcp_servers.blobs": {
               url: mcpSession.endpoint,
-              tool_timeout_sec: CODEX_T3_MCP_TOOL_TIMEOUT_SEC,
+              tool_timeout_sec: CODEX_BLOBS_MCP_TOOL_TIMEOUT_SEC,
               http_headers: {
                 Authorization: mcpSession.authorizationHeader,
               },

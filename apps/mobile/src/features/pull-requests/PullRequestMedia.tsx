@@ -1,13 +1,13 @@
 import { createContext, useContext, useState } from "react";
 import { pullRequestMediaSource, pullRequestImageSource } from "./pullRequestMediaSource";
 import { useFilePreviewGallery } from "../../components/FilePreviewGallery";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import {
   SOURCE_CONTROL_MEDIA_ASSET,
   type AssetResource,
   type EnvironmentId,
-} from "@t3tools/contracts";
-import { videoMimeType } from "@t3tools/shared/video";
+} from "@satslab/contracts";
+import { videoMimeType } from "@satslab/shared/video";
 import { Pressable, View } from "react-native";
 import { Image } from "expo-image";
 import { AppText } from "../../components/ui/AppText";

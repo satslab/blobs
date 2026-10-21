@@ -5,7 +5,7 @@ import * as Clock from "effect/Clock";
 import type {
   RelayClientInstallProgressEvent,
   RelayClientInstallProgressStage,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Config from "effect/Config";
 import * as Context from "effect/Context";
 import * as Crypto from "effect/Crypto";
@@ -29,7 +29,7 @@ import * as HostProcess from "./HostProcess.ts";
 export const CLOUDFLARED_VERSION = "2026.10.4";
 // Minimum for --output support; older connectors exit on that flag.
 export const CLOUDFLARED_MIN_VERSION = "2025.6.1";
-const CLOUDFLARED_PATH_ENV_NAME = "T3CODE_CLOUDFLARED_PATH";
+const CLOUDFLARED_PATH_ENV_NAME = "BLOBS_CLOUDFLARED_PATH";
 
 const CLOUDFLARED_DOWNLOAD_TIMEOUT = "10 minutes";
 
@@ -159,7 +159,7 @@ export function isPinnedManagedRelayClient(client: AvailableRelayClient): boolea
 }
 
 export class RelayClient extends Context.Service<RelayClient, RelayClientShape>()(
-  "@t3tools/shared/relayClient",
+  "@satslab/shared/relayClient",
 ) {}
 
 function executableFileName(platform: NodeJS.Platform): string {
@@ -567,7 +567,7 @@ export const makeCloudflaredRelayClient = Effect.fn("cloudflared.make")(function
     if (!releaseAsset) {
       return yield* new RelayClientInstallError({
         reason: "unsupported_platform",
-        message: `T3 Code does not provide a managed relay client binary for ${platform}-${arch}.`,
+        message: `Blobs does not provide a managed relay client binary for ${platform}-${arch}.`,
       });
     }
 

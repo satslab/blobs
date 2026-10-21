@@ -1,7 +1,7 @@
-import { type ServerProviderAuth, type ServerProviderModel } from "@t3tools/contracts";
+import { type ServerProviderAuth, type ServerProviderModel } from "@satslab/contracts";
 import type { FxSettings } from "../settings.ts";
-import { createModelCapabilities } from "@t3tools/shared/model";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
+import { createModelCapabilities } from "@satslab/shared/model";
+import { resolveSpawnCommand } from "@satslab/shared/shell";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
@@ -27,7 +27,7 @@ import {
   providerModelsFromSettings,
   type ServerProviderDraft,
   spawnAndCollect,
-} from "@t3tools/provider-core/server/snapshotProbe";
+} from "@satslab/provider-core/server/snapshotProbe";
 
 const FX_PRESENTATION = {
   displayName: "fx",

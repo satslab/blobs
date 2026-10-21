@@ -1,5 +1,5 @@
 import { useAuth, useClerk } from "@clerk/react";
-import { readConnectAuthorizeRequest } from "@t3tools/shared/connectAuth";
+import { readConnectAuthorizeRequest } from "@satslab/shared/connectAuth";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import {
@@ -15,7 +15,7 @@ const invalidLinkMessage = {
   context: "Authorization request",
   title: "This connect link is incomplete",
   description:
-    "The link is missing its authorization request. Re-run `t3 connect` in your terminal and open the freshly printed URL.",
+    "The link is missing its authorization request. Re-run `blobs connect` in your terminal and open the freshly printed URL.",
 } as const;
 
 export function ConnectCliAuthorizeSurface() {

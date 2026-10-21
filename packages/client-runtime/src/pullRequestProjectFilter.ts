@@ -1,4 +1,4 @@
-import type { EnvironmentId, ProjectId } from "@t3tools/contracts";
+import type { EnvironmentId, ProjectId } from "@satslab/contracts";
 
 interface FilterProject {
   readonly id: ProjectId;

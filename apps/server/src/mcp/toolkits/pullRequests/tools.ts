@@ -9,7 +9,7 @@ import {
   ThreadPullRequestLinkSource,
   TrimmedNonEmptyString,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import * as Schema from "effect/Schema";
 import * as McpSchema from "effect/ai/McpSchema";
 import * as Tool from "effect/ai/Tool";
@@ -172,7 +172,7 @@ export class PullRequestProjectNotFoundError extends Schema.TaggedError<PullRequ
   { repository: Schema.String },
 ) {
   override get message(): string {
-    return `No project in this environment is a checkout of ${this.repository}, so its pull requests cannot be read here. Add one with t3_project_create.`;
+    return `No project in this environment is a checkout of ${this.repository}, so its pull requests cannot be read here. Add one with s3_project_create.`;
   }
 }
 

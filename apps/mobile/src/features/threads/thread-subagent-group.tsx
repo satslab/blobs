@@ -1,14 +1,14 @@
 import { useAtomValue } from "@effect/atom-react";
 import { StackActions, useNavigation } from "@react-navigation/native";
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { summarizeSubagentStatuses } from "@t3tools/client-runtime/state/subagent-display";
-import { isActiveSubagentStatus } from "@t3tools/client-runtime/state/subagentRuntime";
+import { scopeThreadRef } from "@satslab/client-runtime/environment";
+import { summarizeSubagentStatuses } from "@satslab/client-runtime/state/subagent-display";
+import { isActiveSubagentStatus } from "@satslab/client-runtime/state/subagentRuntime";
 import type {
   EnvironmentId,
   OrchestrationV2Subagent,
   OrchestrationV2TurnItem,
   ServerProvider,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { Pressable, View, type ColorValue } from "react-native";
 
 import { AppText as Text } from "../../components/ui/AppText";

@@ -16,7 +16,7 @@ it.effect("shares only the selected Codex profile's config and login with bot se
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const source = yield* fs.makeTempDirectoryScoped({ prefix: "sora-codex-profile-" });
+    const source = yield* fs.makeTempDirectoryScoped({ prefix: "blobs-codex-profile-" });
     for (const name of ["config.toml", "auth.json", "models_cache.json", "AGENTS.md"])
       yield* fs.writeFileString(path.join(source, name), name);
     yield* fs.makeDirectory(path.join(source, "skills"));

@@ -110,7 +110,7 @@ function BotSidebarContent() {
     setDragTarget(null);
   });
   const cancelDrag = useStableCallback(() => sensorRef.current?.cancel());
-  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- cancels the active pointer sensor when the sidebar unmounts
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- cancels the active pointer sensor when the sidebar unmounts
   useLayoutEffect(() => () => sensorRef.current?.cancel(), []);
   const sensors = useSensors(
     useSensor(SidebarPointerSensor, {
@@ -211,11 +211,11 @@ function BotSidebarContent() {
   ];
   const busy = placements !== null;
   const motionPass = { layoutKey: itemsKey, animate: !dragging && query.length === 0 };
-  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- updates the imperative sidebar animation after layout changes
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- updates the imperative sidebar animation after layout changes
   useLayoutEffect(() => {
     motion.current?.update(motionPass.animate);
   }, [motionPass]);
-  // oxlint-disable-next-line sora/no-unreasoned-state-sync -- cancels the pointer sensor when its dragged row disappears or filtering begins
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- cancels the pointer sensor when its dragged row disappears or filtering begins
   useLayoutEffect(() => {
     if (query || (draggedId !== null && !rows.some((row) => row.bot.id === draggedId)))
       cancelDrag();

@@ -4,9 +4,9 @@ import type { FileDiffContentsLoader, FileDiffMetadata } from "@pierre/diffs";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import { safeErrorLogAttributes } from "@t3tools/client-runtime/errors";
-import type { ReviewBranchCommitsResult, ScopedThreadRef, RunId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/state/runtime";
+import { safeErrorLogAttributes } from "@satslab/client-runtime/errors";
+import type { ReviewBranchCommitsResult, ScopedThreadRef, RunId } from "@satslab/contracts";
 import {
   ArrowRightIcon,
   CheckIcon,
@@ -39,7 +39,7 @@ import {
   useDiffPanelStore,
 } from "../diffPanelStore";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { isTestChangedFile } from "@t3tools/shared/changedFileKind";
+import { isTestChangedFile } from "@satslab/shared/changedFileKind";
 import { useHideTestFiles } from "./diffs/useHideTestFiles";
 import { useRenderedAppearance } from "../hooks/useTheme";
 import { useStableCallback } from "../hooks/useStableCallback";
@@ -110,7 +110,7 @@ import { useOpenLink } from "../browser/useOpenLink";
 
 type DiffThemeType = "light" | "dark";
 const AUTOMATIC_BASE_REF = "__automatic_base_ref__";
-const DIFF_FILE_TREE_STORAGE_KEY = "t3code.diffFileTreeOpen";
+const DIFF_FILE_TREE_STORAGE_KEY = "blobs.diffFileTreeOpen";
 const fileEntryCache = new WeakMap<
   FileDiffMetadata,
   { fileDiff: FileDiffMetadata; fileKey: string; fileVersion: number }

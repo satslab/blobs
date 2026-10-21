@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@satslab/contracts";
 import type { Thread } from "../types";
 import { makeThreadFixture } from "../test-fixtures";
 import {
@@ -423,8 +423,8 @@ describe("buildThreadActionItems", () => {
             {
               kind: "action",
               value: "action:new-thread",
-              searchTerms: ["New thread in t3code"],
-              title: "New thread in t3code",
+              searchTerms: ["New thread in blobs"],
+              title: "New thread in blobs",
               icon: null,
               run: async () => undefined,
             },
@@ -558,15 +558,15 @@ describe("buildThreadActionItems", () => {
               value: "action:new-thread",
               searchTerms: ["new thread", "chat"],
               // Styled: not a string, so only `searchTitle` holds its words.
-              title: ["New thread in ", "t3code"],
-              searchTitle: "New thread in t3code",
+              title: ["New thread in ", "blobs"],
+              searchTitle: "New thread in blobs",
               icon: null,
               run: async () => undefined,
             },
           ],
         },
       ],
-      query: "> new t3code",
+      query: "> new blobs",
       isInSubmenu: false,
       projectSearchItems: [],
       threadSearchItems: [],
@@ -645,7 +645,7 @@ describe("buildThreadActionItems", () => {
     });
     const items = buildThreadActionItems({
       threads: [idThread, titleThread],
-      projectByKey: new Map([[`${LOCAL_ENVIRONMENT_ID}:${PROJECT_ID}`, { title: "T3 Code" }]]),
+      projectByKey: new Map([[`${LOCAL_ENVIRONMENT_ID}:${PROJECT_ID}`, { title: "Blobs" }]]),
       icon: null,
       runThread: async (_thread) => undefined,
     });

@@ -20,44 +20,44 @@ On Windows, in PowerShell:
 irm https://t3.codes/install.ps1 | iex
 ```
 
-This installs the `t3` binary to `~/.local/bin`. If your shell reports `command not found`
+This installs the `blobs` binary to `~/.local/bin`. If your shell reports `command not found`
 afterwards, that directory is not on your `PATH` yet; the installer prints the
-line to add. Set `T3CODE_CHANNEL=nightly` to install the nightly train, or
-`T3CODE_VERSION` to pin an exact version.
+line to add. Set `BLOBS_CHANNEL=nightly` to install the nightly train, or
+`BLOBS_VERSION` to pin an exact version.
 
-| Task                                             | Command                                                                 |
-| ------------------------------------------------ | ----------------------------------------------------------------------- |
-| Start the server and open the web app            | `t3`                                                                    |
-| Start the server without a browser               | `t3 serve`                                                              |
-| Keep it running in the background (macOS, Linux) | `t3 service install` ([details](./background-service.md))               |
-| Move to the newest release                       | `t3 update`                                                             |
-| Reclaim database space                           | `t3 doctor` ([details](./background-service.md#reclaim-database-space)) |
-| Remove it again                                  | `t3 uninstall`                                                          |
+| Task                                             | Command                                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------------------- |
+| Start the server and open the web app            | `blobs`                                                                    |
+| Start the server without a browser               | `blobs serve`                                                              |
+| Keep it running in the background (macOS, Linux) | `blobs service install` ([details](./background-service.md))               |
+| Move to the newest release                       | `blobs update`                                                             |
+| Reclaim database space                           | `blobs doctor` ([details](./background-service.md#reclaim-database-space)) |
+| Remove it again                                  | `blobs uninstall`                                                          |
 
-Run `t3 help` or `t3 --help` for the full reference. To start in a new working
+Run `blobs help` or `blobs --help` for the full reference. To start in a new working
 directory, use an explicit path such as `t3 ./my-project`. A bare directory name
 is accepted only if it already exists.
 
-If `t3` or `t3 start` reports an already running server, connect to that server
+If `blobs` or `blobs start` reports an already running server, connect to that server
 instead. Stop it before starting a replacement, or use a different `--base-dir`
 for an independent server.
 
-To try T3 Code once without installing it, run `npx t3@latest` instead (needs
+To try T3 Code once without installing it, run `npx @satslab/blobs@latest` instead (needs
 Node.js for `npx`).
 
 ### Intel Macs
 
-There is no `t3` executable for Intel Macs (the desktop app is available). To
+There is no `blobs` executable for Intel Macs (the desktop app is available). To
 run a server there, build it from source with `vp`, which provides the Node version it needs
 ([Install vp](https://github.com/pingdotgg/t3code#install-vp)):
 
 ```bash
 git clone https://github.com/pingdotgg/t3code
-cd t3code && vp i && vp run build:desktop
+cd blobs && vp i && vp run build:desktop
 node apps/server/dist/bin.mjs
 ```
 
-`t3 update` and the background service do not apply to a server run this way;
+`blobs update` and the background service do not apply to a server run this way;
 update it with `git pull` and a rebuild.
 
 ## Desktop app
@@ -80,7 +80,7 @@ update fails. Download the new `.deb` and install it the same way.
 
 ### Nix (nixpkgs)
 
-T3 Code is maintained in [nixpkgs](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/by-name/t3/t3code).
+Blobs is maintained in [nixpkgs](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/by-name/t3/t3code).
 The command above installs from `nixos-unstable` and requires Nix 2.30 or later with
 `nix-command` and `flakes` enabled. Launch the desktop app with `t3code-desktop`;
 the package also includes the `t3` command.
@@ -106,13 +106,13 @@ The desktop app includes the `t3` command-line tool. To run it from any
 terminal, open **Settings → About** and choose **Install** next to
 **t3 command**. On macOS and Linux it adds a `t3` link to a folder on your
 `PATH`; on Windows it adds the app's command folder to your `PATH`. Open a new
-terminal afterwards. **Remove** takes it off again. If you already have `t3`
+terminal afterwards. **Remove** takes it off again. If you already have `blobs`
 from npm, it stays as it is.
 
 ### Windows Subsystem for Linux
 
 Choose a WSL distro in **Settings → Sharing & access** to run agents and projects
-there. Install the provider CLIs inside that distro. T3 Code installs its own
+there. Install the provider CLIs inside that distro. Blobs installs its own
 server runtime there automatically; the first launch after an app update can
 take longer.
 
@@ -121,19 +121,19 @@ take longer.
 With the desktop app already running on the same machine:
 
 ```bash
-t3 app
+blobs app
 ```
 
 This opens a new thread for the current directory, adding the project if needed.
-Pass a path, such as `t3 app ../my-project`, to open another directory. It requires
+Pass a path, such as `blobs app ../my-project`, to open another directory. It requires
 the desktop app, so a standalone server or an SSH session is not enough. If the
 command cannot reach the app, start or update the desktop app and try again.
 
 ## Mobile app
 
 Install T3 Code from the
-[App Store](https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824) or
-[Google Play](https://play.google.com/store/apps/details?id=com.t3tools.t3code).
+[App Store](https://apps.apple.com/us/app/blobs-remote-claude-more/id6787819824) or
+[Google Play](https://play.google.com/store/apps/details?id=xyz.satslab.blobs).
 The phone connects to a server on another machine. Follow
 [remote access](./remote-access.md) to link it through T3 Connect or a pairing URL.
 
