@@ -59,6 +59,7 @@ export const RPC_REQUIRED_SCOPES = {
   [WS_METHODS.serverProbe]: AuthOrchestrationReadScope,
   [WS_METHODS.botsList]: AuthOrchestrationReadScope,
   [WS_METHODS.botsMemory]: AuthOrchestrationReadScope,
+  [WS_METHODS.botsDiscordGet]: AuthOrchestrationReadScope,
   [WS_METHODS.botsCreate]: AuthOrchestrationOperateScope,
   [WS_METHODS.botsRename]: AuthOrchestrationOperateScope,
   [WS_METHODS.botsReset]: AuthOrchestrationOperateScope,
