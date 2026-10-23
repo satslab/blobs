@@ -444,13 +444,14 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
         className={cn(
           "relative min-w-0",
           folded ? "w-full" : "max-w-[80%] rounded-2xl p-3 text-message-foreground",
-          !folded && (userMessage.attribution === "guest" ? guestBubbleClassName(false) : "bg-message"),
+          !folded &&
+            (userMessage.attribution === "guest" ? guestBubbleClassName(false) : "bg-message"),
         )}
       >
         {folded ? (
           <FoldedMessageHeader
             icon={MessagesSquareIcon}
-            label={senderShell?.title.trim() || "Agent"}
+            label={userMessage.sourceLabel ?? (senderShell?.title.trim() || "Agent")}
             summary={foldSummary}
             expanded={expanded}
             onToggle={() => setExpanded((value) => !value)}
@@ -466,7 +467,13 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
               folded && !ctx.findActive && "max-h-96 overflow-auto",
             )}
           >
-            <MessageAuthorHeading>{folded ? "Another agent" : userMessage.guestName === undefined ? "You" : `${userMessage.guestName} (guest)`}</MessageAuthorHeading>
+            <MessageAuthorHeading>
+              {folded
+                ? (userMessage.sourceLabel ?? "Another agent")
+                : userMessage.guestName === undefined
+                  ? "You"
+                  : `${userMessage.guestName} (guest)`}
+            </MessageAuthorHeading>
             {(regularImages.length > 0 || userVideos.length > 0) && (
               <div className="mb-2 grid max-w-[210px] grid-cols-2 gap-2">
                 {regularImages.map((image) => (

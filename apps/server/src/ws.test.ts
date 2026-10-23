@@ -1,4 +1,5 @@
 import * as BotChat from "./bots/BotChat.ts";
+import * as DiscordIntegration from "@satslab/bot-discord/DiscordIntegration";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import {
@@ -362,6 +363,7 @@ it.effect("shell snapshots leave idle subagent children out only for clients tha
 // Build the production RPC layer; unrelated capabilities fail if this test calls them.
 const layerUnusedConfigRpcServices = Layer.mergeAll(
   Layer.mock(BotChat.BotChat)({}),
+  Layer.mock(DiscordIntegration.DiscordIntegration)({}),
   Layer.mock(ServerSecretStore.ServerSecretStore)({}),
   Layer.mock(WorkspacePaths.WorkspacePaths)({}),
   Layer.mock(TraceDiagnostics.TraceDiagnostics)({}),

@@ -2,6 +2,7 @@ import { ModelSelection } from "./modelSelection.ts";
 import { RuntimeMode } from "./providerPolicy.ts";
 import { ThreadId, BotId, EnvironmentId } from "./baseSchemas.ts";
 import { BotIdentity, BotChatError, BotMemoryInput, BotMemoryResult } from "./botChat.ts";
+import { BotDiscordSettings, BotDiscordStatus, BotIntegrationError } from "./botIntegrations.ts";
 import {
   OrchestrationV2SearchThreadError,
   OrchestrationV2SearchThreadInput,
@@ -404,6 +405,9 @@ import { Project, ProjectMutation, ProjectMutationError } from "./project.ts";
 export const WS_METHODS = {
   botsList: "bots.list",
   botsMemory: "bots.memory",
+  botsDiscordGet: "bots.discord.get",
+  botsDiscordConfigure: "bots.discord.configure",
+  botsDiscordSetCredential: "bots.discord.setCredential",
   botsCreate: "bots.create",
   botsReset: "bots.reset",
   botsRename: "bots.rename",
@@ -1840,6 +1844,24 @@ const WsBotsMemoryRpc = Rpc.make(WS_METHODS.botsMemory, {
   success: BotMemoryResult,
   error: Schema.Union([BotChatError, EnvironmentAuthorizationError]),
 });
+const WsBotsDiscordGetRpc = Rpc.make(WS_METHODS.botsDiscordGet, {
+  payload: Schema.Struct({ botId: BotId }),
+  success: BotDiscordStatus,
+  error: Schema.Union([BotIntegrationError, EnvironmentAuthorizationError]),
+});
+const WsBotsDiscordConfigureRpc = Rpc.make(WS_METHODS.botsDiscordConfigure, {
+  payload: Schema.Struct({ botId: BotId, settings: BotDiscordSettings }),
+  success: BotDiscordStatus,
+  error: Schema.Union([BotIntegrationError, EnvironmentAuthorizationError]),
+});
+const WsBotsDiscordSetCredentialRpc = Rpc.make(WS_METHODS.botsDiscordSetCredential, {
+  payload: Schema.Struct({
+    botId: BotId,
+    token: Schema.NullOr(Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(4096))),
+  }),
+  success: BotDiscordStatus,
+  error: Schema.Union([BotIntegrationError, EnvironmentAuthorizationError]),
+});
 const WsBotsCreateRpc = Rpc.make(WS_METHODS.botsCreate, {
   payload: Schema.Struct({
     threadId: ThreadId,
@@ -2063,6 +2085,9 @@ export class RpcScopeAuthorization extends RpcMiddleware.Service<RpcScopeAuthori
 export const WsBotRpcGroup = RpcGroup.make(
   WsBotsListRpc,
   WsBotsMemoryRpc,
+  WsBotsDiscordGetRpc,
+  WsBotsDiscordConfigureRpc,
+  WsBotsDiscordSetCredentialRpc,
   WsBotsCreateRpc,
   WsBotsRenameRpc,
   WsBotsResetRpc,
