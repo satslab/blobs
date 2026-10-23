@@ -1,3 +1,4 @@
+import * as DiscordPrompt from "@satslab/bot-discord/DiscordPrompt";
 import { botInput, botMessageText } from "../bots/BotInput.ts";
 import { makeEnsureWorkspace } from "../bots/BotWorkspace.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
@@ -151,6 +152,7 @@ export const layer: Layer.Layer<
   | RunExecutionService.RunExecutionServiceV2
   | RuntimePolicy.RuntimePolicyV2
   | BotChat.BotChat
+  | DiscordPrompt.DiscordPrompt
   | ThreadCommandExecutor.ThreadCommandExecutor
 > = Layer.effect(
   ProviderTurnStartServiceV2,
@@ -167,6 +169,7 @@ export const layer: Layer.Layer<
     const providerSessions = yield* ProviderSessionManager.ProviderSessionManagerV2;
     const runExecution = yield* RunExecutionService.RunExecutionServiceV2;
     const botChat = yield* BotChat.BotChat;
+    const discordPrompt = yield* DiscordPrompt.DiscordPrompt;
     const threadCommands = yield* ThreadCommandExecutor.ThreadCommandExecutor;
     const ensureWorkspace = yield* makeEnsureWorkspace;
     const runtimePolicy = yield* RuntimePolicy.RuntimePolicyV2;
@@ -844,6 +847,19 @@ export const layer: Layer.Layer<
                 ).pipe(Effect.as(false)),
               ),
             );
+      const connectionInstructions = yield* Effect.result(
+        projection.thread.botId === undefined
+          ? Effect.succeed("")
+          : discordPrompt.instructions(projection.thread.botId),
+      );
+      if (connectionInstructions._tag === "Failure") {
+        yield* settleStartFailure({
+          signal: "connection-instructions-failure",
+          title: "Bot connection instructions are unavailable",
+          error: connectionInstructions.failure,
+        });
+        return;
+      }
       const resolvedRuntimePolicy =
         projection.thread.botId === undefined
           ? {
@@ -861,7 +877,12 @@ export const layer: Layer.Layer<
               ...baseRuntimePolicy,
               cwd: workspaceResult.success ?? baseRuntimePolicy.cwd,
               botChat: {
-                systemPrompt: turnInstructions(projection.thread.title, projection.thread.id),
+                systemPrompt: [
+                  turnInstructions(projection.thread.title, projection.thread.id),
+                  connectionInstructions.success,
+                ]
+                  .filter(Boolean)
+                  .join("\n"),
                 runId: run.id,
                 loadResources: botLoadResources,
               },
