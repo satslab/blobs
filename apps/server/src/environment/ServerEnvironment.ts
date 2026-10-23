@@ -198,11 +198,6 @@ export const make = Effect.gen(function* () {
     launcherManaged: launcher.managed,
   });
   const serverInstallation = serverSelfUpdate === null ? yield* resolveServerInstallation : null;
-  // Desktop and server ship together; a control fd guarantees requestDesktopUpdate support.
-
-  const desktopAppUpdate =
-    serverSelfUpdate === "desktop-managed" && serverConfig.desktopTelemetryControlFd !== undefined;
-
   const descriptor: ExecutionEnvironmentDescriptor = {
     environmentId,
     label,
@@ -259,10 +254,7 @@ export const make = Effect.gen(function* () {
       ignoredFileListing: true,
       ...(serverSelfUpdate === null ? {} : { serverSelfUpdate }),
       ...(serverInstallation === null ? {} : { serverInstallation }),
-      ...(serverSelfUpdate === "boot-service" || desktopAppUpdate
-        ? { serverSelfUpdateProgress: true }
-        : {}),
-      ...(desktopAppUpdate ? { desktopAppUpdate: true } : {}),
+      ...(serverSelfUpdate === "boot-service" ? { serverSelfUpdateProgress: true } : {}),
       serverBrowser: true,
     },
   };
