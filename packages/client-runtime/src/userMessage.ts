@@ -5,6 +5,8 @@ import {
   type OrchestrationV2IdleCompaction,
   ScheduledTaskId,
 } from "@satslab/contracts";
+import * as Option from "effect/Option";
+import * as Schema from "effect/Schema";
 
 /** The working row while Sora's own compaction runs. */
 export const IDLE_COMPACTING_LABELS = {
@@ -20,6 +22,15 @@ export const IDLE_COMPACTION_TITLES = {
 
 const LEGACY_AUTOMATION_PREFIX = /^\[Triggered by schedule task: [^\r\n]+\]\r?\n\r?\n/;
 const LEGACY_AUTOMATION_MESSAGE_ID = /^scheduled-task-message:(.+):\d+:(?:scheduled|manual)$/;
+const decodeDiscordInput = Schema.decodeUnknownOption(
+  Schema.fromJsonString(
+    Schema.Struct({
+      source: Schema.Literal("discord"),
+      sender: Schema.Struct({ displayName: Schema.String }),
+      text: Schema.String,
+    }),
+  ),
+);
 
 export function resolveUserMessagePresentation(message: {
   readonly id?: string;
@@ -35,6 +46,7 @@ export function resolveUserMessagePresentation(message: {
   readonly scheduledTaskId: ScheduledTaskId | undefined;
   /** Set when `attribution` is "guest". */
   readonly guestName?: string;
+  readonly sourceLabel?: string;
 } {
   if (message.role !== "user") {
     return { text: message.text, attribution: null, scheduledTaskId: undefined };
@@ -48,6 +60,17 @@ export function resolveUserMessagePresentation(message: {
       scheduledTaskId: undefined,
       guestName: guest.name,
     };
+  }
+  // Integration input IDs are assigned by the server, so pasted routing JSON stays ordinary text.
+  if (message.creationSource === "server" && message.id?.startsWith("bot-input:")) {
+    const envelope = decodeDiscordInput(message.text.slice(message.text.lastIndexOf("\n\n") + 2));
+    if (Option.isSome(envelope))
+      return {
+        text: envelope.value.text,
+        attribution: "agent",
+        sourceLabel: `Discord · ${envelope.value.sender.displayName}`,
+        scheduledTaskId: undefined,
+      };
   }
   if (message.scheduledTaskId !== undefined) {
     return {

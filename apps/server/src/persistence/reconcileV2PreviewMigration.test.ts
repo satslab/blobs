@@ -53,6 +53,7 @@ describe("V2 preview upgrade", () => {
         [71, "BotProjects"],
         [72, "OutgoingWebhooks"],
         [73, "OutgoingWebhookEndpointUrl"],
+        [74, "BotIntegrations"],
       ]);
       assert.deepStrictEqual(yield* runMigrations(), []);
       assert.deepStrictEqual(yield* sql`SELECT * FROM orchestration_v2_legacy_imports`, imports);
@@ -149,6 +150,7 @@ describe("V2 preview upgrade", () => {
         [71, "BotProjects"],
         [72, "OutgoingWebhooks"],
         [73, "OutgoingWebhookEndpointUrl"],
+        [74, "BotIntegrations"],
       ]);
     }).pipe(Effect.provide(NodeSqliteClient.layer({ filename: ":memory:" }))),
   );
@@ -173,7 +175,7 @@ it.effect(
   () =>
     Effect.gen(function* () {
       const sql = yield* SqlClient.SqlClient;
-      yield* runMigrations({ toMigrationInclusive: 71 });
+      yield* runMigrations({ toMigrationInclusive: 72 });
       yield* sql`INSERT INTO outgoing_webhooks
       (id, name, enabled, events_json, template, preview_length, endpoint_origin, header_names_json, created_at, updated_at)
       VALUES ('legacy-webhook', 'Legacy', 1, '["completed"]', '{}', 500, 'https://hooks.example.test', '[]', '2026-10-01', '2026-10-01')`;
