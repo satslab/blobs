@@ -75,3 +75,5 @@ export * from "./settingsSecretValue.ts";
 export * from "./clientRpcPermissions.ts";
 
 export * from "./botChat.ts";
+
+export * from "./botIntegrations.ts";

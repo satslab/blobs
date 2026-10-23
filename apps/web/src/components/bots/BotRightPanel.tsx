@@ -5,6 +5,7 @@ import { RightPanelSheet } from "../RightPanelSheet";
 import { PreviewPanelShell } from "../preview/PreviewPanelShell";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
+import { BotIntegrationPanel } from "./BotIntegrationPanel";
 import { BotMemoryPanel } from "./BotMemoryPanel";
 import { ThreadRelationshipsPanel } from "../chat/ThreadRelationshipsControl";
 
@@ -49,6 +50,7 @@ export function BotRightPanel(props: {
               showEmpty
               sectionVariant="card"
             />
+            <BotIntegrationPanel threadRef={props.threadRef} />
           </div>
         </ScrollArea>
       </section>
