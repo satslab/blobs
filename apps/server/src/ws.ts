@@ -1,5 +1,6 @@
 import * as BotCheckIns from "./bots/BotCheckIns.ts";
 import { WsBotRpcGroup } from "@satslab/contracts";
+import * as DiscordIntegration from "@satslab/bot-discord/DiscordIntegration";
 import * as BotChat from "./bots/BotChat.ts";
 import { OrchestrationDispatchCommandError } from "@satslab/contracts";
 import * as Context from "effect/Context";
@@ -568,6 +569,9 @@ const ServerMainRpcGroup = ServerWsRpcGroup.omit(
   WS_METHODS.botsResources,
   WS_METHODS.botsResourcesChange,
   WS_METHODS.botsCheckIn,
+  WS_METHODS.botsDiscordGet,
+  WS_METHODS.botsDiscordConfigure,
+  WS_METHODS.botsDiscordSetCredential,
   WS_METHODS.botsCreate,
   WS_METHODS.botsRename,
   WS_METHODS.botsReset,
@@ -600,6 +604,7 @@ const OtherWsRpcGroup = RpcGroup.make(...serverWsRpcs.filter(isOtherWsRpc));
 const layerBotRpc = ServerBotRpcGroup.toLayer(
   Effect.gen(function* () {
     const bots = yield* BotChat.BotChat;
+    const discord = yield* DiscordIntegration.DiscordIntegration;
     return ServerBotRpcGroup.of({
       [WS_METHODS.botsList]: () => bots.list(),
       [WS_METHODS.botsMemory]: (input) => bots.inspectMemory(input),
@@ -607,6 +612,10 @@ const layerBotRpc = ServerBotRpcGroup.toLayer(
       [WS_METHODS.botsResourcesChange]: (input) => bots.changeResources(input.botId, input.action),
       [WS_METHODS.botsCheckIn]: (input) =>
         Effect.flatMap(BotCheckIns.BotCheckIns, (checks) => checks.check(input.botId, true)),
+      [WS_METHODS.botsDiscordGet]: (input) => discord.read(input.botId),
+      [WS_METHODS.botsDiscordConfigure]: (input) => discord.configure(input.botId, input.settings),
+      [WS_METHODS.botsDiscordSetCredential]: (input) =>
+        discord.setCredential(input.botId, input.token),
       [WS_METHODS.botsCreate]: (input) => bots.create(input),
       [WS_METHODS.botsRename]: (input) => bots.rename(input.botId, input.name),
       [WS_METHODS.botsReset]: (input) => bots.reset(input.botId),
@@ -2192,6 +2201,8 @@ export const layerWsRpc = (
               Effect.as(commandOutputHub.subscribe(input)),
             ),
           ),
+        [WS_METHODS.scheduledTasksList]: () =>
+          scheduledTasks.list().pipe(Effect.map(withVisibleWebhookUrls)),
         [WS_METHODS.scheduledTasksSubscribe]: (_input) =>
           scheduledTasks.subscribeList().pipe(Stream.map(withVisibleWebhookUrls)),
         [WS_METHODS.scheduledTasksUpsert]: (input) => scheduledTasks.upsert(input),

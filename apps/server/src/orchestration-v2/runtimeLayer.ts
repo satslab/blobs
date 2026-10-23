@@ -2,6 +2,12 @@ import * as BotCheckIns from "../bots/BotCheckIns.ts";
 import * as BotResources from "../bots/BotResources.ts";
 import * as ServerSecretStore from "../auth/ServerSecretStore.ts";
 import * as GuestShareService from "../guest/GuestShareService.ts";
+import * as DiscordPrompt from "@satslab/bot-discord/DiscordPrompt";
+import * as DiscordIntegration from "@satslab/bot-discord/DiscordIntegration";
+import * as DiscordClient from "@satslab/bot-discord/DiscordClient";
+import * as BotIntegrationHost from "../bots/BotIntegrationHost.ts";
+import * as BotIntegrationLifecycle from "../bots/BotIntegrationLifecycle.ts";
+import * as Effect from "effect/Effect";
 import * as BotTransferFiles from "../bots/BotTransferFiles.ts";
 import * as ServerEnvironment from "../environment/ServerEnvironment.ts";
 import * as BotOwnership from "../bots/BotOwnership.ts";
@@ -198,6 +204,7 @@ const layerBotProjectServiceProvided = ProjectService.layerWithBots.pipe(
 );
 
 const layerProviderTurnStartServiceProvided = ProviderTurnStartService.layer.pipe(
+  Layer.provide(DiscordPrompt.layer),
   Layer.provide(
     Layer.mergeAll(
       layerBotChatProvided,
@@ -396,6 +403,24 @@ export const layer = Layer.mergeAll(
   layerLegacyV1ThreadImporterProvided,
 );
 
+const layerDiscordIntegrationProvided = DiscordIntegration.layer.pipe(
+  Layer.provide(DiscordClient.layer),
+  Layer.provide(
+    BotIntegrationHost.layer.pipe(
+      Layer.provide(
+        Layer.mergeAll(
+          BotStorage.layer,
+          ServerEnvironment.layerIdentity,
+          layerThreadManagementProvided,
+        ),
+      ),
+    ),
+  ),
+);
+const layerBotIntegrationLifecycleProvided = Layer.effect(
+  BotIntegrationLifecycle.BotIntegrationLifecycle,
+  Effect.map(DiscordIntegration.DiscordIntegration, (integration) => integration),
+);
 const layerBotCheckInsProvided = BotCheckIns.layer.pipe(
   Layer.provide(
     Layer.mergeAll(layerBotChatProvided, BotStorage.layer, layerThreadManagementProvided),
@@ -427,6 +452,8 @@ export const layerProduction = Layer.mergeAll(
   layerAgentSessionImporterProvided,
   EffectOutbox.layerPruneWorker.pipe(Layer.provide(EffectOutbox.layer)),
 ).pipe(
+  Layer.provide(layerBotIntegrationLifecycleProvided),
+  Layer.provideMerge(layerDiscordIntegrationProvided),
   Layer.provide(ResourceCleanupService.layer.pipe(Layer.provide(layerScheduledTaskProvided))),
   Layer.provide(Scheduler.layer),
   Layer.provideMerge(layerEventInfrastructure),
