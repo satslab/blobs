@@ -87,6 +87,18 @@ export default mergeConfig(
     },
     pack: {
       // SEA embeds one entry; expose the history worker as a hidden subcommand.
+      plugins: [
+        {
+          name: "discord-optional-compression",
+          resolveId(id) {
+            if (id === "zlib-sync") return "\0sora:discord-optional-compression";
+          },
+          load(id) {
+            // Discord falls back to Node zlib when its optional native addon is absent.
+            if (id === "\0sora:discord-optional-compression") return "export default null;";
+          },
+        },
+      ],
       entry: packBootstrap
         ? ["src/bin.ts"]
         : packExecutable
