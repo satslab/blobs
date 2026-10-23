@@ -1,6 +1,7 @@
 import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretResolver";
 import * as BotCheckIns from "./bots/BotCheckIns.ts";
 import * as BotChat from "./bots/BotChat.ts";
+import * as DiscordIntegration from "@satslab/bot-discord/DiscordIntegration";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import {
@@ -482,6 +483,7 @@ it.effect("shell snapshots omit idle children and older settled threads only on 
 const layerUnusedConfigRpcServices = Layer.mergeAll(
   Layer.mock(DocumentText.DocumentText)({}),
   Layer.mock(BotChat.BotChat)({}),
+  Layer.mock(DiscordIntegration.DiscordIntegration)({}),
   Layer.mock(ServerSecretStore.ServerSecretStore)({}),
   Layer.mock(WorkspacePaths.WorkspacePaths)({}),
   Layer.mock(TraceDiagnostics.TraceDiagnostics)({}),
