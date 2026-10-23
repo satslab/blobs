@@ -1,4 +1,5 @@
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
+import * as DiscordPrompt from "@satslab/bot-discord/DiscordPrompt";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
 import * as BotChat from "../bots/BotChat.ts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
@@ -143,6 +144,9 @@ function startWithMissingWorktree(
   const createWorktree = vi.fn(() => Effect.succeed({} as never));
   const listLocalBranchNames = vi.fn(() => Effect.succeed(["feature/restore"]));
   const layer = ProviderTurnStart.layer.pipe(
+    Layer.provide(
+      Layer.succeed(DiscordPrompt.DiscordPrompt, { instructions: () => Effect.succeed("") }),
+    ),
     Layer.provide(ThreadCommandExecutor.layer),
     Layer.provide(Layer.mock(BotChat.BotChat)({})),
     Layer.provide(
@@ -282,6 +286,7 @@ it.each([
 
 function makeLocalCommandHarness(input: {
   readonly text: string;
+  readonly connectionInstructions?: string;
   readonly botDriver?: "pi" | "claudeAgent" | "codex";
   readonly settings?: Parameters<typeof ServerSettings.layerTest>[0];
   readonly delegatedWorker?: boolean;
@@ -931,6 +936,11 @@ function makeLocalCommandHarness(input: {
     }),
   );
   const layer = ProviderTurnStart.layer.pipe(
+    Layer.provide(
+      Layer.succeed(DiscordPrompt.DiscordPrompt, {
+        instructions: () => Effect.succeed(input.connectionInstructions ?? ""),
+      }),
+    ),
     Layer.provide(ThreadCommandExecutor.layer),
     Layer.provide(Layer.mock(BotChat.BotChat)({ prepare: prepareMemory, delegatedContext })),
     Layer.provide(
@@ -2153,5 +2163,28 @@ effectIt.effect(
       expect(delivered?.message.text).toContain("Inspect the project");
       expect(delivered?.message.text).toContain("zoom(id,n)");
       expect(delivered?.runtimePolicy.botChat).toBeUndefined();
+    }),
+);
+
+effectIt.effect.each(["pi", "claudeAgent"] as const)(
+  "includes enabled connection instructions in the bot system prompt for %s",
+  (botDriver) =>
+    Effect.gen(function* () {
+      const connectionInstructions =
+        "# Connections - Discord\nReply to each request at its own source.";
+      const harness = makeLocalCommandHarness({
+        text: "A request from Blobs",
+        botDriver,
+        connectionInstructions,
+        fileSystem: FileSystem.makeNoop({
+          exists: () => Effect.succeed(true),
+          makeDirectory: () => Effect.void,
+        }),
+      });
+      yield* harness.start;
+      const controls = harness.startRootRun.mock.calls[0]?.[0];
+      expect(controls?.runtimePolicy.botChat?.systemPrompt).toContain(connectionInstructions);
+      expect(controls?.runtimePolicy.botChat?.systemPrompt).toContain("# Turns");
+      expect(controls?.message.text).not.toContain(connectionInstructions);
     }),
 );
