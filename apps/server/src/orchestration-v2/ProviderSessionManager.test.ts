@@ -2121,6 +2121,70 @@ it.effect(
     }),
 );
 
+it.effect.each(["revoked", "another-provider"] as const)(
+  "ProviderSessionManagerV2 refreshes a loaded thread after its MCP credential is %s",
+  (replacement) =>
+    Effect.gen(function* () {
+      const state = yield* Ref.make(emptyState);
+      yield* Effect.gen(function* () {
+        const eventSink = yield* EventSink.EventSinkV2;
+        const idAllocator = yield* IdAllocator.IdAllocatorV2;
+        const manager = yield* ProviderSessionManager.ProviderSessionManagerV2;
+        const registry = yield* McpSessionRegistry.McpSessionRegistry;
+        const mcpSessions = yield* McpProviderSessions.McpProviderSessions;
+        const now = yield* DateTime.now;
+        const threadId = ThreadId.make(`thread-mcp-refresh-${replacement}`);
+        const providerSessionId = yield* idAllocator.allocate.providerSession({
+          providerInstanceId: modelSelection.instanceId,
+          threadId,
+        });
+        yield* eventSink.write({
+          events: [yield* makeThreadCreatedEvent({ idAllocator, threadId, now })],
+        });
+        const openInput = { threadId, providerSessionId, modelSelection, runtimePolicy };
+        const runtime = yield* manager.open(openInput);
+        const resumeInput = {
+          threadId,
+          providerThread: makeProviderThread({ idAllocator, threadId, providerSessionId, now }),
+          modelSelection,
+          runtimePolicy,
+        };
+        yield* runtime.resumeThread(resumeInput);
+        yield* runtime.resumeThread(resumeInput);
+        assert.equal((yield* Ref.get(state)).resumeCount, 1);
+        const original = yield* mcpSessions.read(threadId);
+        assert.isDefined(original);
+        if (original === undefined) return;
+        const originalToken = original.authorizationHeader.replace(/^Bearer\s+/, "");
+
+        yield* registry.revokeThread(threadId);
+        if (replacement === "another-provider") {
+          const credential = yield* registry.issue({
+            threadId,
+            providerInstanceId: ProviderInstanceId.make("claude"),
+          });
+          yield* mcpSessions.set(credential.config);
+        }
+        yield* manager.open(openInput);
+        yield* runtime.resumeThread(resumeInput);
+
+        const refreshed = yield* mcpSessions.read(threadId);
+        assert.isDefined(refreshed);
+        if (refreshed === undefined) return;
+        const token = refreshed.authorizationHeader.replace(/^Bearer\s+/, "");
+        const scope = yield* registry.resolve(token);
+        assert.equal(scope?.thread.threadId, threadId);
+        assert.equal(scope?.thread.providerInstanceId, modelSelection.instanceId);
+        assert.notEqual(token, originalToken);
+        assert.equal((yield* Ref.get(state)).resumeCount, 2);
+        assert.equal((yield* Ref.get(state)).openCount, 1);
+        assert.isUndefined(yield* registry.resolve(originalToken));
+        yield* manager.close(providerSessionId);
+        assert.isUndefined(yield* registry.resolve(token));
+      }).pipe(Effect.provide(layerTest({ state, idleTimeoutMs: 60_000 })));
+    }),
+);
+
 it.effect(
   "ProviderSessionManagerV2 protects a reused credential from a predecessor release during open",
   () =>
@@ -3656,9 +3720,9 @@ it.effect("ProviderSessionManagerV2 gives a delegated child its project's device
   }),
 );
 
-it.effect(
-  "ProviderSessionManagerV2 binds a worker MCP credential to its inherited memory snapshot",
-  () =>
+it.effect.each(["bot", "worker"] as const)(
+  "ProviderSessionManagerV2 preserves the %s memory scope when refreshing MCP credentials",
+  (kind) =>
     Effect.gen(function* () {
       const state = yield* Ref.make(emptyState);
       const mcpConfigs = yield* Ref.make<
@@ -3669,6 +3733,7 @@ it.effect(
         const ids = yield* IdAllocator.IdAllocatorV2;
         const manager = yield* ProviderSessionManager.ProviderSessionManagerV2;
         const registry = yield* McpSessionRegistry.McpSessionRegistry;
+        const mcpSessions = yield* McpProviderSessions.McpProviderSessions;
         const now = yield* DateTime.now;
         const threadId = ThreadId.make("memory-worker");
         const botThreadId = ThreadId.make("parent-memory");
@@ -3680,13 +3745,21 @@ it.effect(
         yield* eventSink.write({
           events: [yield* makeThreadCreatedEvent({ idAllocator: ids, threadId, now })],
         });
-        yield* manager.open({
+        const runtime = yield* manager.open({
           threadId,
           providerSessionId,
           modelSelection,
           runtimePolicy: {
             ...runtimePolicy,
-            memoryContext: { threadId: botThreadId, runId: botRunId },
+            ...(kind === "worker"
+              ? { memoryContext: { threadId: botThreadId, runId: botRunId } }
+              : {
+                  botChat: {
+                    systemPrompt: "Bot instructions",
+                    runId: botRunId,
+                    loadResources: false,
+                  },
+                }),
           },
         });
         const captured = (yield* Ref.get(mcpConfigs))[0];
@@ -3696,11 +3769,37 @@ it.effect(
         const token = captured.authorizationHeader.replace(/^Bearer\s+/, "");
         const resolved = yield* registry.resolve(token);
         assert.equal(resolved?.thread.threadId, threadId);
-        assert.equal(resolved?.thread.botThreadId, botThreadId);
+        assert.equal(resolved?.thread.botThreadId, kind === "worker" ? botThreadId : undefined);
         assert.equal(resolved?.thread.botRunId, botRunId);
         yield* registry.revokeThread(botThreadId);
         assert.isDefined(yield* registry.resolve(token));
+        const resumeInput = {
+          threadId,
+          providerThread: makeProviderThread({
+            idAllocator: ids,
+            threadId,
+            providerSessionId,
+            now,
+          }),
+        };
+        yield* runtime.resumeThread(resumeInput);
+        assert.equal(
+          (yield* mcpSessions.read(threadId))?.providerSessionId,
+          captured.providerSessionId,
+        );
+        yield* registry.revokeThread(threadId);
+        yield* runtime.resumeThread(resumeInput);
+        const refreshed = yield* mcpSessions.read(threadId);
+        assert.isDefined(refreshed);
+        if (refreshed === undefined) return;
+        assert.equal(refreshed.endpoint, captured.endpoint);
+        const refreshedToken = refreshed.authorizationHeader.replace(/^Bearer\s+/, "");
+        const refreshedScope = yield* registry.resolve(refreshedToken);
+        assert.equal(refreshedScope?.thread.botRunId, botRunId);
+        assert.equal(refreshedScope?.thread.botThreadId, resolved?.thread.botThreadId);
+        assert.equal((yield* Ref.get(state)).resumeCount, 2);
         yield* manager.close(providerSessionId);
+        assert.isUndefined(yield* registry.resolve(refreshedToken));
         assert.isUndefined(yield* registry.resolve(token));
       }).pipe(Effect.provide(layerTest({ state, mcpConfigs, idleTimeoutMs: 1_000 })));
     }),
