@@ -1427,6 +1427,7 @@ export const layerWithOptions = (
         readonly providerSessionId: ProviderSessionId;
         readonly threadId: ThreadId;
         readonly providerInstanceId: ProviderInstanceId;
+        readonly runtimePolicy: ProviderAdapter.ProviderAdapterV2RuntimePolicy;
       }) =>
         Effect.suspend(() => {
           let attachedTo: ProviderAdapter.ProviderAdapterV2SessionRuntime | undefined;
@@ -1445,22 +1446,41 @@ export const layerWithOptions = (
               Effect.tap((runtime) => Effect.sync(() => (attachedTo = runtime))),
               Effect.uninterruptible,
             );
-            if (attached !== undefined) {
-              const prepared = yield* prepareMcpSession(input.threadId, input.providerInstanceId);
-              preparedForCleanup = prepared;
-              if (prepared.mcpCredentialId !== undefined) {
-                const mcpCredentialId = prepared.mcpCredentialId;
-                yield* Ref.update(sessions, (current) => {
-                  const key = sessionKey(input.providerSessionId);
-                  const entry = current.get(key);
-                  if (entry === undefined) return current;
-                  const mcpCredentialIdByThread = new Map(entry.mcpCredentialIdByThread);
-                  mcpCredentialIdByThread.set(input.threadId, mcpCredentialId);
-                  const updated = new Map(current);
-                  updated.set(key, { ...entry, mcpCredentialIdByThread });
-                  return updated;
+            if (!(yield* Ref.get(sessions)).has(sessionKey(input.providerSessionId))) return;
+            const prepared = yield* prepareMcpSession(
+              input.threadId,
+              input.providerInstanceId,
+              input.runtimePolicy.botChat?.runId ?? input.runtimePolicy.memoryContext?.runId,
+              input.runtimePolicy.memoryContext?.threadId,
+            );
+            preparedForCleanup = prepared;
+            if (prepared.mcpCredentialId !== undefined) {
+              const mcpCredentialId = prepared.mcpCredentialId;
+              yield* Ref.update(sessions, (current) => {
+                const key = sessionKey(input.providerSessionId);
+                const entry = current.get(key);
+                if (
+                  entry === undefined ||
+                  entry.mcpCredentialIdByThread.get(input.threadId) === mcpCredentialId
+                )
+                  return current;
+                const mcpCredentialIdByThread = new Map(entry.mcpCredentialIdByThread);
+                mcpCredentialIdByThread.set(input.threadId, mcpCredentialId);
+                // Codex caches MCP clients on loaded threads; a new credential requires a resume.
+                const loadedProviderThreadKeyByThread = new Map(
+                  entry.loadedProviderThreadKeyByThread,
+                );
+                loadedProviderThreadKeyByThread.delete(input.threadId);
+                const updated = new Map(current);
+                updated.set(key, {
+                  ...entry,
+                  mcpCredentialIdByThread,
+                  loadedProviderThreadKeyByThread,
                 });
-              }
+                return updated;
+              });
+            }
+            if (attached !== undefined) {
               const entry = (yield* Ref.get(sessions)).get(sessionKey(input.providerSessionId));
               if (entry !== undefined) {
                 yield* withActivityError(
@@ -1939,8 +1959,9 @@ export const layerWithOptions = (
         eventSubscribers: Ref.Ref<
           ReadonlyMap<number, Queue.Queue<ProviderSessionEventSignal, Cause.Done>>
         >,
-        botChat: boolean,
+        runtimePolicy: ProviderAdapter.ProviderAdapterV2RuntimePolicy,
       ): ProviderAdapter.ProviderAdapterV2SessionRuntime => {
+        const botChat = runtimePolicy.botChat !== undefined;
         const providerSessionId = runtime.providerSessionId;
         const subscribeEvents = makeEventSubscription(eventSubscribers);
         const turnMetrics = (operation: string, model?: string) =>
@@ -1970,6 +1991,7 @@ export const layerWithOptions = (
                 providerSessionId,
                 threadId: input.threadId,
                 providerInstanceId: runtime.instanceId,
+                runtimePolicy: input.runtimePolicy ?? runtimePolicy,
               }),
             ).pipe(
               Effect.andThen(loadNatively(runtime.ensureThread(input))),
@@ -2005,6 +2027,7 @@ export const layerWithOptions = (
                 providerSessionId,
                 threadId,
                 providerInstanceId: runtime.instanceId,
+                runtimePolicy: input.runtimePolicy ?? runtimePolicy,
               }),
             ).pipe(
               Effect.andThen(
@@ -2058,6 +2081,7 @@ export const layerWithOptions = (
                 providerSessionId,
                 threadId: input.targetThreadId,
                 providerInstanceId: runtime.instanceId,
+                runtimePolicy: input.runtimePolicy ?? runtimePolicy,
               }),
             ).pipe(
               Effect.andThen(loadNatively(runtime.forkThread(input))),
@@ -2086,6 +2110,7 @@ export const layerWithOptions = (
                 providerSessionId,
                 threadId: input.threadId,
                 providerInstanceId: runtime.instanceId,
+                runtimePolicy: input.runtimePolicy ?? runtimePolicy,
               }),
             ).pipe(
               // Failed or stopped starts may omit turn.terminal; clear their turns so sessions can idle.
@@ -2450,6 +2475,7 @@ export const layerWithOptions = (
                   providerSessionId: input.providerSessionId,
                   threadId: input.threadId,
                   providerInstanceId: existing.runtime.instanceId,
+                  runtimePolicy: input.runtimePolicy,
                 });
                 yield* touchActivity(input.providerSessionId);
                 return existing.exposedRuntime;
@@ -2549,7 +2575,7 @@ export const layerWithOptions = (
               const exposedRuntime = decorateRuntime(
                 runtime,
                 eventSubscribers,
-                input.runtimePolicy.botChat !== undefined,
+                input.runtimePolicy,
               );
               const entry: LiveSessionEntry = {
                 attachedThreadIds: new Set([input.threadId]),
