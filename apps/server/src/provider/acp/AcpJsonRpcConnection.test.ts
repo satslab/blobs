@@ -484,7 +484,7 @@ describe("AcpSessionRuntime", () => {
           cwd: process.cwd(),
           clientInfo: { name: "t3-test", version: "0.0.0" },
           authMethodId: "test",
-          mcpServers: [{ type: "stdio", name: "blobs", command: "/usr/bin/node", args: [] }],
+          mcpServers: [{ type: "stdio", name: "t3-code", command: "/usr/bin/node", args: [] }],
           acpMcpServers: [{ type: "acp", name: "t3-code", serverId: "t3-code" }],
           requestLogger: (event) =>
             Effect.sync(() => {

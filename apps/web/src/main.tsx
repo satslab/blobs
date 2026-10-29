@@ -36,7 +36,7 @@ const managedAuthShellModule =
 
 export const startup = Promise.all([
   managedAuthShellModule?.then((module) => module.default) ?? null,
-  prepareBotStartup(history).then(() => router.load()),
+  router.load(),
 ])
   .then(([ManagedAuthShell]) => {
     // Route chunk failures resolve router.load() and surface later through the error boundary.

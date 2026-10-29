@@ -372,7 +372,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
   let started: Promise<void> | undefined;
 
   const registerTools = () => {
-    // Preserve public names for saved loadouts and tool selectors. Hidden
+    // Use public names for loadouts and tool selectors. Hidden
     // canonical names reserve ownership against Pi's configured MCP servers.
     const prefixes = supportsExposure ? ["mcp__t3-code__", "mcp__t3_code__"] : ["mcp__t3-code__"];
     readOnlyMcpTools.clear();
@@ -397,7 +397,7 @@ export default async function t3McpExtension(pi: ExtensionAPI) {
             );
             const content = mcpModelContent(result);
             if (isMcpToolError(result) && !content.some((part) => part.type === "text" && part.text.length > 0)) {
-              content.push({ type: "text", text: "MCP tool blobs/" + name + " returned an error" });
+              content.push({ type: "text", text: "MCP tool t3-code/" + name + " returned an error" });
             }
             return {
               content,

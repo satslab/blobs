@@ -1,5 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": [
+    "apps/web/scripts/verify-built-boot.ts",
+    "scripts/export-android-icons.ts",
+    "scripts/export-brand-icons.ts",
+    "scripts/resolve-nightly-release.ts",
+  ],
   // Exported types are part of our contracts even before they have consumers.
   "rules": { "types": "off", "nsTypes": "off" },
   // These executables are supplied by the OS or installed separately from npm.

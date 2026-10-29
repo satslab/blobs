@@ -10,7 +10,6 @@ import {
 } from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as Option from "effect/Option";
 import * as ServerEnvironment from "../environment/ServerEnvironment.ts";
 import * as ServerSecretStore from "../auth/ServerSecretStore.ts";
 import * as ThreadManagement from "../orchestration-v2/ThreadManagementService.ts";
@@ -93,7 +92,7 @@ it.effect.each(["idle", "preparing", "starting", "running", "waiting"] as const)
             getEnvironmentId: Effect.succeed(owner),
           }),
           Layer.mock(ServerSecretStore.ServerSecretStore)({
-            get: () => Effect.succeed(Option.none()),
+            get: () => Effect.succeedNone,
           }),
         ),
       ),

@@ -1,6 +1,5 @@
 import * as Alchemy from "alchemy";
-import * as Cloudflare from "alchemy/Cloudflare";
-import { Stage } from "alchemy/Stage";
+import * as Cloudflare from "@alchemy.run/cloudflare";
 import * as Effect from "effect/Effect";
 
 export default Alchemy.Stack(
@@ -10,7 +9,7 @@ export default Alchemy.Stack(
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
-    const stage = yield* Stage;
+    const { stage } = yield* Alchemy.Stack;
     const site = yield* Cloudflare.Website.StaticSite("Website", {
       command: "node --run build",
       outdir: "dist",

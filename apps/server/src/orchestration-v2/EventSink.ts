@@ -1,5 +1,6 @@
 import {
   CommandId,
+  type BotId,
   type OrchestrationV2Run,
   OrchestrationV2DomainEvent,
   type OrchestrationV2ProviderThread,
@@ -165,6 +166,7 @@ export interface EventSinkV2Shape {
     readonly error: string;
   }) => Effect.Effect<CommandReceiptStore.CommandReceiptV2, EventSinkV2Error>;
   readonly commitProjectCommand: (input: {
+    readonly botId?: BotId;
     readonly commandId: CommandId;
     readonly projectId: ProjectId;
     readonly commandType: string;
@@ -763,7 +765,7 @@ const layerBase: Layer.Layer<
               return { receipt: yield* existingProjectReceipt(input.commandId), event: undefined };
             }
             const event = yield* eventStore.appendProjectEvent(input.event);
-            yield* projectStore.apply(event);
+            yield* projectStore.apply(event, input.botId);
             const receipt = { ...reserved, resultSequence: event.sequence };
             yield* commandReceipts.upsert(receipt);
             return { receipt, event };

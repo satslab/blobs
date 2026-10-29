@@ -501,7 +501,7 @@ describe("ClaudeAdapterV2 runtime query policy", () => {
 
 describe("ClaudeAdapterV2 MCP query overrides", () => {
   const BLOBS_MCP_SERVERS = {
-    blobs: {
+    "t3-code": {
       type: "http",
       url: "http://127.0.0.1:43123/mcp",
       headers: {
@@ -612,7 +612,7 @@ describe("ClaudeAdapterV2 native protocol logging", () => {
     assert.deepEqual(overrides, {
       allowedTools: ["Read", "mcp__t3-code__*"],
       mcpServers: {
-        blobs: {
+        "t3-code": {
           type: "http",
           url: "http://127.0.0.1:43123/mcp",
           headers: {
@@ -2653,7 +2653,7 @@ describe("ClaudeAdapterV2 MCP credential channel", () => {
             resume: false,
             cwd: null,
             environment: { PATH: "/usr/bin" },
-            mcpServers: { blobs: t3McpServer },
+            mcpServers: { "t3-code": t3McpServer },
           }),
           pathToClaudeCodeExecutable: "/opt/claude/cli.js",
           spawnClaudeCodeProcess: cli.spawn,
@@ -2702,7 +2702,7 @@ describe("ClaudeAdapterV2 MCP credential channel", () => {
 
       assert.deepInclude(cli.controlRequests, {
         subtype: "mcp_set_servers",
-        servers: { blobs: t3McpServer },
+        servers: { "t3-code": t3McpServer },
       });
       assert.deepInclude(
         cli.controlRequests.find((request) => Reflect.get(request, "subtype") === "initialize"),
@@ -18212,7 +18212,7 @@ it("keeps Claude's preset while adding memory coordination and available tool gu
   assert.include(prompt.append, "Frozen memory");
   assert.include(prompt.append, "claude-sonnet-4-6");
   assert.include(prompt.append, "orchestrator_capabilities");
-  assert.include(prompt.append, "## Blobs collaborative browser");
+  assert.include(prompt.append, "## Blobs browser");
   assert.include(prompt.append, "## Blobs devices");
 });
 
