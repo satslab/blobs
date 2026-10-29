@@ -9670,10 +9670,7 @@ describe("CodexAdapterV2 memory process spawning", () => {
       assert.equal(turn.effort, "high");
       assert.equal(turn.serviceTier, "priority");
       assert.equal(turn.collaborationMode, undefined);
-      assert.include(
-        turn.additionalContext?.t3_code_runtime?.value ?? "",
-        "high reasoning effort",
-      );
+      assert.include(turn.additionalContext?.t3_code_runtime?.value ?? "", "high reasoning effort");
       assert.include(
         turn.additionalContext?.t3_code_orchestration_01?.value ?? "",
         "delegate_task",
