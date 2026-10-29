@@ -104,10 +104,50 @@ describe("DesktopConnectionCatalogStore", () => {
     withStore(
       Effect.gen(function* () {
         const store = yield* DesktopConnectionCatalogStore.DesktopConnectionCatalogStore;
+        const environment = yield* DesktopEnvironment.DesktopEnvironment;
+        const fileSystem = yield* FileSystem.FileSystem;
+        const path = yield* Path.Path;
+        const upstreamPath = path.join(environment.stateDir, "connection-catalog.json");
+        const upstreamRegistryPath = path.join(environment.stateDir, "saved-environments.json");
+        const upstream = JSON.stringify({
+          version: 1,
+          encryptedCatalog: Base64.encode(textEncoder.encode("another-app-key")),
+        });
+        yield* fileSystem.makeDirectory(environment.stateDir, { recursive: true });
+        yield* fileSystem.writeFileString(upstreamPath, upstream);
+        yield* fileSystem.writeFileString(upstreamRegistryPath, "not-a-blobs-registry");
+        assert.deepStrictEqual(yield* store.get, Option.none());
         const catalog = '{"schemaVersion":1,"targets":[]}';
 
         assert.isTrue(yield* store.set(catalog));
         assert.deepStrictEqual(yield* store.get, Option.some(catalog));
+        assert.equal(yield* fileSystem.readFileString(upstreamPath), upstream);
+        assert.equal(
+          yield* fileSystem.readFileString(upstreamRegistryPath),
+          "not-a-blobs-registry",
+        );
+      }),
+    ),
+  );
+
+  it.effect("migrates a previous catalog encrypted by this app without changing the original", () =>
+    withStore(
+      Effect.gen(function* () {
+        const store = yield* DesktopConnectionCatalogStore.DesktopConnectionCatalogStore;
+        const environment = yield* DesktopEnvironment.DesktopEnvironment;
+        const fs = yield* FileSystem.FileSystem;
+        const path = yield* Path.Path;
+        const current = path.join(environment.stateDir, "blobs-connection-catalog.json");
+        const previous = path.join(environment.stateDir, "connection-catalog.json");
+        const catalog = '{"schemaVersion":1,"targets":[]}';
+        yield* store.set(catalog);
+        const original = yield* fs.readFileString(current);
+        yield* fs.writeFileString(previous, original);
+        yield* fs.remove(current);
+
+        assert.deepStrictEqual(yield* store.get, Option.some(catalog));
+        assert.isTrue(yield* fs.exists(current));
+        assert.equal(yield* fs.readFileString(previous), original);
       }),
     ),
   );
@@ -247,7 +287,7 @@ describe("DesktopConnectionCatalogStore", () => {
         const environment = yield* DesktopEnvironment.DesktopEnvironment;
         const fileSystem = yield* FileSystem.FileSystem;
         const store = yield* DesktopConnectionCatalogStore.DesktopConnectionCatalogStore;
-        const catalogPath = path.join(environment.stateDir, "connection-catalog.json");
+        const catalogPath = path.join(environment.stateDir, "blobs-connection-catalog.json");
         yield* fileSystem.makeDirectory(environment.stateDir, { recursive: true });
         yield* fileSystem.writeFileString(catalogPath, "{not-json");
 
@@ -284,14 +324,17 @@ describe("DesktopConnectionCatalogStore", () => {
         DesktopConnectionCatalogStore.DesktopConnectionCatalogStoreProtectionError,
       );
       assert.equal(error.operation, "decrypt-catalog");
-      assert.equal(error.catalogPath, path.join(baseDir, "userdata", "connection-catalog.json"));
+      assert.equal(
+        error.catalogPath,
+        path.join(baseDir, "userdata", "blobs-connection-catalog.json"),
+      );
       assert.instanceOf(error.cause, ElectronSafeStorage.ElectronSafeStorageDecryptError);
       const decryptError = error.cause as ElectronSafeStorage.ElectronSafeStorageDecryptError;
       assert.instanceOf(decryptError.cause, Error);
       assert.equal(decryptError.cause.message, "invalid encrypted catalog");
       assert.equal(
         error.message,
-        `Desktop connection catalog protection failed during decrypt-catalog at ${path.join(baseDir, "userdata", "connection-catalog.json")}.`,
+        `Desktop connection catalog protection failed during decrypt-catalog at ${path.join(baseDir, "userdata", "blobs-connection-catalog.json")}.`,
       );
       assert.notEqual(error.message, decryptError.message);
       yield* Ref.set(failDecrypt, false);
