@@ -38,6 +38,6 @@ export function assertToolCallRestrictedGranularOutput(
   const approval = projection.turnItems.find((item) => item.type === "approval_request");
   assert.equal(
     approval?.prompt,
-    "add /home/replay-user/sora/packages/effect-codex-app-server/.codex-probe-write-action.txt",
+    "add /home/replay-user/blobs/packages/effect-codex-app-server/.codex-probe-write-action.txt",
   );
 }

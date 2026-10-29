@@ -8,7 +8,7 @@
 #   BLOBS_CHANNEL           release train to follow: stable, nightly, or preview
 #                            (default: stable; preview is a maintainers' test train)
 #   BLOBS_VERSION           exact version to install (overrides BLOBS_CHANNEL)
-#   BLOBS_HOME              Blobs home directory (default: ~/.blobs)
+#   BLOBS_HOME              data directory (default: existing ~/.t3, otherwise ~/.blobs)
 #   BLOBS_INSTALL_BIN_DIR   where the `blobs` symlink goes (default: ~/.local/bin)
 #   BLOBS_RELEASE_BASE_URL  mirror for releases/download (default: GitHub)
 #
@@ -19,7 +19,9 @@ set -eu
 
 repo="satslab/blobs"
 base_url="${BLOBS_RELEASE_BASE_URL:-https://github.com/${repo}/releases/download}"
-blobs_home="${BLOBS_HOME:-$HOME/.blobs}"
+default_home="$HOME/.blobs"
+if [ -d "$HOME/.t3" ]; then default_home="$HOME/.t3"; fi
+blobs_home="${BLOBS_HOME:-$default_home}"
 bin_dir="${BLOBS_INSTALL_BIN_DIR:-$HOME/.local/bin}"
 
 fail() {
@@ -233,6 +235,6 @@ grep -qxF "$launcher" "$launchers" 2>/dev/null || printf '%s\n' "$launcher" >> "
 if "$interactive"; then printf '\r\033[2K' >&2; fi
 printf '  %sInstalled Blobs %s%s\n\n' "$green" "$version" "$reset" >&2
 case ":${PATH}:" in
-  *":${bin_dir}:"*) printf '  Run %sblobs%s to use Blobs here, or %st3 up%s to use it from your other devices.\n\n' "$bold" "$reset" "$bold" "$reset" ;;
+  *":${bin_dir}:"*) printf '  Run %sblobs%s to use Blobs here, or %sblobs up%s to use it from your other devices.\n\n' "$bold" "$reset" "$bold" "$reset" ;;
   *) printf '  Add %s to your PATH, then run %sblobs%s.\n\n' "$bin_dir" "$bold" "$reset" ;;
 esac

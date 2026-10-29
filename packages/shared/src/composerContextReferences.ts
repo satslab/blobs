@@ -177,7 +177,7 @@ export function replaceComposerContextReferences(
   return result + text.slice(cursor);
 }
 
-const CONTEXT_ENVELOPE_TAG = "blobs_context";
+const CONTEXT_ENVELOPE_TAG = "t3_context";
 const CONTEXT_ENTRY_TAG = "context";
 
 function kindDisplayName(kind: ComposerContextKind): string {
