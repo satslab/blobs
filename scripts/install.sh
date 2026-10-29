@@ -8,7 +8,7 @@
 #   BLOBS_CHANNEL           release train to follow: stable, nightly, or preview
 #                            (default: stable; preview is a maintainers' test train)
 #   BLOBS_VERSION           exact version to install (overrides BLOBS_CHANNEL)
-#   BLOBS_HOME              Blobs home directory (default: ~/.blobs)
+#   BLOBS_HOME              data directory (default: existing ~/.t3, otherwise ~/.blobs)
 #   BLOBS_INSTALL_BIN_DIR   where the `blobs` symlink goes (default: ~/.local/bin)
 #   BLOBS_RELEASE_BASE_URL  mirror for releases/download (default: GitHub)
 #
@@ -19,7 +19,9 @@ set -eu
 
 repo="satslab/blobs"
 base_url="${BLOBS_RELEASE_BASE_URL:-https://github.com/${repo}/releases/download}"
-blobs_home="${BLOBS_HOME:-$HOME/.blobs}"
+default_home="$HOME/.blobs"
+if [ -d "$HOME/.t3" ]; then default_home="$HOME/.t3"; fi
+blobs_home="${BLOBS_HOME:-$default_home}"
 case "$blobs_home" in
   /*) ;;
   *)

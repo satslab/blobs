@@ -28,8 +28,11 @@ installer or the desktop app did not create is already there, it leaves that
 one alone and stops. Set `BLOBS_CHANNEL=nightly` to install the nightly train, or
 `BLOBS_VERSION` to pin an exact version.
 
-| Task                                             | Command                                                                 |
-| ------------------------------------------------ | ----------------------------------------------------------------------- |
+Blobs uses `~/.t3` when that directory exists, otherwise `~/.blobs`.
+Set `BLOBS_HOME` or pass `--base-dir` to use another data directory.
+
+| Task                                             | Command                                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------------------- |
 | Start the server and open the web app            | `blobs`                                                                    |
 | Start the server without a browser               | `blobs serve`                                                              |
 | Use it from your other devices                   | `blobs up` ([details](./remote-access.md))                                 |
