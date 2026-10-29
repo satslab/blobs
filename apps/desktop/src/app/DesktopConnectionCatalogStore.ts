@@ -383,7 +383,7 @@ export const make = Effect.gen(function* () {
   const safeStorage = yield* ElectronSafeStorage.ElectronSafeStorage;
   const crypto = yield* Crypto.Crypto;
   const savedEnvironments = yield* DesktopSavedEnvironments.DesktopSavedEnvironments;
-  const catalogPath = path.join(environment.stateDir, "connection-catalog.json");
+  const catalogPath = path.join(environment.stateDir, "blobs-connection-catalog.json");
   const encryptionAvailable = safeStorage.isEncryptionAvailable.pipe(
     Effect.mapError(
       (cause) =>
@@ -470,29 +470,62 @@ export const make = Effect.gen(function* () {
     return Option.some(encoded);
   });
 
+  const decryptCatalog = Effect.fn("desktop.connectionCatalogStore.decryptCatalog")(function* (
+    document: EncryptedConnectionCatalogDocument,
+    sourcePath: string,
+  ) {
+    const encrypted = yield* decodeSecretBytes(sourcePath, document.encryptedCatalog);
+    return yield* safeStorage.decryptString(encrypted).pipe(
+      Effect.mapError(
+        (cause) =>
+          new DesktopConnectionCatalogStoreProtectionError({
+            operation: "decrypt-catalog",
+            catalogPath: sourcePath,
+            cause,
+          }),
+      ),
+    );
+  });
+
+  const migratePreviousCatalog = Effect.gen(function* () {
+    if (!(yield* encryptionAvailable)) return Option.none<string>();
+    const previousPath = path.join(environment.stateDir, "connection-catalog.json");
+    const document = yield* readDocument(fileSystem, previousPath);
+    if (Option.isNone(document)) return Option.none<string>();
+    const catalog = yield* decryptCatalog(document.value, previousPath).pipe(
+      Effect.asSome,
+      // Shared T3 homes can contain a catalog encrypted with another application's OS key.
+      Effect.catchTags({
+        DesktopConnectionCatalogStoreProtectionError: () => Effect.succeedNone,
+      }),
+    );
+    if (Option.isSome(catalog)) {
+      yield* writeCatalog(catalog.value).pipe(
+        Effect.mapError(
+          (cause) =>
+            new DesktopConnectionCatalogStoreMigrationError({
+              operation: "persist-catalog",
+              catalogPath,
+              cause,
+            }),
+        ),
+      );
+    }
+    return catalog;
+  });
+
   return DesktopConnectionCatalogStore.of({
     get: Effect.gen(function* () {
       const document = yield* readDocument(fileSystem, catalogPath);
       if (Option.isNone(document)) {
+        const migrated = yield* migratePreviousCatalog;
+        if (Option.isSome(migrated)) return migrated;
         return yield* migrateLegacyCatalog;
       }
       if (!(yield* encryptionAvailable)) {
         return Option.none<string>();
       }
-      const decrypted = yield* decodeSecretBytes(catalogPath, document.value.encryptedCatalog).pipe(
-        Effect.flatMap((encryptedCatalog) =>
-          safeStorage.decryptString(encryptedCatalog).pipe(
-            Effect.mapError(
-              (cause) =>
-                new DesktopConnectionCatalogStoreProtectionError({
-                  operation: "decrypt-catalog",
-                  catalogPath,
-                  cause,
-                }),
-            ),
-          ),
-        ),
-      );
+      const decrypted = yield* decryptCatalog(document.value, catalogPath);
       return Option.some(decrypted);
     }).pipe(Effect.withSpan("desktop.connectionCatalogStore.get")),
     set: Effect.fn("desktop.connectionCatalogStore.set")(function* (catalog) {

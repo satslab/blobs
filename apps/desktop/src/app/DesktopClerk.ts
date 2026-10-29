@@ -86,7 +86,7 @@ export const desktopClerkFrontendApiHostname = resolveDesktopClerkFrontendApiHos
 
 function createDesktopClerkBridge(stateDir: string, isDevelopment: boolean) {
   return createClerkBridge({
-    storage: storage({ path: stateDir }),
+    storage: storage({ path: stateDir, name: "blobs-clerk-tokens" }),
     manageSingleInstanceLock: false,
     passkeys: true,
     renderer: {
