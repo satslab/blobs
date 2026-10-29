@@ -135,6 +135,13 @@ const handlers = {
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.McpInvocationContext;
       const service = yield* OrchestratorMcpService.OrchestratorMcpService;
+      if (!McpInvocationContext.ordinarySecretRequestsEnabled()) {
+        return yield* new OrchestratorMcpFailure({
+          code: "invalid_request",
+          message:
+            "Bots must use t3_bot_request_secret in their own conversation. Bot subagents cannot request secrets.",
+        });
+      }
       return yield* service.requestSecret(scope, input);
     }),
   ),

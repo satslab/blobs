@@ -15,7 +15,7 @@ import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
-import migration from "../persistence/Migrations/073_BotChat.ts";
+import migration from "../persistence/BlobsMigrations/001_BotChat.ts";
 import * as BotStorage from "./BotStorage.ts";
 import * as BotOwnership from "./BotOwnership.ts";
 

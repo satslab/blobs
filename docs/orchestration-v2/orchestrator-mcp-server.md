@@ -35,7 +35,7 @@ The orchestration tools share the existing authenticated HTTP MCP endpoint:
 http://127.0.0.1:<server-port>/mcp
 ```
 
-The provider-visible server key is `blobs`. The endpoint registers both the
+The provider-visible server key is `t3-code`. The endpoint registers both the
 preview toolkit and the orchestration toolkit.
 
 Before `ProviderSessionManager` opens a new V2 provider session, it asks
@@ -64,7 +64,7 @@ and `thread/fork` config, with the provider-session token in an
 `Authorization` header. The same server is registered twice:
 
 - `blobs`: every tool except `t3_thread_wait`.
-- `blobs-direct`: only `t3_thread_wait`, with `omit_tools_from = ["code_mode", "deferred"]`.
+- `t3-code-direct`: only `t3_thread_wait`, with `omit_tools_from = ["code_mode", "deferred"]`.
 
 Code Mode runs a nested call as part of a script, so the model keeps working
 while a blocking wait runs. The second entry makes the wait a direct tool call,
@@ -79,7 +79,7 @@ Claude receives an HTTP MCP server in its query options:
 ```ts
 {
   mcpServers: {
-    "blobs": {
+    "t3-code": {
       type: "http",
       url: "http://127.0.0.1:<port>/mcp",
       headers: {
@@ -89,7 +89,7 @@ Claude receives an HTTP MCP server in its query options:
   },
   allowedTools: [
     // existing allowed tools
-    "mcp__blobs__*",
+    "mcp__t3-code__*",
   ],
 }
 ```
@@ -164,7 +164,7 @@ BLOBS_MCP_URL=http://127.0.0.1:<port>/mcp
 BLOBS_MCP_BEARER_TOKEN=<provider-session-token>
 ```
 
-The extension preserves public names under `mcp__blobs__` for saved loadouts
+The extension registers public names under `mcp__t3-code__` for saved loadouts
 and tool selectors. Modern Pi also receives hidden `mcp__t3_code__` aliases,
 which reserve the normalized namespace against configured MCP servers without
 adding declarations or search results. On Pi 0.99+,

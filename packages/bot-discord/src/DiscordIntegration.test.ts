@@ -523,7 +523,7 @@ it.effect("includes Discord routing rules only while the bot connection is enabl
       assert.include(prompt, "# Connections - Discord");
       assert.include(prompt, "Track the source of each request separately");
       assert.include(prompt, "For requests sent from the Blobs app, reply normally in Blobs");
-      assert.include(prompt, "s3_bot_connection");
+      assert.include(prompt, "t3_bot_connection");
       assert.include(prompt, "including steers and delegated results");
       yield* test.integration.suspend(botId);
       assert.equal(yield* test.prompt.instructions(botId), prompt);

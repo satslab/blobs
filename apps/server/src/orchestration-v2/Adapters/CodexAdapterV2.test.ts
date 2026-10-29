@@ -1662,7 +1662,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
     ),
   );
 
-  // regression: #15839 launch-arg MCP servers survive the thread's blobs server
+  // regression: #15839 launch-arg MCP servers survive the thread's t3-code server
   it.effect("replays historical and dotted MCP config while enforcing other thread config", () =>
     Effect.gen(function* () {
       const recordedServer = {
@@ -1678,7 +1678,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
         "mcp_servers.extra.command": "cat",
       };
       for (const recordedMcp of [
-        { mcp_servers: { blobs: recordedServer } },
+        { mcp_servers: { "t3-code": recordedServer } },
         { "mcp_servers.t3-code": recordedServer, "mcp_servers.extra.command": "echo" },
       ]) {
         const entries = codexReplayPreamble({
@@ -6689,7 +6689,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
             item: {
               type: "mcpToolCall",
               id: COMPLETED_WAIT_ITEM,
-              server: "blobs",
+              server: "t3-code",
               tool: "t3_thread_wait",
               status: "inProgress",
               arguments: { threadId: "thread:completed-wait", timeoutMs: 30000 },
@@ -6709,7 +6709,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
             item: {
               type: "mcpToolCall",
               id: COMPLETED_WAIT_ITEM,
-              server: "blobs",
+              server: "t3-code",
               tool: "t3_thread_wait",
               status: "completed",
               arguments: { threadId: "thread:completed-wait", timeoutMs: 30000 },
@@ -6730,7 +6730,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
             item: {
               type: "mcpToolCall",
               id: ORPHAN_WAIT_ITEM,
-              server: "blobs",
+              server: "t3-code",
               tool: "t3_thread_wait",
               status: "inProgress",
               arguments: {

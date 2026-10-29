@@ -1,4 +1,5 @@
 import { PullRequestProviderError } from "@t3tools/source-control-core/server/PullRequestProvider";
+import { AnalyticsService } from "../telemetry/AnalyticsService.ts";
 import { CloudManagedEndpointRuntime } from "../cloud/ManagedEndpointRuntime.ts";
 import { SourceControlProviderKind } from "@satslab/contracts";
 import { limitRecoveryCommand } from "./UsageLimitRecoveryWorker.ts";
@@ -408,6 +409,11 @@ it.effect("production bot and normal sessions retain project agent capabilities"
           Layer.provide(
             Layer.mergeAll(
               Layer.mock(CloudManagedEndpointRuntime)({}),
+              Layer.mock(AnalyticsService)({
+                record: () => Effect.void,
+                flush: Effect.void,
+                recordOwners: () => Effect.void,
+              }),
               Layer.mock(ServerEnvironment.ServerEnvironment)({}),
               Layer.succeed(
                 HttpClient.HttpClient,
@@ -424,9 +430,16 @@ it.effect("production bot and normal sessions retain project agent capabilities"
             Layer.mock(SourceControlRepositoryService.SourceControlRepositoryService)({}),
           ),
           Layer.provide(
-            Layer.mock(ServerSecretStore.ServerSecretStore)({
-              getOrCreateRandom: () => Effect.succeed(new Uint8Array(32)),
-            }),
+            Layer.succeed(
+              ServerSecretStore.ServerSecretStore,
+              ServerSecretStore.ServerSecretStore.of({
+                get: () => Effect.die("Unexpected secret read"),
+                set: () => Effect.die("Unexpected secret write"),
+                create: () => Effect.die("Unexpected secret creation"),
+                remove: () => Effect.die("Unexpected secret removal"),
+                getOrCreateRandom: () => Effect.succeed(new Uint8Array(32)),
+              }),
+            ),
           ),
           Layer.provide(registry),
           Layer.provide(McpProviderSessions.layer),

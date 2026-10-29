@@ -2,14 +2,13 @@ import { assert, describe } from "@effect/vitest";
 
 import { createOxlintRuleHarness } from "../test/utils.ts";
 
-const reports = (output: string) =>
-  output.match(/t3code\(no-unreasoned-state-sync\)/g)?.length ?? 0;
+const reports = (output: string) => output.match(/blobs\(no-unreasoned-state-sync\)/g)?.length ?? 0;
 const lint = (filename: string) =>
-  createOxlintRuleHarness("t3code/no-unreasoned-state-sync", { filename });
+  createOxlintRuleHarness("blobs/no-unreasoned-state-sync", { filename });
 
 const component = lint("apps/web/src/Panel.tsx");
 
-describe("t3code/no-unreasoned-state-sync", () => {
+describe("blobs/no-unreasoned-state-sync", () => {
   component.invalid(
     "reports every effect hook, including member calls",
     `import React, { useEffect } from "react";
@@ -36,7 +35,7 @@ const alias = useEffect;
   component.valid(
     "accepts an effect whose suppression states its reason",
     `export function Panel() {
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- subscribes to the window's resize events
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- subscribes to the window's resize events
   React.useEffect(() => {});
   return null;
 }

@@ -759,7 +759,7 @@ function AdaptiveWorkspaceLayoutContent(
   const leavingWorkspacePage = useRef(false);
   // The slide starts after the commit that lays the pane out, not in the press handler: Reanimated
   // commits the shadow tree every frame, and that starves a large React commit until it stops.
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- animates the Reanimated rail and sidebar width shared values toward the layout's targets
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- animates the Reanimated rail and sidebar width shared values toward the layout's targets
   useEffect(() => {
     if (nativeWorkspace) return;
     renderedRailWidth.set(withTiming(navigationRailWidth, WORKSPACE_PANE_TIMING));

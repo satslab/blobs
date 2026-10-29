@@ -142,7 +142,7 @@ const dependencies = (
     EventStore.layer,
     transfers
       ? BotOwnership.layer.pipe(Layer.provide(BotStorage.layer))
-      : Layer.mock(BotOwnership.BotOwnership)({ packageFor: () => Effect.succeed(undefined) }),
+      : Layer.mock(BotOwnership.BotOwnership)({ packageFor: () => Effect.sync(() => undefined) }),
     transfers ? BotTransferFiles.layer : Layer.mock(BotTransferFiles.BotTransferFiles)({}),
     ProjectStore.layer,
     Layer.succeed(ServerEnvironment.ServerEnvironmentIdentity, {
@@ -170,7 +170,7 @@ const dependencies = (
           commitProjectCommand: (input) =>
             Effect.gen(function* () {
               const event = yield* events.appendProjectEvent(input.event);
-              yield* projects.apply(event);
+              yield* projects.apply(event, input.botId);
               return {
                 committed: true,
                 receipt: {
@@ -657,7 +657,7 @@ it.effect("moves bot resources and history without unrelated files", () =>
     );
     const targetSql = Context.get(destinationContext, SqlClient.SqlClient);
     assert.deepEqual(
-      yield* targetSql`SELECT id,count,source FROM sats_bot_memory_jobs WHERE bot_id=${created.id}`,
+      yield* targetSql`SELECT id,count,source FROM sora_bot_memory_jobs WHERE bot_id=${created.id}`,
       packageBefore?.jobs,
     );
     assert.deepEqual(yield* targetStorage.memory(created.id), packageBefore?.state);
@@ -1010,6 +1010,17 @@ it.effect(
         );
         assert.equal(project.value.title, first.name);
         assert.isTrue(project.value.isBot);
+        const sql = yield* SqlClient.SqlClient;
+        assert.deepEqual(
+          yield* sql`SELECT bot_id FROM sora_bot_projects
+          WHERE project_id=${project.value.projectId}`,
+          [{ bot_id: first.id }],
+        );
+        assert.deepEqual(
+          yield* sql`SELECT event_id FROM orchestration_events
+          WHERE aggregate_kind='project' AND json_type(payload_json,'$.isBot') IS NOT NULL`,
+          [],
+        );
       }
       const fs = yield* FileSystem.FileSystem;
       assert.isTrue(yield* fs.exists(projection.thread.worktreePath ?? ""));
@@ -1662,7 +1673,7 @@ it.effect("reads only the active owner's bot memory", () =>
     });
     const result = yield* chat.inspectMemory({ botId: bot.id, section: "summary" });
     assert.equal(result.stats.entries, 0);
-    yield* sql`UPDATE sats_bots SET status='forwarded' WHERE id=${bot.id}`;
+    yield* sql`UPDATE sora_bots SET status='forwarded' WHERE id=${bot.id}`;
     const rejected = yield* chat
       .inspectMemory({ botId: bot.id, section: "entries" })
       .pipe(Effect.result);

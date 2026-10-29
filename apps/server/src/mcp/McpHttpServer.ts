@@ -1,3 +1,4 @@
+import * as BotSecretRequests from "../bots/BotSecretRequests.ts";
 import * as MemoryHandlers from "./toolkits/bots/handlers.ts";
 import * as DiscordHandlers from "./toolkits/bots/discordHandlers.ts";
 import { BotDiscoveryToolkit, MemoryToolkit } from "./toolkits/bots/tools.ts";
@@ -1252,7 +1253,7 @@ export const layerMcpTransport = <RA, RE, RR>(registrations: Layer.Layer<RA, RE,
 const layerBotDiscoveryToolkit = toolkitRegistration(
   BotDiscoveryToolkit,
   MemoryHandlers.layerDiscovery,
-);
+).pipe(Layer.provide(BotSecretRequests.layer), Layer.provide(OrchestratorMcpService.layer));
 
 export const layerTools = Layer.mergeAll(
   toolkitRegistration(DiscordHandlers.toolkit, DiscordHandlers.layer),

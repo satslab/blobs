@@ -16,7 +16,7 @@ Ordinary coding tasks need no T3 tools.
 - Another machine: \`t3_environment_links\` lists linked ones. Pass its \`environmentId\` to a T3 tool to act there. Ids are then that machine's, so pass \`threadId\`.
 - A machine the user names that is not linked ("delegate this to my vps"): call \`t3_environment_link\` with a \`hint\` from their words. Never ask for a pairing code in chat.
 - In your reply, mention a thread by its \`link\`, verbatim. Never a plain title or bare id.
-- A login, token, PIN, pairing code or sudo password only the user can give: call \`request_secret\`, not a chat ask or a handoff. Not for access you have. Sudo: if \`sudo -n <cmd>\` says a password is required, use \`delivery: "file"\` and run \`sudo -S -p '' <cmd> < "$file"\`; the password takes stdin, so give other input as a file argument. When asked only to schedule, \`schedule_task\` without running its prompt.
+- A login, token, PIN or pairing code only the user can give: bots call \`t3_bot_request_secret\` to request and save it automatically; bot subagents ask their bot and cannot request secrets. Ordinary threads call \`request_secret\` themselves. Pass its \`secretRef\` to a T3 tool, or use \`delivery: "file"\` for a shell command. Never ask in chat or invent one. Sudo: if \`sudo -n <cmd>\` requires a password, ordinary threads use \`request_secret\` with \`delivery: "file"\` and run \`sudo -S -p '' <cmd> < "$file"\`; give other input as a file argument. When asked only to schedule, \`schedule_task\` without running its prompt.
 - T3 tools may load late. Try the name once before you call it absent.`,
   `### Visuals and preview
 
@@ -139,7 +139,3 @@ export function t3OrchestrationSystemPrompt(
 ): string | undefined {
   return hasT3Mcp ? orchestrationInstructions(hasDeviceTools) : undefined;
 }
-
-export const T3_CODE_DEVICE_TOOL_INSTRUCTIONS = `## Blobs devices
-
-The \`blobs\` MCP server also exposes \`device_*\` tools for iOS Simulators and Android Emulators on this environment. For mobile verification, call \`device_list\`, then \`device_open\` so the user can watch the device in their Device panel; its result explains how to drive the device. Driving happens through the \`agent-device\` CLI, using the exact launcher path returned by \`device_open\`. Keep the host config and session flags returned by \`device_open\` on every command so concurrent devices stay independent: prefer \`agent-device snapshot -i\` refs over coordinates, and use \`device_screenshot\` when you need to see the screen. Prefer these tools and \`agent-device\` for opening and driving devices. Platform tools such as \`xcrun simctl\` and \`adb\` remain available for anything they do not cover, such as builds, logs, or port forwarding. If \`device_list\` reports a platform as unavailable, say so.`;
