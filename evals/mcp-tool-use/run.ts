@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { BotDiscoveryToolkit } from "../../apps/server/src/mcp/toolkits/bots/tools.ts";
 // @effect-diagnostics nodeBuiltinImport:off
 import { turnInstructions } from "../../apps/server/src/bots/MemoryWorker.ts";
 import { buildBotSystemPrompt } from "@satslab/provider-core/server/botInstructions";
@@ -325,7 +326,8 @@ const toolResult = (id: string, content: unknown): Block => ({
 });
 const texts = (content: typeof Content.Type) =>
   typeof content === "string" ? [content] : content.flatMap((block) => block.text ?? []);
-const isT3Name = (name: string) => name.startsWith(T3_PREFIX) || name.startsWith("mcp__t3_code__");
+const toolPrefixes = [T3_PREFIX, "mcp__t3_code__"];
+const isT3Name = (name: string) => toolPrefixes.some((prefix) => name.startsWith(prefix));
 const hasTool = (tools: ReadonlyArray<ApiTool>, name: string) =>
   tools.some((tool) => tool.name === name);
 
@@ -341,8 +343,9 @@ const CODEX_NAMES: Readonly<Record<string, string>> = {
 };
 export const normalizeToolName = (name: string) => {
   const bare = name.slice(name.lastIndexOf(".") + 1);
-  return isT3Name(bare)
-    ? bare.slice(T3_PREFIX.length)
+  const prefix = toolPrefixes.find((prefix) => bare.startsWith(prefix));
+  return prefix !== undefined
+    ? bare.slice(prefix.length)
     : (CODEX_NAMES[bare] ?? bare.slice(bare.lastIndexOf("_") + 1));
 };
 export const normalizeToolInput = (name: string, input: unknown) =>
@@ -356,6 +359,7 @@ export const normalizeToolInput = (name: string, input: unknown) =>
 // description, and schema through unchanged.
 const t3SourceTools: ReadonlyArray<Tool.Any> = [
   OrchestratorToolkit,
+  BotDiscoveryToolkit,
   ThreadToolkit,
   AttachmentToolkit,
   ProjectToolkit,
@@ -384,9 +388,17 @@ const enabledWhen = (predicate: () => boolean) =>
 const hiddenFromSubagents = enabledWhen(McpInvocationContext.hiddenFromSubagents);
 // The Linked environments beta starts off, and T3 lists its tools only while it is on.
 const hiddenWhileLinksOff = enabledWhen(McpInvocationContext.hiddenWhileLinksOff);
-const visibleT3Tools = (options: { readonly subagent?: boolean; readonly links?: boolean }) =>
+const botSecretTools = enabledWhen(McpInvocationContext.botSecretRequestsEnabled);
+const ordinarySecretTools = enabledWhen(McpInvocationContext.ordinarySecretRequestsEnabled);
+const visibleT3Tools = (options: {
+  readonly bot?: boolean;
+  readonly subagent?: boolean;
+  readonly links?: boolean;
+}) =>
   t3Tools.filter(
     (tool) =>
+      ((options.bot === true && options.subagent !== true) || !botSecretTools.has(tool.name)) &&
+      (options.bot !== true || !ordinarySecretTools.has(tool.name)) &&
       (options.links === true || !hiddenWhileLinksOff.has(tool.name)) &&
       !(options.subagent === true && hiddenFromSubagents.has(tool.name)),
   );

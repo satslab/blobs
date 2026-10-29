@@ -1,8 +1,20 @@
+import * as BotSecretRequests from "./BotSecretRequests.ts";
+import * as BotChat from "./BotChat.ts";
+import * as OrchestratorMcpService from "../mcp/OrchestratorMcpService.ts";
+import type { McpInvocationScope } from "../mcp/McpInvocationContext.ts";
 import { vi } from "vite-plus/test";
-import systemTimezoneMigration from "../persistence/Migrations/079_BotSystemTimezone.ts";
+import systemTimezoneMigration from "../persistence/BlobsMigrations/007_BotSystemTimezone.ts";
 import { NodeServices } from "@effect/platform-node";
 import { assert, it } from "@effect/vitest";
-import { BotId, EnvironmentId, ProjectId, ThreadId } from "@satslab/contracts";
+import {
+  BotId,
+  EnvironmentId,
+  ProjectId,
+  ProviderInstanceId,
+  RunId,
+  SecretRef,
+  ThreadId,
+} from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
@@ -11,8 +23,8 @@ import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 import * as Config from "../config.ts";
 import * as SecretStore from "../auth/ServerSecretStore.ts";
 import * as SecretRequests from "../secrets/SecretRequests.ts";
-import botMigration from "../persistence/Migrations/073_BotChat.ts";
-import resourceMigration from "../persistence/Migrations/078_BotResources.ts";
+import botMigration from "../persistence/BlobsMigrations/001_BotChat.ts";
+import resourceMigration from "../persistence/BlobsMigrations/006_BotResources.ts";
 import * as BotStorage from "./BotStorage.ts";
 import * as BotResources from "./BotResources.ts";
 
@@ -78,16 +90,73 @@ it.effect(
         },
         project,
       );
-      yield* resources.change(
-        source,
-        { type: "secret.save", key: "api-token", secretRef: "secret-ref:fixture" },
-        project,
+      let requested = 0;
+      let declined = false;
+      const requestLayer = BotSecretRequests.layer.pipe(
+        Layer.provide(
+          Layer.mock(BotChat.BotChat)({
+            forThread: (threadId) => storage.forThread(threadId),
+            assertOwner: (id) => storage.get(id),
+            changeResources: (id, action) => resources.change(id, action, project),
+          }),
+        ),
+        Layer.provide(
+          Layer.mock(OrchestratorMcpService.OrchestratorMcpService)({
+            requestSecret: () => {
+              requested++;
+              return Effect.succeed(
+                declined
+                  ? { status: "declined" as const }
+                  : { status: "saved" as const, secretRef: SecretRef.make("secret-ref:fixture") },
+              );
+            },
+          }),
+        ),
       );
+      const requests = yield* BotSecretRequests.BotSecretRequests.pipe(
+        Effect.provide(requestLayer),
+      );
+      const scope: McpInvocationScope = {
+        environmentId: EnvironmentId.make("owner"),
+        requestNamespace: "bot-test",
+        issuedAt: 0,
+        thread: {
+          threadId: ThreadId.make(source),
+          providerSessionId: "bot-session",
+          providerInstanceId: ProviderInstanceId.make("codex"),
+          botRunId: RunId.make("bot-run"),
+        },
+        client: undefined,
+        capabilities: new Set(["orchestration"]),
+      };
+      const input = { key: "api-token", label: "API token", reason: "Release access" };
+      const saved = yield* requests.request(scope, input);
+      assert.deepEqual(saved, { status: "saved", key: "api-token" });
+      assert.deepEqual((yield* storage.resources(source)).secrets, [{ key: "api-token" }]);
+      const child = {
+        ...scope,
+        thread: {
+          threadId: ThreadId.make("child"),
+          providerSessionId: "child-session",
+          providerInstanceId: ProviderInstanceId.make("codex"),
+          subagent: true,
+          botThreadId: ThreadId.make(source),
+        },
+      };
+      const refused = yield* requests.request(child, input).pipe(Effect.result);
+      assert.equal(refused._tag, "Failure");
+      assert.equal(requested, 1);
+      declined = true;
+      assert.deepEqual(yield* requests.request(scope, { ...input, key: "unused" }), {
+        status: "declined",
+        key: "unused",
+      });
+      assert.deepEqual((yield* storage.resources(source)).secrets, [{ key: "api-token" }]);
       const path = yield* resources.secretPath(source, "api-token");
       assert.equal(yield* fs.readFileString(path), "fixture-token");
       const rows = yield* sql<{
         secret_ref: string;
-      }>`SELECT secret_ref FROM sats_bot_secrets WHERE bot_id=${source}`;
+      }>`SELECT secret_ref FROM sora_bot_secrets WHERE bot_id=${source}`;
       assert.match(rows[0]?.secret_ref ?? "", /^bot-secret-/);
       assert.notInclude(rows[0]?.secret_ref ?? "", "fixture-token");
       assert.equal((yield* storage.resources(destination)).secrets.length, 0);

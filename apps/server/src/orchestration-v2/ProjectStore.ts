@@ -1,5 +1,6 @@
 import {
   type ApplicationProjectEvent,
+  type BotId,
   IsoDateTime,
   ModelSelection,
   type OrchestrationProjectShell,
@@ -77,7 +78,10 @@ export class ProjectStoreV2 extends Context.Service<
   ProjectStoreV2,
   {
     /** Call inside the commit transaction. */
-    readonly apply: (event: ApplicationProjectEvent) => Effect.Effect<void, ProjectStoreV2Error>;
+    readonly apply: (
+      event: ApplicationProjectEvent,
+      botId?: BotId,
+    ) => Effect.Effect<void, ProjectStoreV2Error>;
     readonly get: (
       projectId: ProjectId,
       options?: { readonly includeDeleted?: boolean },
@@ -114,7 +118,7 @@ export const make = Effect.gen(function* () {
     Result: ProjectDbRow,
     execute: (request) => sql`
       SELECT
-        is_bot AS "isBot",
+        EXISTS(SELECT 1 FROM sora_bot_projects bot WHERE bot.project_id=projection_projects.project_id) AS "isBot",
         project_id AS "projectId",
         title,
         workspace_root AS "workspaceRoot",
@@ -145,7 +149,6 @@ export const make = Effect.gen(function* () {
       Effect.flatMap(
         (encoded) => sql`
           INSERT INTO projection_projects (
-            is_bot,
             project_id,
             title,
             workspace_root,
@@ -160,7 +163,6 @@ export const make = Effect.gen(function* () {
             deleted_at
           )
           VALUES (
-            ${encoded.isBot ?? 0},
             ${encoded.projectId},
             ${encoded.title},
             ${encoded.workspaceRoot},
@@ -176,7 +178,6 @@ export const make = Effect.gen(function* () {
           )
           ON CONFLICT (project_id)
           DO UPDATE SET
-            is_bot = excluded.is_bot,
             title = excluded.title,
             workspace_root = excluded.workspace_root,
             default_model_selection_json = excluded.default_model_selection_json,
@@ -220,11 +221,15 @@ export const make = Effect.gen(function* () {
     );
 
   const apply: ProjectStoreV2["Service"]["apply"] = Effect.fn("ProjectStoreV2.apply")(
-    function* (event) {
+    function* (event, botId) {
+      if (botId !== undefined) {
+        yield* sql`INSERT INTO sora_bot_projects(project_id,bot_id)
+          VALUES (${event.payload.projectId},${botId})
+          ON CONFLICT(project_id) DO UPDATE SET bot_id=excluded.bot_id`.pipe(mapError("apply"));
+      }
       if (event.type === "project.created") {
         const payload = event.payload;
         return yield* upsertRow({
-          isBot: payload.isBot ?? false,
           projectId: payload.projectId,
           title: payload.title,
           workspaceRoot: payload.workspaceRoot,
@@ -252,7 +257,6 @@ export const make = Effect.gen(function* () {
       const payload = event.payload;
       yield* upsertRow({
         ...row,
-        ...(payload.isBot === undefined ? {} : { isBot: payload.isBot }),
         ...(payload.title === undefined ? {} : { title: payload.title }),
         ...(payload.workspaceRoot === undefined ? {} : { workspaceRoot: payload.workspaceRoot }),
         ...(payload.defaultModelSelection === undefined

@@ -400,7 +400,7 @@ export function layerWithRegistry<Error>(
   const layerProviderTurnStartServiceProvided = ProviderTurnStartService.layer.pipe(
     Layer.provide(DiscordPrompt.layer.pipe(Layer.provide(layerDatabase))),
     Layer.provide(
-      Layer.mock(BotChat.BotChat)({ delegatedContext: () => Effect.succeed(undefined) }),
+      Layer.mock(BotChat.BotChat)({ delegatedContext: () => Effect.sync(() => undefined) }),
     ),
     Layer.provide(
       Layer.mergeAll(

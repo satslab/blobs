@@ -56,24 +56,24 @@ Then choose what the agent may do:
 ## Claude Code
 
 ```sh
-claude mcp add --transport http blobs https://<environment-address>/mcp
-claude mcp login t3
+claude mcp add --transport http t3-code https://<environment-address>/mcp
+claude mcp login t3-code
 ```
 
 `claude mcp login` opens the sign-in page in your browser. On a machine
 without a browser, add `--no-browser`, open the printed URL elsewhere, and
-paste the final URL back when asked. `claude mcp list` shows `blobs` as connected
+paste the final URL back when asked. `claude mcp list` shows `t3-code` as connected
 once you approve.
 
 ## Codex
 
 ```sh
-codex mcp add blobs --url https://<environment-address>/mcp
-codex mcp login t3
+codex mcp add t3-code --url https://<environment-address>/mcp
+codex mcp login t3-code
 ```
 
 `codex mcp login --no-browser` prints the sign-in URL instead of opening it.
-`codex mcp list` shows `blobs` with OAuth once you approve.
+`codex mcp list` shows `t3-code` with OAuth once you approve.
 
 ## ChatGPT
 

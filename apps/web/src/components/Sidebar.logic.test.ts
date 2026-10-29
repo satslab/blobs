@@ -70,7 +70,7 @@ describe("filterSidebarV2VisibleThreads", () => {
       const ordinary = makeThreadFixture({ environmentId: localEnvironmentId });
       const bot = { ...ordinary, id: ThreadId.make("bot-thread"), botId: BotId.make("bot") };
 
-      expect(filterSidebarV2VisibleThreads([ordinary, bot], scope)).toEqual([ordinary]);
+      expect(filterSidebarV2VisibleThreads([ordinary, bot], scope, new Set())).toEqual([ordinary]);
     },
   );
 });

@@ -608,7 +608,7 @@ function acpMcpContext(
   return {
     servers: [
       {
-        name: "blobs",
+        name: "t3-code",
         command: self.command,
         args: [...selfInvocationArgs(self, ["acp-mcp-bridge"])],
         env: [
@@ -618,7 +618,7 @@ function acpMcpContext(
         ],
       },
     ],
-    acpServers: [{ type: "acp", name: "blobs", serverId: "blobs" }],
+    acpServers: [{ type: "acp", name: "t3-code", serverId: "t3-code" }],
     endpoint: session.endpoint,
     authorization: session.authorizationHeader,
     processEnvironment: {

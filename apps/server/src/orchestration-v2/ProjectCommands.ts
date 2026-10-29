@@ -20,7 +20,6 @@ export interface ProjectCreateCommand {
   readonly type: "project.create";
   readonly commandId: CommandId;
   readonly projectId: ProjectId;
-  readonly isBot?: boolean;
   readonly title: string;
   readonly workspaceRoot: string;
   readonly scripts?: ReadonlyArray<ProjectScript>;
@@ -30,7 +29,6 @@ export interface ProjectMetaUpdateCommand {
   readonly type: "project.meta.update";
   readonly commandId: CommandId;
   readonly projectId: ProjectId;
-  readonly isBot?: boolean;
   readonly title?: string;
   readonly workspaceRoot?: string;
   readonly defaultModelSelection?: ModelSelection | null;
@@ -158,7 +156,6 @@ export function planProjectCommand(input: {
         payload: {
           projectId: command.projectId,
           title: command.title,
-          ...(command.isBot === undefined ? {} : { isBot: command.isBot }),
           workspaceRoot: command.workspaceRoot,
           defaultModelSelection: null,
           faviconPath: null,
@@ -199,7 +196,6 @@ export function planProjectCommand(input: {
         type: "project.meta-updated",
         payload: {
           projectId: command.projectId,
-          ...(command.isBot === undefined ? {} : { isBot: command.isBot }),
           ...(command.title === undefined ? {} : { title: command.title }),
           ...(command.workspaceRoot === undefined ? {} : { workspaceRoot: command.workspaceRoot }),
           ...(command.defaultModelSelection === undefined

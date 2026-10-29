@@ -1,3 +1,4 @@
+import { CollapsibleSectionHeader } from "../ui/collapsible-section-header";
 import { resolveBotThreadContext } from "../../botThreadContext";
 import { useAtomValue } from "@effect/atom-react";
 import { ThreadDetailsControl } from "./ThreadDetailsControl";
@@ -47,7 +48,6 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
   BotIcon,
-  ChevronDownIcon,
   CornerLeftUpIcon,
   GitForkIcon,
   MessageSquarePlusIcon,
@@ -81,9 +81,6 @@ import { toastManager } from "../ui/toast";
 import { Spinner } from "../ui/spinner";
 import { cn } from "~/lib/utils";
 import {
-  THREAD_DETAILS_PANEL_CHEVRON_CLASS,
-  THREAD_DETAILS_PANEL_ICON_CLASS,
-  THREAD_DETAILS_PANEL_LABEL_CLASS,
   THREAD_DETAILS_PANEL_SPLIT_GROUP_CLASS,
   THREAD_DETAILS_PANEL_ROW_CONTENT_CLASS,
   THREAD_DETAILS_PANEL_SPLIT_SEPARATOR_CLASS,
@@ -867,7 +864,11 @@ export function ThreadRelationshipsPanel(props: {
       actions={threadActions}
     >
       {delegatedFrom === undefined ? null : (
-        <ThreadLineageRowList hiddenCount={0} onShowMore={() => {}}>
+        <ThreadLineageRowList
+          card={props.sectionVariant === "card"}
+          hiddenCount={0}
+          onShowMore={() => {}}
+        >
           <DelegatedFromRow
             delegatedFrom={delegatedFrom}
             fallbackLabel={currentThread?.linkOrigin?.label}
@@ -887,7 +888,11 @@ export function ThreadRelationshipsPanel(props: {
         </ThreadLineageGroup>
       ))}
       {remoteSubagents.length > 0 ? (
-        <ThreadLineageRowList hiddenCount={0} onShowMore={() => {}}>
+        <ThreadLineageRowList
+          card={props.sectionVariant === "card"}
+          hiddenCount={0}
+          onShowMore={() => {}}
+        >
           {remoteSubagents.map((agent) => (
             <RemoteSubagentRow
               key={agent.id}

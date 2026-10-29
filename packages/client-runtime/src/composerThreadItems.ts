@@ -72,7 +72,14 @@ export function matchComposerThreadItems(input: {
         type: "thread",
         thread: { environmentId: shell.environmentId, threadId: shell.id },
         label: shell.title,
-        description: shell.botId === undefined ? (machine === undefined ? "Thread" : `Thread on ${machine}`) : (machine === undefined ? "Bot" : `Bot on ${machine}`),
+        description:
+          shell.botId === undefined
+            ? machine === undefined
+              ? "Thread"
+              : `Thread on ${machine}`
+            : machine === undefined
+              ? "Bot"
+              : `Bot on ${machine}`,
         ...(shell.botId === undefined ? {} : { isBot: true }),
       };
     });

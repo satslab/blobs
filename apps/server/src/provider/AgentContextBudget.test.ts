@@ -1,3 +1,5 @@
+import { DiscordIntegration } from "@satslab/bot-discord/DiscordIntegration";
+import { BotChat } from "../bots/BotChat.ts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { expect, it } from "@effect/vitest";
 import { ProviderInstanceId } from "@satslab/contracts";
@@ -45,6 +47,8 @@ import budget from "./agentContextBudget.json" with { type: "json" };
 
 // Registration only stores tool definitions, so the handlers' services are never called.
 const toolHandlerServices = Layer.mergeAll(
+  Layer.mock(BotChat)({}),
+  Layer.mock(DiscordIntegration)({}),
   Layer.mock(DeviceService)({}),
   Layer.mock(DocumentText)({}),
   Layer.mock(GitVcsDriver)({}),

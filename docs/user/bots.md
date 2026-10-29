@@ -22,7 +22,7 @@ Codex 0.160.0 or newer, Claude Code, Pi, and local OpenCode support bot replies.
 Each Codex instance keeps its configured home, login, models, and composer options.
 Older Codex instances are disabled for bot chat. If the version cannot be verified, bot turns stop before inference starts.
 Bot replies keep the provider’s native tools and your configured native MCP servers. Other provider integrations do not support bot replies yet.
-Files attached to a message are available through `s3_attachment_read`. Images use the provider's normal image input.
+Files attached to a message are available through `t3_attachment_read`. Images use the provider's normal image input.
 
 ## Coordinate work
 
@@ -37,7 +37,7 @@ When no reply is needed in Blobs, the bot can finish silently; `NO_UPDATES` resp
 
 ## Choose whether replies load instructions and skills
 
-Open a bot's settings and use **Instructions → Load instructions and skills**. It is on by default.
+Use **Capabilities → Instructions and skills** in the bot panel's **Bot** tab, or **Instructions → Load instructions and skills** in the bot's settings. It is on by default.
 When on, each reply lets its provider load the global and workspace instruction files
 (`AGENTS.md`, `CLAUDE.md`) and skills it normally would. Codex then runs in the selected Codex home
 instead of the bot's separate copy, and Claude Code still skips MCP servers from its settings.
@@ -100,15 +100,15 @@ Connecting from another device does not move ownership or inference to that devi
 
 Ask a bot to keep track of something, such as a release waiting for CI. Its **Work** panel lists follow-ups with notes and source links. Resolve an item when finished, reopen it if needed, or dismiss it to stop tracking.
 
-Enable **Automatic check-ins** in the bot's **Autonomy** panel or its settings. The timezone defaults to the owning server's system timezone. Choose a frequency, quiet hours, and daily message limit. Changes save automatically. The bot checks open follow-ups while idle and reports developments that need your attention. **Check in now** bypasses quiet hours and the daily limit. Check-ins require the owning environment to be running.
+Enable **Automatic check-ins** in the bot's **Autonomy** panel. The timezone defaults to the owning server's system timezone. Choose a frequency, quiet hours, and daily message limit. Changes save automatically. The bot checks open follow-ups while idle and reports developments that need your attention. **Check in now** bypasses quiet hours and the daily limit. Check-ins require the owning environment to be running.
 
 Check-ins use the bot's current chat model. Memory compaction continues to use the global model in **Settings → Bots**.
 
 ## Save a bot's skills and secrets
 
-Ask a bot to save a workflow as a skill. Each skill is a Markdown file in that bot's workspace. Delete a skill from the panel to remove its saved entry and file.
+Ask a bot to save a workflow as a skill. Each skill is a Markdown file in that bot's workspace. Delete a skill from the **Work** panel to remove its saved entry and file.
 
-To save a credential, ask the bot to request a secret and save it under a key, such as `release-token`. Enter the value in the secret card. The bot can later obtain its file path and use it in a command without copying the value into chat. Saved values use T3's secret storage and filesystem permissions. They are unencrypted on disk and remain until you delete them or the bot.
+To save a credential, ask the bot to request a secret under a key, such as `release-token`. Enter the value in the secret card. It is saved to the bot automatically. Subagents ask the bot when they need a new secret. The bot can later obtain its file path and use it in a command without copying the value into chat. Saved values use T3's secret storage and filesystem permissions. They are unencrypted on disk and remain until you delete them or the bot.
 
 For browser logins, ask the bot to fill a field using a saved secret. T3 checks the page origin and fills the field without returning the value to the bot or submitting the form.
 

@@ -205,3 +205,19 @@ export const requireThreadScope = (scope: McpInvocationScope, operation: string)
   scope.thread === undefined
     ? Effect.fail(threadCallerRequired(operation))
     : Effect.succeed(scope as McpThreadInvocationScope);
+
+export const botSecretRequestsEnabled = (): boolean => {
+  const fiber = Fiber.getCurrent();
+  const scope = fiber && Context.getOrUndefined(fiber.context, McpInvocationContext);
+  return (
+    scope?.thread?.botRunId !== undefined &&
+    scope.thread.subagent !== true &&
+    scope.thread.botThreadId === undefined
+  );
+};
+
+export const ordinarySecretRequestsEnabled = (): boolean => {
+  const fiber = Fiber.getCurrent();
+  const scope = fiber && Context.getOrUndefined(fiber.context, McpInvocationContext);
+  return scope?.thread?.botRunId === undefined && scope?.thread?.botThreadId === undefined;
+};

@@ -25,7 +25,7 @@ import {
   migratePersistedBrowserFaviconState,
 } from "./browserFaviconLogic";
 import { useComposerDraftStore } from "./composerDraftStore";
-import { createBotStorage, createMemoryStorage, type StateStorage } from "./lib/storage";
+import { createBotStorage, type StateStorage } from "./lib/storage";
 
 const BROWSER_FAVICON_STORAGE_KEY = "blobs:browser-favicons:v1";
 const MAX_PENDING_ORIGINS_PER_THREAD = 10;
