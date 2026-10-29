@@ -801,7 +801,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
             );
             assert.deepStrictEqual(spawned.at(-1), [
               "run",
-              "--filter=t3",
+              "--filter=@satslab/blobs",
               "dev",
               ...devServerInput.runArgs,
             ]);

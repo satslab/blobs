@@ -36,12 +36,10 @@ export function BotResourcesPanel({
   const disabled = !canChange || busy || bot.status !== "active";
   async function save(action: BotResourceAction) {
     setBusy(true);
-    try {
-      const result = await change({ environmentId, input: { botId: bot.id, action } });
-      if (result._tag === "Success") query.refresh();
-    } finally {
-      setBusy(false);
-    }
+    const result = await change({ environmentId, input: { botId: bot.id, action } }).finally(() =>
+      setBusy(false),
+    );
+    if (result._tag === "Success") query.refresh();
   }
   const work = section === "all" || section === "work";
   const autonomy = section === "all" || section === "autonomy";
@@ -218,9 +216,12 @@ function CheckInSection({
         refresh();
       }
       setStatus(saved ? "idle" : "failed");
-    } finally {
+    } catch (error) {
       inFlight.current = false;
+      setStatus("failed");
+      throw error;
     }
+    inFlight.current = false;
   }
 
   function update(patch: Partial<CheckInSettings>) {
@@ -270,12 +271,10 @@ function CheckInSection({
               disabled={disabled || !canCheck || checking}
               onClick={async () => {
                 setChecking(true);
-                try {
-                  await check({ environmentId, input: { botId: bot.id } });
-                  refresh();
-                } finally {
-                  setChecking(false);
-                }
+                await check({ environmentId, input: { botId: bot.id } }).finally(() =>
+                  setChecking(false),
+                );
+                refresh();
               }}
             >
               Check in now

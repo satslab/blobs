@@ -38,6 +38,7 @@ export function ProjectsSettings() {
   const roots = useBotThreadShells();
   const bot = resolveLegacyBotSettingsIdentity(records, selectedMembers, roots);
   const navigate = useNavigate();
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- redirects legacy bot project settings URLs to their bot settings route
   useEffect(() => {
     if (!isBotSelection || !bot) return;
     void navigate({

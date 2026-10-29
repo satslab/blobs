@@ -108,8 +108,8 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       });
       const installed = yield* command.install;
       expect(installed.installedPath).toBe(link);
-      expect(installed.launcherPath).toBe(path.join(home, ".blobs", "bin", "t3"));
-      expect(yield* fs.readLink(link)).toBe(path.join(home, ".blobs", "bin", "t3"));
+      expect(installed.launcherPath).toBe(path.join(home, ".blobs", "bin", "blobs"));
+      expect(yield* fs.readLink(link)).toBe(path.join(home, ".blobs", "bin", "blobs"));
       expect((yield* command.install).installedPath).toBe(link);
 
       expect((yield* command.uninstall).installedPath).toBeNull();
