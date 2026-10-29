@@ -125,6 +125,14 @@ for (const override of DEVELOPMENT_PUBLIC_ICON_OVERRIDES) {
   outputs.set(override.targetRelativePath, source);
 }
 const mark = await resize(128);
+outputs.set(
+  "apps/marketing/src/assets/icon.webp",
+  await sharp(source).resize(128, 128).webp({ quality: 90 }).toBuffer(),
+);
+outputs.set("apps/marketing/public/favicon.ico", favicon);
+outputs.set("apps/marketing/public/favicon-16x16.png", await resize(16));
+outputs.set("apps/marketing/public/favicon-32x32.png", await resize(32));
+outputs.set("apps/marketing/public/apple-touch-icon.png", await resize(180));
 outputs.set("assets/blobs/mark.png", mark);
 outputs.set("apps/web/public/blobs-mark.png", mark);
 const markUrl = `data:image/png;base64,${mark.toString("base64")}`;
