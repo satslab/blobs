@@ -267,21 +267,22 @@ jobs:
           gh release create "v$VERSION" --repo "$RELEASE_REPOSITORY" --verify-tag --title "Blobs $VERSION" --notes "Blobs $VERSION" --draft ./*
           gh release edit "v$VERSION" --repo "$RELEASE_REPOSITORY" --draft=false --latest
 
-  publish_npm:
-    needs: [metadata, publish]
-    if: github.ref_type == 'tag'
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-tags: false
-      - uses: ./.github/actions/setup-ci-deps
-      - name: Build and publish npm launcher
-        env:
-          VERSION: ${{ needs.metadata.outputs.version }}
-        run: |
-          node scripts/build-npm-launcher.ts --version "$VERSION" --output-dir npm-packages
-          node apps/server/scripts/cli.ts publish --packages-dir npm-packages --tag latest --provenance --verbose
+  # npm publishing is paused; keep the launcher and trusted-publishing job for later.
+  # publish_npm:
+  #   needs: [metadata, publish]
+  #   if: github.ref_type == 'tag'
+  #   runs-on: ubuntu-24.04
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   steps:
+  #     - uses: actions/checkout@v6
+  #       with:
+  #         fetch-tags: false
+  #     - uses: ./.github/actions/setup-ci-deps
+  #     - name: Build and publish npm launcher
+  #       env:
+  #         VERSION: ${{ needs.metadata.outputs.version }}
+  #       run: |
+  #         node scripts/build-npm-launcher.ts --version "$VERSION" --output-dir npm-packages
+  #         node apps/server/scripts/cli.ts publish --packages-dir npm-packages --tag latest --provenance --verbose
