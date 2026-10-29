@@ -14,7 +14,12 @@ const SUPPORTED = ["darwin-arm64", "linux-x64", "win32-x64"];
 
 function blobsHome() {
   const raw = (process.env.BLOBS_HOME || "").trim();
-  if (raw === "") return path.join(os.homedir(), ".blobs");
+  if (raw === "") {
+    const t3Home = path.join(os.homedir(), ".t3");
+    return fs.statSync(t3Home, { throwIfNoEntry: false })?.isDirectory()
+      ? t3Home
+      : path.join(os.homedir(), ".blobs");
+  }
   if (raw === "~") return os.homedir();
   if (raw.startsWith("~/") || raw.startsWith("~\\")) return path.join(os.homedir(), raw.slice(2));
   return path.resolve(raw);
@@ -50,7 +55,7 @@ async function download(url, file) {
         shown = step;
         const percent = total ? ` ${step}%` : "";
         process.stderr.write(
-          `\r\x1b[2Ksora: downloading Blobs ${version}${percent} (${(received / 1048576).toFixed(1)} MB)`,
+          `\r\x1b[2Kblobs: downloading Blobs ${version}${percent} (${(received / 1048576).toFixed(1)} MB)`,
         );
       }
     }

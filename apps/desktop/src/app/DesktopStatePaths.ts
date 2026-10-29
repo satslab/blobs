@@ -19,11 +19,11 @@ export function resolveDesktopBaseDir(input: {
   readonly exists?: (path: string) => boolean;
 }): string {
   return Option.getOrElse(normalizeConfiguredBaseDir(input.t3Home), () => {
-    const exists = input.exists ?? NodeFS.existsSync;
-    // Installs from before the Blobs rename keep using ~/.sora until it is moved.
-    const legacy = input.joinPath(input.homeDirectory, ".sora");
-    const current = input.joinPath(input.homeDirectory, ".blobs");
-    return !exists(current) && exists(legacy) ? legacy : current;
+    const exists =
+      input.exists ??
+      ((path: string) => NodeFS.statSync(path, { throwIfNoEntry: false })?.isDirectory() ?? false);
+    const t3Home = input.joinPath(input.homeDirectory, ".t3");
+    return exists(t3Home) ? t3Home : input.joinPath(input.homeDirectory, ".blobs");
   });
 }
 

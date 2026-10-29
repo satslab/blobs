@@ -69,7 +69,7 @@ const AUTH = {
   policy: "remote-reachable",
   bootstrapMethods: ["one-time-token"],
   sessionMethods: ["dpop-access-token"],
-  sessionCookieName: "sora_session",
+  sessionCookieName: "blobs_session",
 } satisfies AuthSessionState["auth"];
 const SESSION = {
   authenticated: true,

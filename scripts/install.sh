@@ -8,7 +8,7 @@
 #   BLOBS_CHANNEL           release train to follow: stable, nightly, or preview
 #                            (default: stable; preview is a maintainers' test train)
 #   BLOBS_VERSION           exact version to install (overrides BLOBS_CHANNEL)
-#   BLOBS_HOME              Blobs home directory (default: ~/.blobs)
+#   BLOBS_HOME              data directory (default: existing ~/.t3, otherwise ~/.blobs)
 #   BLOBS_INSTALL_BIN_DIR   where the `blobs` symlink goes (default: ~/.local/bin)
 #   BLOBS_RELEASE_BASE_URL  mirror for releases/download (default: GitHub)
 #
@@ -19,11 +19,13 @@ set -eu
 
 repo="satslab/blobs"
 base_url="${BLOBS_RELEASE_BASE_URL:-https://github.com/${repo}/releases/download}"
-blobs_home="${BLOBS_HOME:-$HOME/.blobs}"
+default_home="$HOME/.blobs"
+if [ -d "$HOME/.t3" ]; then default_home="$HOME/.t3"; fi
+blobs_home="${BLOBS_HOME:-$default_home}"
 bin_dir="${BLOBS_INSTALL_BIN_DIR:-$HOME/.local/bin}"
 
 fail() {
-  printf '\nsora install: %s\n' "$1" >&2
+  printf '\nblobs install: %s\n' "$1" >&2
   exit 1
 }
 
@@ -233,6 +235,6 @@ grep -qxF "$launcher" "$launchers" 2>/dev/null || printf '%s\n' "$launcher" >> "
 if "$interactive"; then printf '\r\033[2K' >&2; fi
 printf '  %sInstalled Blobs %s%s\n\n' "$green" "$version" "$reset" >&2
 case ":${PATH}:" in
-  *":${bin_dir}:"*) printf '  Run %ssora%s to get started.\n\n' "$bold" "$reset" ;;
-  *) printf '  Add %s to your PATH, then run %ssora%s.\n\n' "$bin_dir" "$bold" "$reset" ;;
+  *":${bin_dir}:"*) printf '  Run %sblobs%s to get started.\n\n' "$bold" "$reset" ;;
+  *) printf '  Add %s to your PATH, then run %sblobs%s.\n\n' "$bin_dir" "$bold" "$reset" ;;
 esac

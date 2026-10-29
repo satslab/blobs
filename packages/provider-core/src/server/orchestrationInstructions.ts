@@ -101,7 +101,7 @@ export function t3AcpPromptWithInstructions(input: {
         ]
       : []),
   ];
-  return `<sora_code_instructions>\n${instructions.join("\n\n")}\n</sora_code_instructions>\n\n<user_request>\n${input.prompt}\n</user_request>`;
+  return `<t3_code_instructions>\n${instructions.join("\n\n")}\n</t3_code_instructions>\n\n<user_request>\n${input.prompt}\n</user_request>`;
 }
 
 const orchestrationInstructions = (hasDeviceTools: boolean) =>
@@ -110,7 +110,7 @@ const orchestrationInstructions = (hasDeviceTools: boolean) =>
     : T3_CODE_ORCHESTRATION_INSTRUCTIONS;
 
 function prependT3OrchestrationInstructions(prompt: string, instructions: string): string {
-  return `<sora_code_orchestration_instructions>${instructions.trim()}</sora_code_orchestration_instructions>\n\n<user_request>\n${prompt}\n</user_request>`;
+  return `<t3_code_orchestration_instructions>${instructions.trim()}</t3_code_orchestration_instructions>\n\n<user_request>\n${prompt}\n</user_request>`;
 }
 
 /** For providers whose instructions ride on the prompt, so a compacted conversation loses them. */

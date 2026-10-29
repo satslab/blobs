@@ -1159,7 +1159,7 @@ describe("EnvironmentSupervisor", () => {
                   policy: "loopback-browser",
                   bootstrapMethods: ["one-time-token"],
                   sessionMethods: ["dpop-access-token"],
-                  sessionCookieName: "sora_session_test",
+                  sessionCookieName: "blobs_session_test",
                 },
                 scopes: AuthStandardClientScopes,
               }),

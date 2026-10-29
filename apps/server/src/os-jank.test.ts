@@ -3,14 +3,33 @@ import { it as effectIt } from "@effect/vitest";
 import * as HostProcess from "@satslab/shared/HostProcess";
 import { CommandAvailability, WindowsShellEnvironment } from "@satslab/shared/shell";
 import * as Effect from "effect/Effect";
+import * as FileSystem from "effect/FileSystem";
+import * as Path from "effect/Path";
 // @effect-diagnostics-next-line nodeBuiltinImport:off -- Observe the existing synchronous shell probe without launching the user's login shell.
 import * as NodeChildProcess from "node:child_process";
 import * as NodeOS from "node:os";
 import { assert, it, vi } from "vite-plus/test";
 
-import { fixPath, hydratePosixHome } from "./os-jank.ts";
+import { fixPath, hydratePosixHome, resolveBaseDir } from "./os-jank.ts";
 
 vi.mock("node:child_process", { spy: true });
+
+effectIt.effect("reuses an existing T3 home before falling back to Blobs", () =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
+    const home = yield* fs.makeTempDirectoryScoped();
+    const resolve = (raw?: string) =>
+      resolveBaseDir(raw).pipe(Effect.provideService(HostProcess.HomeDirectory, home));
+    assert.equal(yield* resolve(), path.join(home, ".blobs"));
+    yield* fs.makeDirectory(path.join(home, ".blobs"));
+    yield* fs.makeDirectory(path.join(home, ".t3"));
+    assert.equal(yield* resolve(), path.join(home, ".t3"));
+    assert.equal(yield* resolve("  "), path.join(home, ".t3"));
+    assert.equal(yield* resolve("~/custom"), path.join(home, "custom"));
+    assert.equal(yield* resolve(path.join(home, ".blobs")), path.join(home, ".blobs"));
+  }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
+);
 
 it("hydrates HOME independently of a blank process HOME", () => {
   const originalHome = process.env.HOME;

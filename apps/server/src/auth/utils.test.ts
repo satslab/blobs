@@ -72,8 +72,8 @@ describe("session cookie isolation", () => {
       development: true,
     });
 
-    expect(first).toMatch(/^sora_session_5775_[a-f0-9]{12}$/);
-    expect(second).toMatch(/^sora_session_5775_[a-f0-9]{12}$/);
+    expect(first).toMatch(/^blobs_session_5775_[a-f0-9]{12}$/);
+    expect(second).toMatch(/^blobs_session_5775_[a-f0-9]{12}$/);
     expect(first).not.toBe(second);
   });
 
@@ -96,8 +96,8 @@ describe("session cookie isolation", () => {
       development: false,
     });
 
-    expect(first).toMatch(/^sora_session_[a-f0-9]{12}$/);
-    expect(second).toMatch(/^sora_session_[a-f0-9]{12}$/);
+    expect(first).toMatch(/^blobs_session_[a-f0-9]{12}$/);
+    expect(second).toMatch(/^blobs_session_[a-f0-9]{12}$/);
     expect(first).not.toBe(second);
   });
 
