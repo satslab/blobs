@@ -28,7 +28,7 @@ import {
   t3SystemAppend,
   withDevices,
 } from "./run.ts";
-import { DeviceOperationError, LOCAL_DEVICE_HOST_ID } from "@t3tools/contracts";
+import { DeviceOperationError, LOCAL_DEVICE_HOST_ID } from "@satslab/contracts";
 
 const MAC = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const IPHONE = "BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB";
@@ -173,11 +173,11 @@ it.effect("gives a native subagent T3's SubagentStart context instead of T3's ap
     );
     assert.include(reminders, subagentContext);
     // Claude Code 2.1.310 records the hook's context after the task, and sends it that way.
-    const blocks = shown({ ...native, subagentContext: "## T3 Code devices" }) ?? [];
+    const blocks = shown({ ...native, subagentContext: "## Blobs devices" }) ?? [];
     assert.equal(blocks.at(-2), testCase.prompt);
     assert.equal(
       blocks.at(-1),
-      "<system-reminder>\nSubagentStart hook additional context: ## T3 Code devices\n</system-reminder>",
+      "<system-reminder>\nSubagentStart hook additional context: ## Blobs devices\n</system-reminder>",
     );
   }),
 );
@@ -214,7 +214,7 @@ it("prints agent-device's own help for a lone help command on a returned launche
       ?.trimEnd();
   // Commands from the paired runs. The simulator once answered the first with a placeholder.
   const launcher = "/home/user/.t3/userdata/device/bin/agent-device";
-  const target = `--platform ios --udid ${IPHONE} --config /home/user/.t3/userdata/device/hosts/303617b9730210ef3c86c52d.json --session t3-4c43aa31e607633b85e9ff2f`;
+  const target = `--platform ios --udid ${IPHONE} --config /home/user/.t3/userdata/device/hosts/303617b9730210ef3c86c52d.json --session blobs-4c43aa31e607633b85e9ff2f`;
   const asked = (command: string) => launcherHelp([launcher], command);
   assert.match(help("") ?? "", /^agent-device <command> \[args\] \[--json\]\n/);
   assert.equal(asked(`${launcher} help ${target}`), help(""));
@@ -656,7 +656,7 @@ it.effect("denies every device tool with T3's own error when agent device access
       );
     }
     // T3 drops its device text for a thread without the capability, on refs that have it.
-    assert.notInclude(t3SystemAppend(model, false), "## T3 Code devices");
+    assert.notInclude(t3SystemAppend(model, false), "## Blobs devices");
   }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
 );
 
@@ -681,7 +681,7 @@ it.effect("refuses an open on a device another thread's agent-device session hol
   Effect.gen(function* () {
     const tools = yield* deviceTools({ deviceOwners: { [IPHONE]: "acme-design-review" } });
     // T3 names the owner's session as it names every thread's.
-    const owner = "t3-a062c547ef0b6bf8ee839b67";
+    const owner = "blobs-a062c547ef0b6bf8ee839b67";
     assert.deepEqual(tools.owners, [
       { deviceId: IPHONE, threadId: "acme-design-review", session: owner },
     ]);
@@ -781,7 +781,7 @@ it.effect(
     Effect.gen(function* () {
       // Opus R11-B3(a): in run 6 the simulator gave the free spare's plain open the owner's
       // DEVICE_IN_USE twice. It could not tell which device a flagless bound launcher drives.
-      const owner = "t3-a062c547ef0b6bf8ee839b67";
+      const owner = "blobs-a062c547ef0b6bf8ee839b67";
       const sample = makeSample(
         deviceCase({ world: { ...twoMacs, deviceOwners: { [IPHONE]: "acme-design-review" } } }),
         base,

@@ -22,7 +22,7 @@ import * as Layer from "effect/Layer";
 import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 import * as ServerConfig from "../config.ts";
 import * as ProjectionStore from "../orchestration-v2/ProjectionStore.ts";
-import migration from "../persistence/Migrations/073_BotChat.ts";
+import migration from "../persistence/BlobsMigrations/001_BotChat.ts";
 import * as BotStorage from "./BotStorage.ts";
 import * as MemoryAccess from "./MemoryAccess.ts";
 

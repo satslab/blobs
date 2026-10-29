@@ -3,8 +3,16 @@ import * as Queue from "effect/Queue";
 import * as Tracer from "effect/Tracer";
 import { assert, it } from "@effect/vitest";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { CommandId, type Project, ProjectId, ProviderInstanceId } from "@satslab/contracts";
+import {
+  BotId,
+  EventId,
+  CommandId,
+  type Project,
+  ProjectId,
+  ProviderInstanceId,
+} from "@satslab/contracts";
 import * as Deferred from "effect/Deferred";
+import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
 import * as Layer from "effect/Layer";
@@ -60,7 +68,7 @@ const layerMetadata = Layer.merge(
 );
 
 class EnrichmentCompletions extends Context.Service<EnrichmentCompletions, Queue.Queue<void>>()(
-  "t3/project/ProjectService.test/EnrichmentCompletions",
+  "@satslab/blobs/project/ProjectService.test/EnrichmentCompletions",
 ) {}
 
 const layerEnrichmentCompletions = Layer.effectContext(
@@ -735,6 +743,65 @@ it.effect("rejects an update that waited on the lock while its project was delet
     assert.equal(
       Option.getOrThrow(yield* service.getById(projectId, { includeDeleted: true })).title,
       "Update race",
+    );
+  }).pipe(Effect.provide(layerProjectServiceDependencies)),
+);
+
+it.effect("commits bot project metadata atomically without adding it to source events", () =>
+  Effect.gen(function* () {
+    const sink = yield* EventSink.EventSinkV2;
+    const projects = yield* ProjectStore.ProjectStoreV2;
+    const sql = yield* SqlClient.SqlClient;
+    const now = yield* DateTime.now;
+    const timestamp = DateTime.formatIso(now);
+    const projectId = ProjectId.make("bot-metadata-commit");
+    const commandId = CommandId.make("bot-metadata-create");
+    const input = {
+      botId: BotId.make("memory-bot"),
+      projectId,
+      commandId,
+      commandType: "project.create",
+      acceptedAt: now,
+      event: {
+        eventId: EventId.make("bot-metadata-created"),
+        aggregateKind: "project" as const,
+        aggregateId: projectId,
+        occurredAt: timestamp,
+        commandId,
+        causationEventId: null,
+        correlationId: commandId,
+        metadata: {},
+        type: "project.created" as const,
+        payload: {
+          projectId,
+          title: "Memory",
+          workspaceRoot: "/workspace/memory-bot",
+          defaultModelSelection: null,
+          scripts: [],
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      },
+    };
+    yield* sql`CREATE TRIGGER reject_bot_metadata BEFORE INSERT ON sora_bot_projects
+      BEGIN SELECT RAISE(ABORT,'injected metadata failure'); END`;
+    yield* sink.commitProjectCommand(input).pipe(Effect.flip);
+    assert.deepEqual(yield* sql`SELECT project_id FROM projection_projects`, []);
+    assert.deepEqual(yield* sql`SELECT project_id FROM sora_bot_projects`, []);
+    assert.deepEqual(yield* sql`SELECT event_id FROM orchestration_events`, []);
+    assert.deepEqual(yield* sql`SELECT command_id FROM orchestration_command_receipts`, []);
+    yield* sql`DROP TRIGGER reject_bot_metadata`;
+    assert.isTrue((yield* sink.commitProjectCommand(input)).committed);
+    assert.isFalse(
+      (yield* sink.commitProjectCommand({ ...input, botId: BotId.make("other") })).committed,
+    );
+    assert.isTrue(Option.getOrThrow(yield* projects.getShell(projectId)).isBot);
+    assert.deepEqual(yield* sql`SELECT * FROM sora_bot_projects`, [
+      { project_id: projectId, bot_id: "memory-bot" },
+    ]);
+    assert.deepEqual(
+      yield* sql`SELECT json_type(payload_json,'$.isBot') AS flag FROM orchestration_events`,
+      [{ flag: null }],
     );
   }).pipe(Effect.provide(layerProjectServiceDependencies)),
 );

@@ -108,7 +108,7 @@ const layerLegacyV1ThreadImporterProvided = LegacyV1ThreadImporter.layer.pipe(
 const layerProjectDependencies = Layer.mergeAll(
   ProjectStore.layer,
   ProjectionStore.layer,
-  layerEventSinkProvided,
+  layerEventSink,
   IdAllocator.layer,
   layerLegacyV1ThreadImporterProvided,
 );
@@ -191,7 +191,7 @@ const layerBotChatProvided = BotChat.layer.pipe(
       BotOwnership.layer.pipe(Layer.provide(BotStorage.layer)),
       ProjectStore.layer,
       ServerEnvironment.layerIdentity,
-      layerEventSinkProvided,
+      layerEventSink,
       ProjectionStore.layer,
       OrchestrationEventStore.layer,
       IdAllocator.layer,
@@ -421,6 +421,7 @@ const layerBotIntegrationLifecycleProvided = Layer.effect(
   BotIntegrationLifecycle.BotIntegrationLifecycle,
   Effect.map(DiscordIntegration.DiscordIntegration, (integration) => integration),
 );
+
 const layerBotCheckInsProvided = BotCheckIns.layer.pipe(
   Layer.provide(
     Layer.mergeAll(layerBotChatProvided, BotStorage.layer, layerThreadManagementProvided),

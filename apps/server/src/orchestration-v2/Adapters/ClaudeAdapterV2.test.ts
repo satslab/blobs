@@ -462,7 +462,7 @@ describe("ClaudeAdapterV2 runtime query policy", () => {
 
 describe("ClaudeAdapterV2 MCP query overrides", () => {
   const BLOBS_MCP_SERVERS = {
-    blobs: {
+    "t3-code": {
       type: "http",
       url: "http://127.0.0.1:43123/mcp",
       headers: {
@@ -542,7 +542,7 @@ describe("ClaudeAdapterV2 MCP query overrides", () => {
       ...Object.values(HtmlToolkit.tools),
     ]
       .filter((tool) => Context.get(tool.annotations, Tool.Readonly))
-      .map((tool) => `mcp__blobs__${tool.name}`)
+      .map((tool) => `mcp__t3-code__${tool.name}`)
       .sort();
 
     assert.deepEqual(
@@ -571,9 +571,9 @@ describe("ClaudeAdapterV2 native protocol logging", () => {
       allowedTools: ["Read"],
     });
     assert.deepEqual(overrides, {
-      allowedTools: ["Read", "mcp__blobs__*"],
+      allowedTools: ["Read", "mcp__t3-code__*"],
       mcpServers: {
-        blobs: {
+        "t3-code": {
           type: "http",
           url: "http://127.0.0.1:43123/mcp",
           headers: {
@@ -605,7 +605,7 @@ describe("ClaudeAdapterV2 native protocol logging", () => {
     assert.equal(systemPrompt.type, "preset");
     assert.equal(systemPrompt.preset, "claude_code");
     assert.include(systemPrompt.append ?? "", "Use `delegate_task`");
-    assert.include(systemPrompt.append ?? "", "call `s3_background_wait`");
+    assert.include(systemPrompt.append ?? "", "call `t3_background_wait`");
     assert.notInclude(systemPrompt.append ?? "", "## Blobs devices");
     const logged = ClaudeAdapterV2.loggedClaudeQueryOptions(options);
     assert.equal(logged.hasMcpServers, true);
@@ -2398,7 +2398,7 @@ describe("ClaudeAdapterV2 MCP credential channel", () => {
             resume: false,
             cwd: null,
             environment: { PATH: "/usr/bin" },
-            mcpServers: { blobs: t3McpServer },
+            mcpServers: { "t3-code": t3McpServer },
           }),
           pathToClaudeCodeExecutable: "/opt/claude/cli.js",
           spawnClaudeCodeProcess: cli.spawn,
@@ -2447,7 +2447,7 @@ describe("ClaudeAdapterV2 MCP credential channel", () => {
 
       assert.deepInclude(cli.controlRequests, {
         subtype: "mcp_set_servers",
-        servers: { blobs: t3McpServer },
+        servers: { "t3-code": t3McpServer },
       });
       const spawned = JSON.stringify(cli.spawns);
       assert.notInclude(spawned, "--mcp-config");
@@ -15085,7 +15085,7 @@ it("keeps Claude's preset while adding memory coordination and available tool gu
   assert.include(prompt.append, "Frozen memory");
   assert.include(prompt.append, "claude-sonnet-4-6");
   assert.include(prompt.append, "orchestrator_capabilities");
-  assert.include(prompt.append, "## Blobs collaborative browser");
+  assert.include(prompt.append, "## Blobs browser");
   assert.include(prompt.append, "## Blobs devices");
 });
 
@@ -15140,7 +15140,7 @@ it("keeps frozen memory recall available in Claude's read-only mode", () => {
       browserToolsAvailable: false,
     },
   });
-  assert.include(overrides.allowedTools ?? [], "mcp__blobs__zoom");
-  assert.include(overrides.allowedTools ?? [], "mcp__blobs__s3_attachment_read");
-  assert.notInclude(overrides.allowedTools ?? [], "mcp__blobs__delegate_task");
+  assert.include(overrides.allowedTools ?? [], "mcp__t3-code__zoom");
+  assert.include(overrides.allowedTools ?? [], "mcp__t3-code__t3_attachment_read");
+  assert.notInclude(overrides.allowedTools ?? [], "mcp__t3-code__delegate_task");
 });

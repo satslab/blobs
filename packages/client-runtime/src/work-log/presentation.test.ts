@@ -99,7 +99,7 @@ describe("resolveWorkEntryToolPresentation", () => {
       id: "clone",
       createdAt: "2026-09-19T00:00:00.000Z",
       tone: "tool",
-      label: "T3-code.s3_project_clone",
+      label: "T3-code.t3_project_clone",
       toolLifecycleStatus: "inProgress",
       itemType: "dynamic_tool",
       toolData: { output: { isError: true } },
@@ -117,7 +117,7 @@ describe("resolveWorkEntryToolPresentation", () => {
     expect(workEntryDisplayIndicatesToolFailure(childFailure)).toBe(false);
   });
   it.each([
-    "mcp__blobs__preview_click",
+    "mcp__t3-code__preview_click",
     "mcp__t3_code__preview_click",
     "mcp__blobs__preview_click",
     "T3-code.preview_click",

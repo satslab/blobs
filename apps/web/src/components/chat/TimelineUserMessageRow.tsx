@@ -445,10 +445,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
 
   return (
     <div
-      className={cn(
-        "group flex min-w-0 flex-col gap-1",
-        folded ? "items-start px-1 py-0.5" : "items-end",
-      )}
+      className="group flex flex-col items-end gap-1"
       data-user-message-attribution={folded ? "agent" : undefined}
     >
       {userMessage.attribution === "blobs" ? (
@@ -468,11 +465,11 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
       ) : null}
       <div
         className={cn(
-          "relative min-w-0",
-          folded ? "w-full" : "max-w-[80%] rounded-2xl p-3 text-message-foreground",
+          "relative min-w-0 max-w-[80%] rounded-2xl text-message-foreground",
           BUBBLE_CHIP_CLASS_NAME,
-          !folded &&
-            (userMessage.attribution === "guest" ? guestBubbleClassName(false) : "bg-message"),
+          userMessage.attribution === "guest" ? guestBubbleClassName(false) : "bg-message",
+          !folded && "p-3",
+          folded && expanded && "w-full",
         )}
       >
         {/* Outside the fold so a collapsed message still has a heading to navigate to. */}
@@ -646,12 +643,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
       </div>
       <UserMessageProjectedStatus row={row} />
       {!folded || expanded ? (
-        <div
-          className={cn(
-            "flex w-full items-center text-xs tabular-nums opacity-0 transition-opacity duration-200 pointer-coarse:opacity-100 focus-within:opacity-100 group-hover:opacity-100",
-            folded ? "justify-start" : "max-w-[80%] justify-end pe-1",
-          )}
-        >
+        <div className="flex w-full max-w-[80%] items-center justify-end pe-1 text-xs tabular-nums opacity-0 transition-opacity duration-200 pointer-coarse:opacity-100 focus-within:opacity-100 group-hover:opacity-100">
           <div className="flex shrink-0 items-center gap-2">
             {folded && senderThreadId ? (
               <InlineButton onClick={() => ctx.onOpenThread(senderThreadId)} tone="muted">

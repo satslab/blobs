@@ -1,16 +1,9 @@
+import { BotResourcesPanel } from "./BotResourcesPanel";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { ArrowLeftIcon } from "lucide-react";
 import { EnvironmentId, ThreadId } from "@satslab/contracts";
 import { useBotRecords, useBotThreadContext } from "../../state/bots";
-import { useProjects, useQuietThreadShell } from "../../state/entities";
-import { useEnvironments } from "../../state/environments";
-import { useClientSettings } from "../../hooks/useSettings";
-import {
-  deriveLogicalProjectKeyFromSettings,
-  selectProjectGroupingSettings,
-} from "../../logicalProject";
-import { useEscapeToGoBack } from "../../hooks/useNavigateBack";
 import { isElectron } from "../../env";
 import { SidebarInset } from "../ui/sidebar";
 import { Button } from "../ui/button";
@@ -21,13 +14,12 @@ import {
   WorkspaceBreadcrumbSeparator,
 } from "../WorkspaceBreadcrumb";
 import { SettingsScopeProvider } from "../settings/SettingsScopeContext";
-import { useSettingsProjectGroups } from "../settings/useSettingsProjectGroups";
 import { SettingsPageContainer, SettingsSection } from "../settings/settingsLayout";
 import { ProjectIdentitySettings } from "../settings/ProjectIdentitySettings";
-import { ProjectDefaultsSettings } from "../settings/ProjectDefaultsSettings";
 import { ProjectActionsSettings } from "../settings/ProjectActionsSettings";
 import { BotResourceSettings } from "./BotResourceSettings";
 import { BotDiscordSettings } from "./BotDiscordSettings";
+import { useBotSettingsGroup } from "./useBotSettingsGroup";
 import { BotActionsProvider, useBotActions } from "./BotActions";
 import { BotSettingsActions } from "./BotSettingsActions";
 import {
@@ -52,24 +44,7 @@ export function BotSettingsPage({
 }) {
   const records = useBotRecords();
   const { bot, redirectEnvironmentId } = resolveBotSettingsIdentity(records, botId, environmentId);
-  const root = useQuietThreadShell(
-    bot ? { environmentId: bot.ownerEnvironmentId, threadId: bot.threadId } : null,
-  );
-  const projects = useProjects({ includeBot: true });
-  const grouping = useClientSettings(selectProjectGroupingSettings);
-  const project = projects.find(
-    (candidate) =>
-      candidate.environmentId === bot?.ownerEnvironmentId && candidate.id === root?.projectId,
-  );
-  const projectKey = project ? deriveLogicalProjectKeyFromSettings(project, grouping) : undefined;
-  const groups = useSettingsProjectGroups(projectKey);
-  const group = resolveBotSettingsGroup(groups, bot, root);
-  const { environments } = useEnvironments();
-  const connected = environments.some(
-    (environment) =>
-      environment.environmentId === bot?.ownerEnvironmentId &&
-      environment.connection.phase === "connected",
-  );
+  const { group, connected } = useBotSettingsGroup(bot);
   const navigate = useNavigate();
   const location = useLocation();
   const origin = location.state.botSettingsReturnHref;
@@ -85,7 +60,7 @@ export function BotSettingsPage({
   const goBack = () => {
     void navigate({ href: botSettingsReturnHref(bot, origin, returnContext) });
   };
-  useEscapeToGoBack(goBack);
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- keeps the router on the confirmed current owner after bot transfer
   useEffect(() => {
     if (!redirectEnvironmentId) return;
     void navigate({
@@ -97,7 +72,15 @@ export function BotSettingsPage({
     });
   }, [redirectEnvironmentId, botId, navigate, location.hash, location.state]);
   return (
-    <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none isolate">
+    <SidebarInset
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && !event.defaultPrevented) {
+          event.preventDefault();
+          goBack();
+        }
+      }}
+      className="h-dvh min-h-0 overflow-hidden overscroll-y-none isolate"
+    >
       <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background text-foreground">
         <WorkspacePageHeader electron={isElectron}>
           <Button size="icon-sm" variant="ghost" aria-label="Back" onClick={goBack}>
@@ -161,8 +144,8 @@ function BotSettingsPanel({
     <SettingsPageContainer className="gap-6" showScopeSentence={false}>
       <fieldset key={disabled ? "read-only" : "editable"} disabled={disabled} className="contents">
         <ProjectIdentitySettings group={group} disabled={disabled} />
-        <ProjectDefaultsSettings category="project" />
         <BotResourceSettings />
+        <BotResourcesPanel bot={bot} />
         <BotDiscordSettings bot={bot} disabled={disabled} />
         <ProjectActionsSettings />
       </fieldset>

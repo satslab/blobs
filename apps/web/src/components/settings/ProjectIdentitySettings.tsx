@@ -41,9 +41,9 @@ export function ProjectIdentitySettings({
   group: SidebarProjectSnapshot;
   disabled?: boolean;
 }) {
-  const iconLabel = group.memberProjects.some((member) => member.isBot)
-    ? "Bot icon"
-    : "Project icon";
+  // A bot's face is its generated avatar, so there is no icon to choose.
+  const isBot = group.memberProjects.some((member) => member.isBot);
+  const iconLabel = "Project icon";
   const primaryEnvironmentId = usePrimaryEnvironmentId();
   const { environments } = useEnvironments();
   const environmentById = new Map(
@@ -219,54 +219,56 @@ export function ProjectIdentitySettings({
             />
           }
         />
-        <SettingsRow
-          title={iconLabel}
-          description={
-            projectIcon?.kind === "lucide"
-              ? `${projectIcon.name} · ${projectIcon.color}`
-              : projectIcon?.kind === "monogram"
-                ? `${projectIcon.text} · ${projectIcon.color}`
-                : projectIcon?.kind === "emoji"
-                  ? projectIcon.emoji
-                  : (faviconPath ?? "Automatic")
-          }
-          resetAction={
-            group.memberProjects.some(
-              (member) => member.faviconPath != null || member.projectIcon != null,
-            ) ? (
-              <SettingResetButton
-                label={iconLabel.toLowerCase()}
-                disabled={isSavingFavicon || !canEditGroup}
-                onClick={() => void setProjectIcon({ faviconPath: null, projectIcon: null })}
-              />
-            ) : null
-          }
-          control={
-            <div className="flex items-center gap-2">
-              <ProjectFavicon project={representative} className="size-6" />
-              <Button
-                size="sm"
-                variant="outline"
-                type="button"
-                aria-label={`Choose a ${iconLabel.toLowerCase()}`}
-                disabled={isSavingFavicon || !canEditGroup}
-                onClick={() => setIconPickerOpen(true)}
-              >
-                Choose icon
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                type="button"
-                aria-label={`Choose a ${iconLabel.toLowerCase()} file`}
-                disabled={isSavingFavicon || !canEditGroup}
-                onClick={() => setFaviconPickerOpen(true)}
-              >
-                Choose file
-              </Button>
-            </div>
-          }
-        />
+        {isBot ? null : (
+          <SettingsRow
+            title={iconLabel}
+            description={
+              projectIcon?.kind === "lucide"
+                ? `${projectIcon.name} · ${projectIcon.color}`
+                : projectIcon?.kind === "monogram"
+                  ? `${projectIcon.text} · ${projectIcon.color}`
+                  : projectIcon?.kind === "emoji"
+                    ? projectIcon.emoji
+                    : (faviconPath ?? "Automatic")
+            }
+            resetAction={
+              group.memberProjects.some(
+                (member) => member.faviconPath != null || member.projectIcon != null,
+              ) ? (
+                <SettingResetButton
+                  label={iconLabel.toLowerCase()}
+                  disabled={isSavingFavicon || !canEditGroup}
+                  onClick={() => void setProjectIcon({ faviconPath: null, projectIcon: null })}
+                />
+              ) : null
+            }
+            control={
+              <div className="flex items-center gap-2">
+                <ProjectFavicon project={representative} className="size-6" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  aria-label={`Choose a ${iconLabel.toLowerCase()}`}
+                  disabled={isSavingFavicon || !canEditGroup}
+                  onClick={() => setIconPickerOpen(true)}
+                >
+                  Choose icon
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  aria-label={`Choose a ${iconLabel.toLowerCase()} file`}
+                  disabled={isSavingFavicon || !canEditGroup}
+                  onClick={() => setFaviconPickerOpen(true)}
+                >
+                  Choose file
+                </Button>
+              </div>
+            }
+          />
+        )}
       </SettingsSection>
       <ProjectFaviconPickerDialog
         key={`${representative.environmentId}:${representative.workspaceRoot}:${faviconPickerOpen}`}

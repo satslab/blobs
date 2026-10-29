@@ -16,6 +16,7 @@
     "sharp": "0.35.4"
   },
   "devDependencies": {
+    "@alchemy.run/cloudflare": "catalog:",
     "@astrojs/check": "^0.9.10",
     "@vercel/config": "^0.3.0",
     "alchemy": "catalog:",

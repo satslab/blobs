@@ -1441,7 +1441,7 @@ it.effect(
         payload: { ...thread, botId: BotId.make("personal") },
       });
       const sql = yield* SqlClient.SqlClient;
-      yield* sql`INSERT INTO sats_bots(id,name,owner_environment_id,thread_id,generation,status,state_json)
+      yield* sql`INSERT INTO sora_bots(id,name,owner_environment_id,thread_id,generation,status,state_json)
         VALUES ('personal','Personal','owner',${threadId},0,'active','{}')`;
       for (const index of [1, 2]) {
         yield* orchestrator.dispatch({
@@ -1488,7 +1488,7 @@ it.effect(
         threadId,
       });
       for (const status of ["transferring", "forwarded", "staged"] as const) {
-        yield* sql`UPDATE sats_bots SET status=${status} WHERE id='personal'`;
+        yield* sql`UPDATE sora_bots SET status=${status} WHERE id='personal'`;
         const denied = yield* Effect.result(
           orchestrator.dispatch({
             type: "message.dispatch",
@@ -1625,7 +1625,7 @@ it.effect(
           occurredAt: yield* DateTime.now,
           payload: { ...(yield* projections.getThread(threadId)), botId },
         });
-        yield* sql`INSERT INTO sats_bots(id,name,owner_environment_id,thread_id,generation,status,state_json)
+        yield* sql`INSERT INTO sora_bots(id,name,owner_environment_id,thread_id,generation,status,state_json)
         VALUES (${botId},'Bellatrix','owner',${threadId},0,'active','{}')`;
         for (const text of maintenanceFirst ? ["/compact", "Hi who are u"] : ["Hi who are u"]) {
           const commandId = CommandId.make(`${threadId}:${text}`);

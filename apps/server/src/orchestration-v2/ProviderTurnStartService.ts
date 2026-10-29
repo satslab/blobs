@@ -164,6 +164,7 @@ export const layer: Layer.Layer<
     const projectionStore = yield* ProjectionStore.ProjectionStoreV2;
     const providerSessions = yield* ProviderSessionManager.ProviderSessionManagerV2;
     const runExecution = yield* RunExecutionService.RunExecutionServiceV2;
+    const serverSettings = yield* ServerSettings.ServerSettingsService;
     const botChat = yield* BotChat.BotChat;
     const discordPrompt = yield* DiscordPrompt.DiscordPrompt;
     const threadCommands = yield* ThreadCommandExecutor.ThreadCommandExecutor;
@@ -269,8 +270,7 @@ export const layer: Layer.Layer<
                 const request = turnItems.find((item) => item.type === "run_interrupt_request");
                 return request?.type === "run_interrupt_request" ? request.message : undefined;
               }),
-              // @effect-diagnostics-next-line effectSucceedWithVoid:off - This optional result requires undefined, not the wider void type.
-              Effect.catchCause(() => Effect.succeed(undefined)),
+              Effect.catchCause(() => Effect.sync(() => undefined)),
             ),
       };
     };
@@ -727,7 +727,7 @@ export const layer: Layer.Layer<
       }
       const workspaceResult = yield* Effect.result(
         projection.thread.botId === undefined
-          ? Effect.succeed(undefined)
+          ? Effect.sync(() => undefined)
           : ensureWorkspace(projection.thread.botId),
       );
       if (workspaceResult._tag === "Failure") {
@@ -741,7 +741,7 @@ export const layer: Layer.Layer<
       const delegatedMemoryResult = yield* Effect.result(
         projection.thread.lineage.relationshipToParent === "subagent"
           ? botChat.delegatedContext(projection.thread)
-          : Effect.succeed(undefined),
+          : Effect.sync(() => undefined),
       );
       if (delegatedMemoryResult._tag === "Failure") {
         yield* settleStartFailure({
@@ -757,23 +757,22 @@ export const layer: Layer.Layer<
           ? ""
           : `${delegatedBotInstructions}\n${delegatedMemory.snapshot.view}`;
       // An unreadable settings file keeps the bot isolated rather than loading host files unasked.
-      const botLoadResources =
+      const botSettings =
         projection.thread.botId === undefined
-          ? false
+          ? { loadResources: false, role: "" }
           : yield* serverSettings.getSettings.pipe(
-              Effect.map(
-                (settings) =>
-                  resolveProjectSettings(settings, projection.thread.projectId).settings
-                    .botLoadResources,
-              ),
+              Effect.map((settings) => {
+                const resolved = resolveProjectSettings(settings, projection.thread.projectId);
+                return {
+                  loadResources: resolved.settings.botLoadResources,
+                  role: resolved.settings.botRole.trim(),
+                };
+              }),
               Effect.catch((cause) =>
-                Effect.logWarning(
-                  "Could not read bot resource loading; keeping the bot isolated.",
-                  {
-                    threadId: projection.thread.id,
-                    cause,
-                  },
-                ).pipe(Effect.as(false)),
+                Effect.logWarning("Could not read bot settings; keeping the bot isolated.", {
+                  threadId: projection.thread.id,
+                  cause,
+                }).pipe(Effect.as({ loadResources: false, role: "" })),
               ),
             );
       const connectionInstructions = yield* Effect.result(
@@ -808,17 +807,18 @@ export const layer: Layer.Layer<
               botChat: {
                 systemPrompt: [
                   turnInstructions(projection.thread.title, projection.thread.id),
+                  botSettings.role === "" ? "" : `# Role\n${botSettings.role}`,
                   connectionInstructions.success,
                 ]
                   .filter(Boolean)
                   .join("\n"),
                 runId: run.id,
-                loadResources: botLoadResources,
+                loadResources: botSettings.loadResources,
               },
             };
       const memorySnapshotResult = yield* Effect.result(
         projection.thread.botId === undefined
-          ? Effect.succeed(undefined)
+          ? Effect.sync(() => undefined)
           : botChat.prepare({
               botId: projection.thread.botId,
               runId: run.id,

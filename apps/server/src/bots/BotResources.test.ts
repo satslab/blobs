@@ -1,5 +1,5 @@
 import { vi } from "vite-plus/test";
-import systemTimezoneMigration from "../persistence/Migrations/079_BotSystemTimezone.ts";
+import systemTimezoneMigration from "../persistence/BlobsMigrations/007_BotSystemTimezone.ts";
 import { NodeServices } from "@effect/platform-node";
 import { assert, it } from "@effect/vitest";
 import { BotId, EnvironmentId, ProjectId, ThreadId } from "@satslab/contracts";
@@ -11,8 +11,8 @@ import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 import * as Config from "../config.ts";
 import * as SecretStore from "../auth/ServerSecretStore.ts";
 import * as SecretRequests from "../secrets/SecretRequests.ts";
-import botMigration from "../persistence/Migrations/073_BotChat.ts";
-import resourceMigration from "../persistence/Migrations/078_BotResources.ts";
+import botMigration from "../persistence/BlobsMigrations/001_BotChat.ts";
+import resourceMigration from "../persistence/BlobsMigrations/006_BotResources.ts";
 import * as BotStorage from "./BotStorage.ts";
 import * as BotResources from "./BotResources.ts";
 
@@ -87,7 +87,7 @@ it.effect(
       assert.equal(yield* fs.readFileString(path), "fixture-token");
       const rows = yield* sql<{
         secret_ref: string;
-      }>`SELECT secret_ref FROM sats_bot_secrets WHERE bot_id=${source}`;
+      }>`SELECT secret_ref FROM sora_bot_secrets WHERE bot_id=${source}`;
       assert.match(rows[0]?.secret_ref ?? "", /^bot-secret-/);
       assert.notInclude(rows[0]?.secret_ref ?? "", "fixture-token");
       assert.equal((yield* storage.resources(destination)).secrets.length, 0);

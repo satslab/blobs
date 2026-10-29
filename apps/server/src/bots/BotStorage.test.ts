@@ -12,7 +12,7 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as SqlClient from "effect/sql/SqlClient";
 import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
-import migration from "../persistence/Migrations/073_BotChat.ts";
+import migration from "../persistence/BlobsMigrations/001_BotChat.ts";
 import * as BotStorage from "./BotStorage.ts";
 import { makeMemory } from "./MemoryWorker.ts";
 import { memoryTools } from "./MemoryTools.ts";
@@ -99,7 +99,7 @@ it.effect("freezes a retry-stable view and commits its current input atomically"
     );
     assert.equal((yield* storage.memory(identity.id)).total, 1);
     const sql = yield* SqlClient.SqlClient;
-    yield* sql`UPDATE sats_bots SET status='transferring' WHERE id=${identity.id}`;
+    yield* sql`UPDATE sora_bots SET status='transferring' WHERE id=${identity.id}`;
     const rejected = yield* Effect.result(
       storage.freezeAndAppend({ ...frozen, runId: RunId.make("other") }, message("next")),
     );

@@ -206,7 +206,7 @@ export function cursorMcpServers(
     return undefined;
   }
   return {
-    blobs: {
+    "t3-code": {
       type: "http",
       url: session.endpoint,
       headers: {
