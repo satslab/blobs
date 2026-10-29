@@ -1,99 +1,42 @@
 # Blobs
 
-Blobs is an "agent harness control surface". It enables control of the agents on your machine with a best-in-class mobile app ([iOS](https://apps.apple.com/us/app/blobs-remote-claude-more/id6787819824), [Android](https://play.google.com/store/apps/details?id=xyz.satslab.blobs)), [web app](https://app.t3.codes) and [Electron-based desktop app](https://t3.codes).
+Blobs is an open-source fork of [T3 Code](https://github.com/pingdotgg/t3code) for running coding agents through a local web app or desktop app.
 
-Works with your subscriptions on Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity, and fx. If they're set up on your computer, Blobs can control them.
+It supports Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity, and fx, with persistent bots, memory, routines, and Discord integration.
 
-## "Wait, what are you selling me?"
-
-Nothing. We built Blobs because we wanted the best possible development experience with agents. We were inspired by existing solutions like the Codex desktop app, Conductor, Claude Desktop and Cursor Glass, but none met our bar.
-
-We wanted something performant, remote-ready, and truly open. If we ever go the wrong direction, we want you to have everything you need to fork and build the editor that you want.
+Website: [blobs.satslab.xyz](https://blobs.satslab.xyz).
 
 ## Installation
 
-> [!WARNING]
-> Blobs currently supports Codex, Claude, Cursor, Grok Build, OpenCode, Antigravity, and fx. Install and authenticate at least one provider before use:
->
-> - Codex: install [Codex CLI](https://developers.openai.com/codex/cli) and run `codex login`
-> - Claude: install [Claude Code](https://claude.com/product/claude-code) and run `claude auth login`
-> - Cursor: install [Cursor CLI](https://cursor.com/cli) and run `agent login`
-> - Grok Build: install [Grok Build CLI](https://x.ai/cli) and run `grok login`
-> - OpenCode: install [OpenCode](https://opencode.ai) and run `opencode auth login`
-> - Antigravity: enable it in Settings, then use **Install Antigravity** and **Sign in with Google**. No CLI is required.
-> - fx: install [fx](https://fx.sh) and run `fx login` on the machine running the Blobs server ([setup guide](./docs/user/providers-fx.md))
+Install and authenticate at least one supported coding provider before starting Blobs. Provider setup is covered in the [user guides](./docs/README.md).
+
+### Desktop
+
+Download the app for your platform from [GitHub Releases](https://github.com/satslab/blobs/releases):
+
+- macOS: `.dmg`
+- Windows: `.exe`
+- Linux: `.deb` or `.AppImage`
 
 ### Command line
 
-```bash
+The install scripts download the self-contained CLI from GitHub Releases. Node.js is not required.
+
+macOS or Linux:
+
+```sh
 curl -fsSL https://blobs.satslab.xyz/install.sh | sh
 ```
 
-On Windows, in PowerShell:
+Windows PowerShell:
 
 ```powershell
 irm https://blobs.satslab.xyz/install.ps1 | iex
 ```
 
-Then run `blobs` to start the server and open the local web app. `blobs service install` keeps it running in the background, `blobs update` moves to a newer release, and `blobs --help` has the full reference.
+Run `blobs` to start the server and open the local web app. Use `blobs service install` to run it in the background, `blobs update` to update it, and `blobs --help` for command options.
 
-To try it once without installing, run `npx @satslab/blobs@latest`. It offers to install the `blobs` command for you.
-
-### Desktop app
-
-Install the latest version of the desktop app from [GitHub Releases](https://github.com/satslab/blobs/releases), or from your favorite package registry:
-
-#### Windows (`winget`)
-
-```bash
-winget install T3Tools.T3Code
-```
-
-#### Windows (`scoop`)
-
-```bash
-scoop install extras/blobs
-```
-
-#### macOS (Homebrew)
-
-```bash
-brew install --cask blobs
-```
-
-#### Debian, Ubuntu (`.deb`)
-
-Download the `.deb` from [GitHub Releases](https://github.com/satslab/blobs/releases), then:
-
-```bash
-sudo apt install ./T3-Code-*.deb
-```
-
-#### Arch Linux (AUR)
-
-Stable:
-
-```bash
-yay -S blobs-bin
-```
-
-Nightly:
-
-```bash
-yay -S blobs-nightly-bin
-```
-
-The AUR packaging is maintained in this repository under [`packaging/aur`](./packaging/aur).
-
-#### Nix (nixpkgs)
-
-```bash
-nix profile add github:NixOS/nixpkgs/nixos-unstable#t3code
-```
-
-The package is maintained in [nixpkgs](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/by-name/t3/t3code)
-and includes the desktop app (`t3code-desktop`) and the `blobs` command.
-See [Nix installation](./docs/user/install.md#nix-nixpkgs) for NixOS configuration and updates.
+npm publishing is paused. Use the GitHub release downloads or install scripts above.
 
 ## Some notes
 
@@ -147,7 +90,3 @@ vp i
 ```
 
 Read [CONTRIBUTING.md](./CONTRIBUTING.md) before reporting a bug or opening a PR.
-
-Have a feature request? Start an [Ideas discussion](https://github.com/satslab/blobs/discussions/categories/ideas).
-
-Need support? Join the [Discord](https://discord.gg/jn4EGJjrvv).
