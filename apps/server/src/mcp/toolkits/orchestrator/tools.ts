@@ -204,6 +204,7 @@ const RequestSecretTool = Tool.make("request_secret", {
   failureMode: "return",
   dependencies,
 })
+  .annotate(McpSchema.EnabledWhen, McpInvocationContext.ordinarySecretRequestsEnabled)
   .annotate(Tool.Title, "Request a secret from the user")
   .annotate(Tool.Destructive, false);
 

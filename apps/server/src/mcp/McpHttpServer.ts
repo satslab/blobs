@@ -1,3 +1,4 @@
+import * as BotSecretRequests from "../bots/BotSecretRequests.ts";
 import * as MemoryHandlers from "./toolkits/bots/handlers.ts";
 import * as DiscordHandlers from "./toolkits/bots/discordHandlers.ts";
 import { BotDiscoveryToolkit, MemoryToolkit } from "./toolkits/bots/tools.ts";
@@ -1161,7 +1162,7 @@ export const layerDeviceToolkit = Layer.mergeAll(
 );
 
 export const layerMcpTransport = McpServer.layerHttp({
-  name: "Blobs",
+  name: "T3 Code",
   version: packageJson.version,
   path: "/mcp",
   protocols: [McpProtocol.v2025_06_18],
@@ -1171,7 +1172,7 @@ export const layerMcpTransport = McpServer.layerHttp({
 const layerBotDiscoveryToolkit = toolkitRegistration(
   BotDiscoveryToolkit,
   MemoryHandlers.layerDiscovery,
-);
+).pipe(Layer.provide(BotSecretRequests.layer), Layer.provide(OrchestratorMcpService.layer));
 
 export const layerTools = Layer.mergeAll(
   toolkitRegistration(DiscordHandlers.toolkit, DiscordHandlers.layer),
@@ -1194,7 +1195,7 @@ const layerStandard = Layer.merge(layerTools, layerCreateThreadsToolkit).pipe(
 );
 
 export const layerBotTransport = McpServer.layerHttp({
-  name: "Blobs bots",
+  name: "T3 Code bots",
   version: packageJson.version,
   path: "/bot-mcp",
   protocols: [McpProtocol.v2025_06_18],

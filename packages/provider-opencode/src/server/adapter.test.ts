@@ -2957,6 +2957,7 @@ it.effect(
             children: async () => ({ data: [] }),
           },
         },
+        {},
         {
           botChat: {
             systemPrompt: "Frozen memory instructions",

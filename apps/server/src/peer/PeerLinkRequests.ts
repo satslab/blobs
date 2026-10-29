@@ -79,7 +79,7 @@ export class PeerLinkRequests extends Context.Service<
       input: PeerLinkRequestAnswerInput,
     ) => Effect.Effect<void, PeerLinkRequestError>;
   }
->()("t3/peer/PeerLinkRequests") {}
+>()("@satslab/blobs/peer/PeerLinkRequests") {}
 
 const make = Effect.gen(function* () {
   const threadManagement = yield* ThreadManagementService.ThreadManagementService;

@@ -32,9 +32,9 @@ describe("resolveT3McpToolPresentation", () => {
 
   it("matches OpenCode 2's per-thread server names, whose thread ids hold underscores", () => {
     expect(
-      resolveT3McpToolPresentation("blobs-thread_opencode2-adapter_delegate_task")?.displayName,
+      resolveT3McpToolPresentation("t3-code-thread_opencode2-adapter_delegate_task")?.displayName,
     ).toBe("Delegate a child task");
-    expect(resolveT3McpToolPresentation("blobs-thread_opencode2-adapter_not_a_tool")).toBeNull();
+    expect(resolveT3McpToolPresentation("t3-code-thread_opencode2-adapter_not_a_tool")).toBeNull();
   });
 });
 

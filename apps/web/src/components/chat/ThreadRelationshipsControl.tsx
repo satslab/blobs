@@ -1,3 +1,4 @@
+import { CollapsibleSectionHeader } from "../ui/collapsible-section-header";
 import { resolveBotThreadContext } from "../../botThreadContext";
 import { useAtomValue } from "@effect/atom-react";
 import { ThreadDetailsControl } from "./ThreadDetailsControl";
@@ -47,7 +48,6 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
   BotIcon,
-  ChevronDownIcon,
   CornerLeftUpIcon,
   GitForkIcon,
   MessagesSquareIcon,
@@ -88,9 +88,6 @@ import { toastManager } from "../ui/toast";
 import { Spinner } from "../ui/spinner";
 import { cn } from "~/lib/utils";
 import {
-  THREAD_DETAILS_PANEL_CHEVRON_CLASS,
-  THREAD_DETAILS_PANEL_ICON_CLASS,
-  THREAD_DETAILS_PANEL_LABEL_CLASS,
   THREAD_DETAILS_PANEL_SPLIT_GROUP_CLASS,
   THREAD_DETAILS_PANEL_ROW_CONTENT_CLASS,
   THREAD_DETAILS_PANEL_SPLIT_SEPARATOR_CLASS,
@@ -920,7 +917,7 @@ export function ThreadRelationshipsPanel(props: {
           }
         >
           {delegatedFrom === undefined ? null : (
-            <ThreadLineageRowList hiddenCount={0} onShowMore={() => {}}>
+            <ThreadLineageRowList card={props.sectionVariant === "card"} hiddenCount={0} onShowMore={() => {}}>
               <DelegatedFromRow
                 delegatedFrom={delegatedFrom}
                 fallbackLabel={currentThread?.linkOrigin?.label}
@@ -929,12 +926,12 @@ export function ThreadRelationshipsPanel(props: {
           )}
           {props.showEmpty && relationshipRows.length === 0 && runningCount === 0 ? <p className="px-3 py-3 text-xs text-muted-foreground">No related threads</p> : null}
           {groups.map((group) => (
-            <ThreadLineageGroup key={`${scopedThreadKey(ref)}:${group.id}`} {...group}>
+            <ThreadLineageGroup card={props.sectionVariant === "card"} key={`${scopedThreadKey(ref)}:${group.id}`} {...group}>
               {(visibleRows) => visibleRows.map(renderRelationshipRow)}
             </ThreadLineageGroup>
           ))}
           {remoteSubagents.length > 0 ? (
-            <ThreadLineageRowList hiddenCount={0} onShowMore={() => {}}>
+            <ThreadLineageRowList card={props.sectionVariant === "card"} hiddenCount={0} onShowMore={() => {}}>
               {remoteSubagents.map((agent) => (
                 <RemoteSubagentRow
                   key={agent.id}

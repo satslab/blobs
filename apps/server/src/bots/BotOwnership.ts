@@ -68,12 +68,12 @@ const make = Effect.gen(function* () {
             const transferId = yield* crypto.randomUUIDv4();
             const secret = yield* crypto.randomUUIDv4();
             const digest = yield* hash(secret);
-            yield* sql`UPDATE sats_bots SET status='transferring',destination_environment_id=${destination},transfer_id=${transferId},release_secret=${secret},release_hash=${digest},transfer_json=NULL,transfer_imported=0 WHERE id=${id}`;
+            yield* sql`UPDATE sora_bots SET status='transferring',destination_environment_id=${destination},transfer_id=${transferId},release_secret=${secret},release_hash=${digest},transfer_json=NULL,transfer_imported=0 WHERE id=${id}`;
           }
           const rows = yield* sql<{
             transfer_id: string;
             release_hash: string;
-          }>`SELECT transfer_id,release_hash FROM sats_bots WHERE id=${id}`;
+          }>`SELECT transfer_id,release_hash FROM sora_bots WHERE id=${id}`;
           const row = rows[0];
           if (!row) return yield* invalid();
           return {
@@ -89,16 +89,16 @@ const make = Effect.gen(function* () {
             },
             state: yield* storage.memory(id),
             messages: yield* decodeMemoryMessageRows(
-              yield* sql`SELECT id,event_key AS key,kind,text,date FROM sats_bot_memory_messages WHERE bot_id=${id} ORDER BY id`,
+              yield* sql`SELECT id,event_key AS key,kind,text,date FROM sora_bot_memory_messages WHERE bot_id=${id} ORDER BY id`,
             ),
             nodes: yield* decodeMemoryNodeRows(
-              yield* sql`SELECT id,count,text FROM sats_bot_memory_nodes WHERE bot_id=${id} ORDER BY count,id`,
+              yield* sql`SELECT id,count,text FROM sora_bot_memory_nodes WHERE bot_id=${id} ORDER BY count,id`,
             ),
             jobs: yield* decodeMemoryJobRows(
-              yield* sql`SELECT id,count,source FROM sats_bot_memory_jobs WHERE bot_id=${id} ORDER BY count,id`,
+              yield* sql`SELECT id,count,source FROM sora_bot_memory_jobs WHERE bot_id=${id} ORDER BY count,id`,
             ),
             snapshots: yield* decodeMemorySnapshotRows(
-              yield* sql`SELECT bot_id AS "botId",run_id AS "runId",total,view FROM sats_bot_memory_snapshots WHERE bot_id=${id}`,
+              yield* sql`SELECT bot_id AS "botId",run_id AS "runId",total,view FROM sora_bot_memory_snapshots WHERE bot_id=${id}`,
             ),
           };
         }),
@@ -108,14 +108,14 @@ const make = Effect.gen(function* () {
   const packageFor = Effect.fn("BotOwnership.packageFor")(function* (id: BotId) {
     const rows = yield* sql<{
       transfer_json: string | null;
-    }>`SELECT transfer_json FROM sats_bots WHERE id=${id}`;
+    }>`SELECT transfer_json FROM sora_bots WHERE id=${id}`;
     return rows[0]?.transfer_json
       ? yield* decodeTransfer(Buffer.from(rows[0].transfer_json, "base64").toString("utf8"))
       : undefined;
   }, wrap);
   const savePackage = Effect.fn("BotOwnership.savePackage")(function* (transfer: BotTransfer) {
     const encoded = yield* encodeTransfer(transfer);
-    yield* sql`UPDATE sats_bots SET transfer_json=${Buffer.from(encoded).toString("base64")} WHERE id=${transfer.identity.id} AND transfer_id=${transfer.transferId}`;
+    yield* sql`UPDATE sora_bots SET transfer_json=${Buffer.from(encoded).toString("base64")} WHERE id=${transfer.identity.id} AND transfer_id=${transfer.transferId}`;
   }, wrap);
   const stage = Effect.fn("BotOwnership.stage")(function* (
     transfer: BotTransfer,
@@ -157,7 +157,7 @@ const make = Effect.gen(function* () {
             generation: number;
             transfer_id: string | null;
             status: string;
-          }>`SELECT generation,transfer_id,status FROM sats_bots WHERE id=${id}`;
+          }>`SELECT generation,transfer_id,status FROM sora_bots WHERE id=${id}`;
           const previous = existing[0];
           if (
             previous?.transfer_id === transfer.transferId &&
@@ -178,24 +178,24 @@ const make = Effect.gen(function* () {
             return yield* invalid();
           // A returned identity replaces only its inactive replica, never an active owner.
           if (previous) {
-            yield* sql`DELETE FROM sats_bot_memory_messages WHERE bot_id=${id}`;
-            yield* sql`DELETE FROM sats_bot_memory_nodes WHERE bot_id=${id}`;
-            yield* sql`DELETE FROM sats_bot_memory_jobs WHERE bot_id=${id}`;
-            yield* sql`DELETE FROM sats_bot_memory_snapshots WHERE bot_id=${id}`;
-            yield* sql`DELETE FROM sats_bots WHERE id=${id}`;
+            yield* sql`DELETE FROM sora_bot_memory_messages WHERE bot_id=${id}`;
+            yield* sql`DELETE FROM sora_bot_memory_nodes WHERE bot_id=${id}`;
+            yield* sql`DELETE FROM sora_bot_memory_jobs WHERE bot_id=${id}`;
+            yield* sql`DELETE FROM sora_bot_memory_snapshots WHERE bot_id=${id}`;
+            yield* sql`DELETE FROM sora_bots WHERE id=${id}`;
           }
           const identity = transfer.identity;
           const state = yield* encodeState(transfer.state);
-          yield* sql`INSERT INTO sats_bots(id,name,owner_environment_id,thread_id,generation,status,state_json,transfer_id,release_hash)
+          yield* sql`INSERT INTO sora_bots(id,name,owner_environment_id,thread_id,generation,status,state_json,transfer_id,release_hash)
         VALUES (${id},${identity.name},${environmentId},${identity.threadId},${identity.generation},'staged',${state},${transfer.transferId},${transfer.releaseHash})`;
           for (const message of transfer.messages)
-            yield* sql`INSERT INTO sats_bot_memory_messages(bot_id,id,event_key,kind,text,date) VALUES (${id},${message.id},${message.key},${message.kind},${message.text},${message.date})`;
+            yield* sql`INSERT INTO sora_bot_memory_messages(bot_id,id,event_key,kind,text,date) VALUES (${id},${message.id},${message.key},${message.kind},${message.text},${message.date})`;
           for (const node of transfer.nodes)
-            yield* sql`INSERT INTO sats_bot_memory_nodes(bot_id,id,count,text) VALUES (${id},${node.id},${node.count},${node.text})`;
+            yield* sql`INSERT INTO sora_bot_memory_nodes(bot_id,id,count,text) VALUES (${id},${node.id},${node.count},${node.text})`;
           for (const job of transfer.jobs)
-            yield* sql`INSERT INTO sats_bot_memory_jobs(bot_id,id,count,source) VALUES (${id},${job.id},${job.count},${job.source})`;
+            yield* sql`INSERT INTO sora_bot_memory_jobs(bot_id,id,count,source) VALUES (${id},${job.id},${job.count},${job.source})`;
           for (const snapshot of transfer.snapshots)
-            yield* sql`INSERT INTO sats_bot_memory_snapshots(bot_id,run_id,total,view) VALUES (${id},${snapshot.runId},${snapshot.total},${snapshot.view})`;
+            yield* sql`INSERT INTO sora_bot_memory_snapshots(bot_id,run_id,total,view) VALUES (${id},${snapshot.runId},${snapshot.total},${snapshot.view})`;
           yield* savePackage(transfer);
           return yield* storage.get(id);
         }),
@@ -212,7 +212,7 @@ const make = Effect.gen(function* () {
             release_secret: string;
             status: string;
             destination_environment_id: string | null;
-          }>`SELECT transfer_id,release_secret,status,destination_environment_id FROM sats_bots WHERE id=${id}`;
+          }>`SELECT transfer_id,release_secret,status,destination_environment_id FROM sora_bots WHERE id=${id}`;
           const row = rows[0];
           if (
             !row ||
@@ -224,7 +224,7 @@ const make = Effect.gen(function* () {
             return yield* invalid();
           if (!(yield* packageFor(id))) return yield* invalid();
           if (row.status === "transferring")
-            yield* sql`UPDATE sats_bots SET status='forwarded',owner_environment_id=destination_environment_id,generation=generation+1 WHERE id=${id}`;
+            yield* sql`UPDATE sora_bots SET status='forwarded',owner_environment_id=destination_environment_id,generation=generation+1 WHERE id=${id}`;
           return { secret: row.release_secret };
         }),
       ),
@@ -242,7 +242,7 @@ const make = Effect.gen(function* () {
       transfer_id: string;
       release_hash: string;
       transfer_imported: number;
-    }>`SELECT transfer_id,release_hash,transfer_imported FROM sats_bots WHERE id=${id}`;
+    }>`SELECT transfer_id,release_hash,transfer_imported FROM sora_bots WHERE id=${id}`;
     if (
       !row ||
       row.transfer_imported !== 1 ||
@@ -265,7 +265,7 @@ const make = Effect.gen(function* () {
       sql.withTransaction(
         Effect.gen(function* () {
           yield* validateActivation(id, transferId, secret, environmentId);
-          yield* sql`UPDATE sats_bots SET status='active' WHERE id=${id}`;
+          yield* sql`UPDATE sora_bots SET status='active' WHERE id=${id}`;
           return yield* storage.get(id);
         }),
       ),
@@ -283,14 +283,14 @@ const make = Effect.gen(function* () {
           const identity = yield* storage.get(id);
           const rows = yield* sql<{
             transfer_id: string;
-          }>`SELECT transfer_id FROM sats_bots WHERE id=${id}`;
+          }>`SELECT transfer_id FROM sora_bots WHERE id=${id}`;
           if (
             rows[0]?.transfer_id !== transferId ||
             identity.ownerEnvironmentId !== environmentId ||
             identity.status !== "transferring"
           )
             return yield* invalid();
-          yield* sql`UPDATE sats_bots SET status='active',destination_environment_id=NULL,transfer_id=NULL,release_secret=NULL,release_hash=NULL,transfer_json=NULL WHERE id=${id}`;
+          yield* sql`UPDATE sora_bots SET status='active',destination_environment_id=NULL,transfer_id=NULL,release_secret=NULL,release_hash=NULL,transfer_json=NULL WHERE id=${id}`;
           return yield* storage.get(id);
         }),
       ),
@@ -300,12 +300,12 @@ const make = Effect.gen(function* () {
     id: BotId,
     transferId: string,
   ) {
-    yield* sql`UPDATE sats_bots SET transfer_imported=1 WHERE id=${id} AND transfer_id=${transferId} AND status='staged'`;
+    yield* sql`UPDATE sora_bots SET transfer_imported=1 WHERE id=${id} AND transfer_id=${transferId} AND status='staged'`;
   }, wrap);
   const describe = Effect.fn("BotOwnership.describe")(function* (id: BotId, transferId: string) {
     const rows = yield* sql<{
       length: number;
-    }>`SELECT length(transfer_json) AS length FROM sats_bots WHERE id=${id} AND transfer_id=${transferId}`;
+    }>`SELECT length(transfer_json) AS length FROM sora_bots WHERE id=${id} AND transfer_id=${transferId}`;
     if (!rows[0]?.length) return yield* invalid();
     return { transferId, length: rows[0].length, chunkSize: 262144 };
   }, wrap);
@@ -317,7 +317,7 @@ const make = Effect.gen(function* () {
     if (!Number.isSafeInteger(offset) || offset < 0) return yield* invalid();
     const rows = yield* sql<{
       data: string;
-    }>`SELECT substr(transfer_json,${offset + 1},262144) AS data FROM sats_bots WHERE id=${id} AND transfer_id=${transferId}`;
+    }>`SELECT substr(transfer_json,${offset + 1},262144) AS data FROM sora_bots WHERE id=${id} AND transfer_id=${transferId}`;
     if (!rows[0]?.data) return yield* invalid();
     return { data: rows[0].data, nextOffset: offset + rows[0].data.length };
   }, wrap);
@@ -336,9 +336,9 @@ const make = Effect.gen(function* () {
       return yield* invalid();
     const rows = yield* sql<{
       data: string;
-    }>`SELECT data FROM sats_bot_transfer_chunks WHERE transfer_id=${transferId} AND offset=${offset}`;
+    }>`SELECT data FROM sora_bot_transfer_chunks WHERE transfer_id=${transferId} AND offset=${offset}`;
     if (rows[0] && rows[0].data !== data) return yield* invalid();
-    yield* sql`INSERT OR IGNORE INTO sats_bot_transfer_chunks(transfer_id,offset,data) VALUES (${transferId},${offset},${data})`;
+    yield* sql`INSERT OR IGNORE INTO sora_bot_transfer_chunks(transfer_id,offset,data) VALUES (${transferId},${offset},${data})`;
   }, wrap);
   const readIncoming = Effect.fn("BotOwnership.readIncoming")(function* (
     transferId: string,
@@ -347,7 +347,7 @@ const make = Effect.gen(function* () {
     const chunks = yield* sql<{
       offset: number;
       data: string;
-    }>`SELECT offset,data FROM sats_bot_transfer_chunks WHERE transfer_id=${transferId} ORDER BY offset`;
+    }>`SELECT offset,data FROM sora_bot_transfer_chunks WHERE transfer_id=${transferId} ORDER BY offset`;
     let covered = 0;
     for (const chunk of chunks) {
       if (chunk.offset !== covered) return yield* invalid();

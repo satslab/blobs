@@ -1,5 +1,11 @@
 import { assert, it } from "@effect/vitest";
-import { EventId, ProjectId, ProviderInstanceId } from "@satslab/contracts";
+import {
+  BotId,
+  type ApplicationProjectEvent,
+  EventId,
+  ProjectId,
+  ProviderInstanceId,
+} from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
@@ -17,7 +23,7 @@ it.layer(ProjectStore.layer.pipe(Layer.provideMerge(SqlitePersistence.layerMemor
         const sql = yield* SqlClient.SqlClient;
         const projectId = ProjectId.make("project-null-options");
         const modelSelection = { instanceId: ProviderInstanceId.make("codex"), model: "gpt-5.4" };
-        yield* projects.apply({
+        const event = {
           sequence: 1,
           eventId: EventId.make("event-null-options"),
           aggregateKind: "project",
@@ -37,7 +43,17 @@ it.layer(ProjectStore.layer.pipe(Layer.provideMerge(SqlitePersistence.layerMemor
             createdAt: "2026-03-24T00:00:00.000Z",
             updatedAt: "2026-03-24T00:00:00.000Z",
           },
-        });
+        } satisfies ApplicationProjectEvent;
+        yield* projects.apply(event, BotId.make("memory-bot"));
+
+        assert.isTrue(Option.getOrNull(yield* projects.get(projectId))?.isBot);
+        assert.deepEqual(yield* sql`SELECT project_id,bot_id FROM sora_bot_projects`, [
+          { project_id: projectId, bot_id: "memory-bot" },
+        ]);
+
+        yield* sql`DELETE FROM projection_projects WHERE project_id=${projectId}`;
+        yield* projects.apply(event);
+        assert.isTrue(Option.getOrNull(yield* projects.getShell(projectId))?.isBot);
 
         const rows = yield* sql<{ readonly defaultModelSelection: string | null }>`
           SELECT default_model_selection_json AS "defaultModelSelection"

@@ -1904,6 +1904,31 @@ effectIt.effect.each([
   }),
 );
 
+effectIt.effect.each([
+  { label: "adds a Role section when the bot's project sets one", role: "  Release manager.  " },
+  { label: "adds nothing for a blank role", role: "   " },
+])("$label", ({ role }) =>
+  Effect.gen(function* () {
+    const harness = makeLocalCommandHarness({
+      text: "Hello",
+      botDriver: "claudeAgent",
+      fileSystem: FileSystem.makeNoop({
+        exists: () => Effect.succeed(true),
+        makeDirectory: () => Effect.void,
+      }),
+      settings: {
+        projectSettingsOverrides: {
+          [ProjectId.make("project-native-account-command")]: { botRole: role },
+        },
+      },
+    });
+    yield* harness.start;
+    const prompt = harness.startRootRun.mock.calls[0]?.[0].runtimePolicy.botChat?.systemPrompt;
+    if (role.trim() === "") expect(prompt).not.toContain("# Role");
+    else expect(prompt).toContain("# Role\nRelease manager.");
+  }),
+);
+
 effectIt.effect.each(["pi", "claudeAgent"] as const)(
   "includes steers accepted during memory preparation in the initial %s request",
   (botDriver) =>

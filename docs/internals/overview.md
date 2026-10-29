@@ -62,6 +62,13 @@ Persisted events must remain decodable on replay. Changing a schema affects old 
 startup as well as live RPC traffic. Compatibility work must account for stored history, not just
 what the newest client sends.
 
+Blobs extensions share the SQLite file but own `sora_*` tables and the `sora_sql_migrations` ledger.
+Keep their migration sequence independent of [upstream migrations](../../apps/server/src/persistence/Migrations.ts);
+add extension migrations through [BlobsMigrations](../../apps/server/src/persistence/BlobsMigrations.ts).
+Bot project associations are extension state committed with project changes, so rebuilding upstream
+projections must preserve them. The legacy upgrade adopts fork history and removes its upstream
+schema additions in one transaction before running either migration sequence.
+
 ## Turn completion and checkpoints
 
 A provider turn ending and its follow-up work settling are separate milestones. Orchestration
