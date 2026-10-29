@@ -39,8 +39,8 @@ describePosix("ClerkTokenStore", () => {
     await withStateDir(async (stateDir) => {
       NodeFS.chmodSync(stateDir, 0o755);
       const directory = NodePath.join(stateDir, "clerk");
-      const legacyPath = NodePath.join(stateDir, "clerk-tokens.json");
-      const tokenPath = NodePath.join(directory, "clerk-tokens.json");
+      const legacyPath = NodePath.join(stateDir, "blobs-clerk-tokens.json");
+      const tokenPath = NodePath.join(directory, "blobs-clerk-tokens.json");
       NodeFS.mkdirSync(directory, { mode: 0o755 });
       NodeFS.chmodSync(directory, 0o755);
       writeLoose(legacyPath, '{"__clerk_client_jwt":"enc:existing"}\n');
@@ -94,8 +94,8 @@ describePosix("ClerkTokenStore", () => {
   it("removes the legacy token file when the private copy already exists", async () => {
     await withStateDir((stateDir) => {
       const directory = NodePath.join(stateDir, "clerk");
-      const legacyPath = NodePath.join(stateDir, "clerk-tokens.json");
-      const tokenPath = NodePath.join(directory, "clerk-tokens.json");
+      const legacyPath = NodePath.join(stateDir, "blobs-clerk-tokens.json");
+      const tokenPath = NodePath.join(directory, "blobs-clerk-tokens.json");
       NodeFS.mkdirSync(directory, { mode: 0o755 });
       writeLoose(legacyPath, "stale-credential");
       writeLoose(tokenPath, "kept-credential");
@@ -134,15 +134,15 @@ describePosix("ClerkTokenStore", () => {
         ...relativeStateDir.split(NodePath.sep).map(() => "profile"),
       );
       const legacyStateDir = NodePath.join(userData, relativeStateDir);
-      const legacyPath = NodePath.join(legacyStateDir, "clerk-tokens.json");
+      const legacyPath = NodePath.join(legacyStateDir, "blobs-clerk-tokens.json");
       NodeFS.mkdirSync(legacyStateDir, { recursive: true });
       writeLoose(legacyPath, "existing-session");
-      const unrelatedPath = NodePath.join(stateDir, "clerk-tokens.json");
+      const unrelatedPath = NodePath.join(stateDir, "blobs-clerk-tokens.json");
       writeLoose(unrelatedPath, "not-the-electron-session");
 
       openClerkTokenStorage(relativeStateDir, idleStorage, userData);
 
-      const tokenPath = NodePath.join(stateDir, "clerk", "clerk-tokens.json");
+      const tokenPath = NodePath.join(stateDir, "clerk", "blobs-clerk-tokens.json");
       assert.equal(NodeFS.readFileSync(tokenPath, "utf8"), "existing-session");
       assert.equal(modeOf(tokenPath), 0o600);
       assert.equal(NodeFS.existsSync(legacyPath), false);
@@ -152,7 +152,7 @@ describePosix("ClerkTokenStore", () => {
 
   it("migrates tokens when the legacy directory is on another filesystem", async () => {
     await withStateDir((stateDir) => {
-      const legacyPath = NodePath.join(stateDir, "clerk-tokens.json");
+      const legacyPath = NodePath.join(stateDir, "blobs-clerk-tokens.json");
       writeLoose(legacyPath, "existing-session");
       using _rename = vi.spyOn(NodeFS, "renameSync").mockImplementation(() => {
         throw Object.assign(new Error("cross-device link"), { code: "EXDEV" });
@@ -160,7 +160,7 @@ describePosix("ClerkTokenStore", () => {
 
       openClerkTokenStorage(stateDir, idleStorage);
 
-      const tokenPath = NodePath.join(stateDir, "clerk", "clerk-tokens.json");
+      const tokenPath = NodePath.join(stateDir, "clerk", "blobs-clerk-tokens.json");
       assert.equal(NodeFS.readFileSync(tokenPath, "utf8"), "existing-session");
       assert.equal(modeOf(tokenPath), 0o600);
       assert.equal(NodeFS.existsSync(legacyPath), false);
@@ -181,7 +181,7 @@ describePosix("ClerkTokenStore", () => {
       const outsideFile = NodePath.join(stateDir, "outside.json");
       NodeFS.writeFileSync(outsideFile, "secret", { mode: 0o644 });
       NodeFS.chmodSync(outsideFile, 0o644);
-      NodeFS.symlinkSync(outsideFile, NodePath.join(stateDir, "clerk-tokens.json"));
+      NodeFS.symlinkSync(outsideFile, NodePath.join(stateDir, "blobs-clerk-tokens.json"));
       assert.throws(() => openClerkTokenStorage(stateDir, idleStorage), /must be a regular file/);
       assert.equal(modeOf(outsideFile), 0o644);
     });
