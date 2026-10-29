@@ -75,8 +75,7 @@ NodeTest.test("only build jobs run on Blacksmith", () => {
   NodeAssert.match(runnerOf(release.jobs, "sign_mac"), /^blacksmith-\d+vcpu-macos-15$/);
   NodeAssert.match(runnerOf(release.jobs, "verify_windows"), /^blacksmith-\d+vcpu-windows-2025$/);
 
-  // npm trusted publishing requires a GitHub-hosted runner.
-  for (const job of ["metadata", "publish", "publish_npm"])
+  for (const job of ["metadata", "publish"])
     NodeAssert.match(runnerOf(release.jobs, job), GITHUB_HOSTED);
 });
 
@@ -114,13 +113,11 @@ NodeTest.test(
     NodeAssert.match(publish, /cli-assets\/blobs-\$VERSION-win32-x64\.zip/);
     NodeAssert.doesNotMatch(publish, /cp .*cli-assets\/\*/);
     NodeAssert.ok(publish.indexOf("sha256sum") < publish.indexOf("gh release create"));
-    NodeAssert.deepEqual(release.jobs.publish_npm.needs, ["metadata", "publish"]);
   },
 );
 
 NodeTest.test("only a version tag publishes, and it publishes the commit that was tagged", () => {
-  for (const job of ["publish", "publish_npm"])
-    NodeAssert.equal(release.jobs[job].if, "github.ref_type == 'tag'");
+  for (const job of ["publish"]) NodeAssert.equal(release.jobs[job].if, "github.ref_type == 'tag'");
   const publish = release.jobs.publish.steps.find((step) => step.name === "Publish Blobs release");
   NodeAssert.match(publish.run, /--verify-tag/);
   NodeAssert.doesNotMatch(publish.run, /--target/);
