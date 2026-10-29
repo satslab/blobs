@@ -145,7 +145,7 @@ describe("resolveDraftProjectSelection", () => {
 
   it("keeps the draft when the picker closes after a choice", () => {
     expect(
-      resolveDraftProjectSelection("environment:t3code-2", projects, [makeScope(projects)], {
+      resolveDraftProjectSelection("environment:blobs-2", projects, [makeScope(projects)], {
         ...draft,
         pickerClosed: true,
       }),

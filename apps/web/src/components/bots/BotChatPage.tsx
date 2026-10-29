@@ -64,6 +64,7 @@ export function BotChatPage() {
       });
     else await navigate({ to: "/settings/bots", replace: true });
   });
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- opens the routed bot and cancels the pending navigation request on unmount
   useEffect(() => {
     if (!manage && environmentId === null) return;
     const controller = new AbortController();

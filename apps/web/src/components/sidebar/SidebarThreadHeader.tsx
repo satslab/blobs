@@ -51,9 +51,6 @@ export function SidebarThreadHeader({
   activeSearchResultIndex,
   onClearSearch,
 }: SidebarThreadHeaderProps) {
-  const resultsVisible = isSearching && searchResultCount > 0;
-  // Shrinking results can remove the active option; never leave aria-activedescendant pointing at it.
-  const activeResultExists = resultsVisible && activeSearchResultIndex < searchResultCount;
   const newThreadLabel = newThreadShortcutLabel
     ? `New thread (${newThreadShortcutLabel})`
     : "New thread";
