@@ -38,6 +38,9 @@ Run `blobs` to start the server and open the local web app. Use `blobs service i
 
 npm publishing is paused. Use the GitHub release downloads or install scripts above.
 
+Blobs uses an existing `~/.t3` data directory, or `~/.blobs` when `~/.t3` is absent.
+Set `BLOBS_HOME` or pass `--base-dir` to choose another directory.
+
 ## Some notes
 
 We are very very early in this project. Expect bugs.
