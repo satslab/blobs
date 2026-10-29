@@ -392,7 +392,7 @@ export class PortalCaptureShortcut {
     const created = await this.request("CreateSession", "", [], {
       session_handle_token: new Variant(
         "s",
-        `sora_capture_${NodeCrypto.randomUUID().replaceAll("-", "")}`,
+        `blobs_capture_${NodeCrypto.randomUUID().replaceAll("-", "")}`,
       ),
     });
     const session = decodeSession(created).session_handle.value;

@@ -20,7 +20,7 @@ import expo.modules.notifications.service.ExpoFirebaseMessagingService
 
 class AgentMessagingService : ExpoFirebaseMessagingService() {
   override fun onMessageReceived(remoteMessage: RemoteMessage) {
-    if (remoteMessage.data["sora_kind"] == "agent_activity") {
+    if (remoteMessage.data["blobs_kind"] == "agent_activity") {
       AgentNotifications.receive(this, remoteMessage.data)
     } else {
       super.onMessageReceived(remoteMessage)

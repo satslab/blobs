@@ -143,7 +143,7 @@ export function museServeArgs(
 
 export function museInitializeParams(readOnly = false) {
   return {
-    clientInfo: { name: "sora_code", title: "Blobs", version: "1" },
+    clientInfo: { name: "blobs", title: "Blobs", version: "1" },
     capabilities: { requestedCapabilities: readOnly ? [] : ["sessionMcp"] },
   };
 }

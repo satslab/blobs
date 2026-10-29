@@ -22,7 +22,7 @@ export { normalizeProviderAccentColor, shouldShowInstanceBadge };
 
 /** Placeholder for untargetable drafts. Never persist or dispatch it; disable send until replaced. */
 export const NO_PROVIDER_MODEL_SELECTION: ModelSelection = {
-  instanceId: ProviderInstanceId.make("sora_no_provider"),
+  instanceId: ProviderInstanceId.make("blobs_no_provider"),
   model: "",
 };
 

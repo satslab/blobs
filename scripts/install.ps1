@@ -7,7 +7,7 @@
 #   BLOBS_CHANNEL           release train to follow: stable, nightly, or preview
 #                            (default: stable; preview is a maintainers' test train)
 #   BLOBS_VERSION           exact version to install (overrides BLOBS_CHANNEL)
-#   BLOBS_HOME              Blobs home directory (default: ~\.blobs)
+#   BLOBS_HOME              data directory (default: existing ~\.t3, otherwise ~\.blobs)
 #   BLOBS_INSTALL_BIN_DIR   where blobs.exe is linked (default: ~\.local\bin)
 #   BLOBS_RELEASE_BASE_URL  mirror for releases/download (default: GitHub)
 #
@@ -18,7 +18,8 @@ $ErrorActionPreference = "Stop"
 
 $repo = "satslab/blobs"
 $baseUrl = if ($env:BLOBS_RELEASE_BASE_URL) { $env:BLOBS_RELEASE_BASE_URL.TrimEnd("/") } else { "https://github.com/$repo/releases/download" }
-$t3Home = if ($env:BLOBS_HOME) { $env:BLOBS_HOME } else { Join-Path $HOME ".blobs" }
+$defaultHome = if (Test-Path -LiteralPath (Join-Path $HOME ".t3") -PathType Container) { Join-Path $HOME ".t3" } else { Join-Path $HOME ".blobs" }
+$t3Home = if ($env:BLOBS_HOME) { $env:BLOBS_HOME } else { $defaultHome }
 $binDir = if ($env:BLOBS_INSTALL_BIN_DIR) { $env:BLOBS_INSTALL_BIN_DIR } else { Join-Path $HOME ".local\bin" }
 
 function Fail([string] $message) {
