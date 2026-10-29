@@ -1,29 +1,32 @@
-# Install T3 Code
+# Install Blobs
 
-T3 Code runs coding agents on your computer and lets you control them from its
+Blobs runs coding agents on your computer and lets you control them from its
 desktop, web, or mobile app. Set up the machine where the agents will work first.
 
 ## Requirements
 
 You need an installed, authenticated provider before starting a thread. You can
-launch T3 Code and configure providers afterwards.
+launch Blobs and configure providers afterwards.
 
 ## Command line
 
 ```bash
-curl -fsSL https://t3.codes/install.sh | sh
+curl -fsSL https://blobs.satslab.xyz/install.sh | sh
 ```
 
 On Windows, in PowerShell:
 
 ```powershell
-irm https://t3.codes/install.ps1 | iex
+irm https://blobs.satslab.xyz/install.ps1 | iex
 ```
 
 This installs the `blobs` binary to `~/.local/bin`. If your shell reports `command not found`
 afterwards, that directory is not on your `PATH` yet; the installer prints the
 line to add. Set `BLOBS_CHANNEL=nightly` to install the nightly train, or
 `BLOBS_VERSION` to pin an exact version.
+
+Blobs uses `~/.t3` when that directory exists, otherwise `~/.blobs`.
+Set `BLOBS_HOME` or pass `--base-dir` to use another data directory.
 
 | Task                                             | Command                                                                    |
 | ------------------------------------------------ | -------------------------------------------------------------------------- |

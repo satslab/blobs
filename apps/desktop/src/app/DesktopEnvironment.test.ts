@@ -3,9 +3,11 @@ import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, describe, it } from "@effect/vitest";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as Option from "effect/Option";
 
 import * as DesktopEnvironment from "./DesktopEnvironment.ts";
 import * as DesktopConfig from "./DesktopConfig.ts";
+import { resolveDesktopBaseDir } from "./DesktopStatePaths.ts";
 
 const defaultInput = {
   dirname: "/repo/apps/desktop/dist-electron",
@@ -38,6 +40,25 @@ const makeEnvironment = (
 ) => DesktopEnvironment.DesktopEnvironment.pipe(Effect.provide(layerEnvironment(overrides, env)));
 
 describe("DesktopEnvironment", () => {
+  it.each([
+    [[], undefined, ".blobs"],
+    [[".blobs"], undefined, ".blobs"],
+    [[".t3", ".blobs"], undefined, ".t3"],
+    [[".t3"], "/custom", "/custom"],
+  ] as const)(
+    "resolves the data home with %j and override %s",
+    (directories, explicit, expected) => {
+      assert.equal(
+        resolveDesktopBaseDir({
+          homeDirectory: "/home/test",
+          joinPath: (first, ...segments) => [first, ...segments].join("/"),
+          t3Home: Option.fromUndefinedOr(explicit),
+          exists: (path) => directories.some((directory) => path === `/home/test/${directory}`),
+        }),
+        expected.startsWith("/") ? expected : `/home/test/${expected}`,
+      );
+    },
+  );
   it.effect("uses the packaged Windows server sidecar as the backend root", () =>
     Effect.gen(function* () {
       const environment = yield* makeEnvironment({

@@ -1,3 +1,3 @@
 <resources>
-  <bool name="sora_subscription_widget_enabled">false</bool>
+  <bool name="blobs_subscription_widget_enabled">false</bool>
 </resources>

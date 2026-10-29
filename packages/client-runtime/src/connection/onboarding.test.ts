@@ -145,7 +145,7 @@ function layerPairingHttp(
             policy: "remote-reachable",
             bootstrapMethods: ["one-time-token"],
             sessionMethods: ["bearer-access-token"],
-            sessionCookieName: "sora_session",
+            sessionCookieName: "blobs_session",
           },
           scopes: sessionScopes,
           sessionMethod: "bearer-access-token",

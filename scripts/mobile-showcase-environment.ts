@@ -39,7 +39,7 @@ const PROJECT_SCRIPTS = JSON.stringify([
 ]);
 
 const SHOWCASE_TERMINAL_PROMPT =
-  "\u001b[1;32m→\u001b[0m \u001b[1;36msora\u001b[0m \u001b[1;34mgit:(\u001b[1;31mfeat/remote-command-center\u001b[1;34m)\u001b[0m \u001b[1;33m✗\u001b[0m ";
+  "\u001b[1;32m→\u001b[0m \u001b[1;36mblobs\u001b[0m \u001b[1;34mgit:(\u001b[1;31mfeat/remote-command-center\u001b[1;34m)\u001b[0m \u001b[1;33m✗\u001b[0m ";
 
 const SHOWCASE_TERMINAL_BUFFER = [
   `${SHOWCASE_TERMINAL_PROMPT}vpr dev`,
@@ -48,7 +48,7 @@ const SHOWCASE_TERMINAL_BUFFER = [
   "",
   "  \u001b[32m→\u001b[0m  \u001b[2mLocal:\u001b[0m    \u001b[4;36mhttp://127.0.0.1:5173/\u001b[0m",
   "  \u001b[32m→\u001b[0m  \u001b[2mNetwork:\u001b[0m  \u001b[4;36mhttp://192.168.1.24:5173/\u001b[0m",
-  "  \u001b[32m→\u001b[0m  \u001b[2mProject:\u001b[0m  \u001b[1msora\u001b[0m \u001b[2m(~/Code/blobs)\u001b[0m",
+  "  \u001b[32m→\u001b[0m  \u001b[2mProject:\u001b[0m  \u001b[1mblobs\u001b[0m \u001b[2m(~/Code/blobs)\u001b[0m",
   "",
   "  \u001b[32m✓ 612 passed\u001b[0m   \u001b[33m△ 2 warnings\u001b[0m   \u001b[31m✗ 0 failed\u001b[0m",
   "",

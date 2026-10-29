@@ -246,7 +246,7 @@ describe("CodexAdapterV2 runtime policy", () => {
         kind: "untrusted",
         value: "Filtered to overdue",
       });
-      assert.isDefined(withT3.additionalContext?.["sora_code_runtime"]);
+      assert.isDefined(withT3.additionalContext?.["t3_code_runtime"]);
     }),
   );
 });
@@ -1907,7 +1907,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
           hasT3Mcp: true,
         });
         assert.include(
-          params.additionalContext?.sora_code_orchestration_01?.value ?? "",
+          params.additionalContext?.t3_code_orchestration_01?.value ?? "",
           "delegate_task",
         );
         const entries = codexReplayPreamble({ nativeThreadId, nativeTurnId, prompt: "work" });
@@ -7911,12 +7911,9 @@ describe("CodexAdapterV2 memory process spawning", () => {
       assert.equal(turn.effort, "high");
       assert.equal(turn.serviceTier, "priority");
       assert.equal(turn.collaborationMode, undefined);
+      assert.include(turn.additionalContext?.t3_code_runtime?.value ?? "", "high reasoning effort");
       assert.include(
-        turn.additionalContext?.sora_code_runtime?.value ?? "",
-        "high reasoning effort",
-      );
-      assert.include(
-        turn.additionalContext?.sora_code_orchestration_01?.value ?? "",
+        turn.additionalContext?.t3_code_orchestration_01?.value ?? "",
         "delegate_task",
       );
     }),

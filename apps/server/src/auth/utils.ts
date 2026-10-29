@@ -9,7 +9,7 @@ import * as NodeCrypto from "node:crypto";
 import * as Base64Url from "effect/encoding/Base64Url";
 import * as Result from "effect/Result";
 
-const SESSION_COOKIE_NAME = "sora_session";
+const SESSION_COOKIE_NAME = "blobs_session";
 
 /** Cookies span ports; use separate names for servers sharing a hostname. */
 export function resolveSessionCookieName(input: {

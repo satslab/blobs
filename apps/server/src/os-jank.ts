@@ -125,10 +125,11 @@ export const resolveBaseDir = Effect.fn(function* (raw: string | undefined) {
   if (!raw || raw.trim().length === 0) {
     const home = yield* HostProcess.HomeDirectory;
     const fs = yield* FileSystem.FileSystem;
-    // Installs from before the Blobs rename keep using ~/.sora until it is moved.
-    const legacy = join(home, ".sora");
-    const current = join(home, ".blobs");
-    return !(yield* fs.exists(current)) && (yield* fs.exists(legacy)) ? legacy : current;
+    const t3Home = join(home, ".t3");
+    const existing = yield* fs.stat(t3Home).pipe(Effect.option);
+    return existing._tag === "Some" && existing.value.type === "Directory"
+      ? t3Home
+      : join(home, ".blobs");
   }
   return resolve(yield* expandHomePath(raw.trim()));
 });
