@@ -127,6 +127,9 @@ describe("htmlRenderFromToolItem", () => {
       ["blobs.html_render", { structuredContent: result, content: [] }],
       ["blobs-thread_1_html_render", JSON.stringify(result)],
       ["html_render", result],
+      ["mcp__t3-code__html_render", result],
+      ["mcp__t3_code__html_render", result],
+      ["t3-code-thread_1_html_render", result],
     ] as const) {
       expect(htmlRenderFromToolItem({ toolName, output })).toEqual(reference);
     }

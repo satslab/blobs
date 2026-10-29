@@ -13,7 +13,7 @@ export const toolkit = Toolkit.make(
 );
 
 export const layer = McpToolAccess.toLayer(toolkit, {
-  s3_bot_connection: McpToolAccess.actsAsCaller((input) =>
+  t3_bot_connection: McpToolAccess.actsAsCaller((input) =>
     Effect.gen(function* () {
       const invocation = yield* McpInvocationContext.McpInvocationContext;
       const caller = yield* McpInvocationContext.requireThreadScope(invocation, "Bot connection");

@@ -155,7 +155,9 @@ export class BotChatError extends Schema.TaggedError<BotChatError>()("BotChatErr
     }
   }
 }
-const BotResourceKey = Schema.String.check(Schema.isPattern(/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/));
+export const BotResourceKey = Schema.String.check(
+  Schema.isPattern(/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/),
+);
 export const BotFollowUp = Schema.Struct({
   key: BotResourceKey,
   title: Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(512)),

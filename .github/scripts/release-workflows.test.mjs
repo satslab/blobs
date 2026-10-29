@@ -32,6 +32,7 @@ NodeTest.test(
   "CI without push triggers, manual Windows tests, and tag-triggered Blobs releases are enabled",
   () => {
     NodeAssert.deepEqual(NodeFS.readdirSync(new URL("../workflows", import.meta.url)).sort(), [
+      "agent-context-budget.yml",
       "ci.yml",
       "deploy-marketing.yml",
       "release.yml",
