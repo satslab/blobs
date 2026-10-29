@@ -52,6 +52,7 @@ vi.mock("node:fs", () => ({
   writeFileSync: writeFileSyncMock,
   copyFileSync: copyFileSyncMock,
   existsSync: () => false,
+  statSync: () => undefined,
 }));
 
 vi.mock("node:child_process", () => ({
