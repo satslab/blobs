@@ -89,7 +89,7 @@ function createDesktopClerkBridge(stateDir: string, isDevelopment: boolean, user
   return createClerkBridge({
     storage: openClerkTokenStorage(
       stateDir,
-      (directory) => storage({ path: directory }),
+      (directory) => storage({ path: directory, name: "blobs-clerk-tokens" }),
       userDataPath,
     ),
     manageSingleInstanceLock: false,
