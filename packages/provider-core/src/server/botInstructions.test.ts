@@ -26,7 +26,7 @@ describe("memory provider instructions", () => {
     expect(prompt).toContain("link_pull_request");
     expect(prompt).toContain("html_render");
     expect(prompt.endsWith("act directly when explicitly asked.")).toBe(true);
-    expect(prompt).not.toContain("## Blobs collaborative browser");
+    expect(prompt).not.toContain("## Blobs browser");
     expect(prompt).not.toContain("## Blobs devices");
   });
 
@@ -36,7 +36,7 @@ describe("memory provider instructions", () => {
       runtime,
       mcpSession: { ...session, browserToolsAvailable: true, capabilities: new Set(["device"]) },
     });
-    expect(prompt).toContain("## Blobs collaborative browser");
+    expect(prompt).toContain("## Blobs browser");
     expect(prompt).toContain("## Blobs devices");
   });
 

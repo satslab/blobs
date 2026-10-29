@@ -1,3 +1,4 @@
+import * as BotSecretRequests from "../../../bots/BotSecretRequests.ts";
 import { OrchestratorMcpFailure } from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as MemoryAccess from "../../../bots/MemoryAccess.ts";
@@ -28,7 +29,7 @@ export const layer = McpToolAccess.toLayer(
           Effect.mapError(failure),
         ),
       ),
-      s3_attachment_read: McpToolAccess.readsAsCaller((input) =>
+      t3_attachment_read: McpToolAccess.readsAsCaller((input) =>
         caller.pipe(
           Effect.flatMap((scope) =>
             access.attachment(scope, {
@@ -58,7 +59,13 @@ const currentBot = Effect.gen(function* () {
   return { bots, bot };
 });
 export const layerDiscovery = McpToolAccess.toLayer(BotDiscoveryToolkit, {
-  s3_bot_browser_fill_secret: McpToolAccess.actsAsCaller((input) =>
+  t3_bot_request_secret: McpToolAccess.actsAsCaller((input) =>
+    Effect.gen(function* () {
+      const scope = yield* McpInvocationContext.McpInvocationContext;
+      return yield* (yield* BotSecretRequests.BotSecretRequests).request(scope, input);
+    }),
+  ),
+  t3_bot_browser_fill_secret: McpToolAccess.actsAsCaller((input) =>
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.requireThreadMcpCapability("preview").pipe(
         Effect.mapError(failure),
@@ -67,7 +74,7 @@ export const layerDiscovery = McpToolAccess.toLayer(BotDiscoveryToolkit, {
       return yield* bots.fillBrowserSecret(bot.id, scope, input).pipe(Effect.mapError(failure));
     }),
   ),
-  s3_bot_resources: McpToolAccess.actsAsCaller((input) =>
+  t3_bot_resources: McpToolAccess.actsAsCaller((input) =>
     Effect.gen(function* () {
       const { bots, bot } = yield* currentBot;
       return yield* (
@@ -75,13 +82,13 @@ export const layerDiscovery = McpToolAccess.toLayer(BotDiscoveryToolkit, {
       ).pipe(Effect.mapError(failure));
     }),
   ),
-  s3_bot_secret: McpToolAccess.actsAsCaller((input) =>
+  t3_bot_secret: McpToolAccess.actsAsCaller((input) =>
     Effect.gen(function* () {
       const { bots, bot } = yield* currentBot;
       return { file: yield* bots.secretPath(bot.id, input.key).pipe(Effect.mapError(failure)) };
     }),
   ),
-  s3_bot_list: McpToolAccess.reads((input) =>
+  t3_bot_list: McpToolAccess.reads((input) =>
     Effect.gen(function* () {
       return yield* (yield* BotChat.BotChat).discover(input).pipe(Effect.mapError(failure));
     }),

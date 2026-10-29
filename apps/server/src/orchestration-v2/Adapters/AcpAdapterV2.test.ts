@@ -2019,8 +2019,8 @@ describe("AcpAdapterV2", () => {
                         title: "Wait for the child",
                         status: "in_progress",
                         rawInput: {
-                          server: "blobs",
-                          tool: "s3_thread_wait",
+                          server: "t3-code",
+                          tool: "t3_thread_wait",
                           arguments: { threadId: "child" },
                         },
                         _meta: { is_mcp_tool_call: true },
@@ -2638,7 +2638,7 @@ describe("AcpAdapterV2", () => {
           (item) =>
             item.threadId === task?.childThreadId &&
             item.type === "dynamic_tool" &&
-            item.toolName === "blobs.task_status",
+            item.toolName === "t3-code.task_status",
         ),
       );
       const childMcp = items.find(
@@ -3725,7 +3725,7 @@ describe("AcpAdapterV2", () => {
         mcpServers: [
           {
             type: "stdio",
-            name: "blobs",
+            name: "t3-code",
             command: process.execPath,
             args: [
               process.argv[1] === undefined ? "blobs" : NodePath.resolve(process.argv[1]),

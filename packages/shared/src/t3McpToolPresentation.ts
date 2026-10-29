@@ -147,31 +147,35 @@ const BLOBS_MCP_TOOLS: Readonly<Record<string, T3McpToolDefinition>> = {
     ["Delete", "Deleting", "Requested deletion of", "a scheduled task"],
     "schedule-delete",
   ),
+  t3_bot_request_secret: tool(
+    ["Ask for", "Asking for", "Asked for", "a bot secret"],
+    "secret-request",
+  ),
   request_secret: tool(["Ask for", "Asking for", "Asked for", "a secret"], "secret-request"),
   create_threads: tool(["Create", "Creating", "Created", "T3 threads"], "thread-create"),
-  s3_thread_start: tool(["Start", "Starting", "Started", "a T3 thread"], "thread-create"),
-  s3_bot_list: tool(["List", "Listing", "Listed", "bots"], "thread-list"),
-  s3_thread_list: tool(["List", "Listing", "Listed", "T3 threads"], "thread-list"),
-  s3_thread_read: tool(["Read", "Reading", "Read", "a T3 thread"], "thread-read"),
-  s3_thread_send: tool(["Send", "Sending", "Sent", "to a T3 thread"], "thread-send"),
-  s3_thread_wait: tool(["Wait", "Waiting", "Waited", "for a T3 thread"], "thread-wait"),
-  s3_workflow_stop: tool(
+  t3_thread_start: tool(["Start", "Starting", "Started", "a T3 thread"], "thread-create"),
+  t3_bot_list: tool(["List", "Listing", "Listed", "bots"], "thread-list"),
+  t3_thread_list: tool(["List", "Listing", "Listed", "T3 threads"], "thread-list"),
+  t3_thread_read: tool(["Read", "Reading", "Read", "a T3 thread"], "thread-read"),
+  t3_thread_send: tool(["Send", "Sending", "Sent", "to a T3 thread"], "thread-send"),
+  t3_thread_wait: tool(["Wait", "Waiting", "Waited", "for a T3 thread"], "thread-wait"),
+  t3_workflow_stop: tool(
     ["Stop", "Stopping", "Requested a stop for", "a workflow"],
     "workflow-stop",
   ),
-  s3_background_wait: tool(
+  t3_background_wait: tool(
     ["Update", "Updating", "Updated", "background waits"],
     "background-wait",
   ),
-  s3_thread_interrupt: tool(
+  t3_thread_interrupt: tool(
     ["Interrupt", "Interrupting", "Requested an interrupt of", "a T3 thread"],
     "thread-interrupt",
   ),
-  s3_worktree_handoff: tool(
+  t3_worktree_handoff: tool(
     ["Hand off", "Handing off", "Handed off", "thread to a git worktree"],
     "worktree-handoff",
   ),
-  s3_worktree_status: tool(["Get", "Getting", "Got", "thread worktree status"], "worktree-status"),
+  t3_worktree_status: tool(["Get", "Getting", "Got", "thread worktree status"], "worktree-status"),
   preview_status: tool(["Get", "Getting", "Got", "preview browser status"], "browser", "browser"),
   preview_open: tool(
     ["Open", "Opening", "Opened", "a page in the preview browser"],
@@ -277,86 +281,86 @@ const BLOBS_MCP_TOOLS: Readonly<Record<string, T3McpToolDefinition>> = {
     ["Run", "Running", "Requested a run of", "a scheduled task"],
     "schedule-run",
   ),
-  s3_queue: tool(["Manage", "Managing", "Managed", "queued messages"], "queue-edit"),
-  s3_pending_request: tool(
+  t3_queue: tool(["Manage", "Managing", "Managed", "queued messages"], "queue-edit"),
+  t3_pending_request: tool(
     ["Handle", "Handling", "Handled", "pending questions"],
     "question-respond",
   ),
-  s3_queue_list: tool(["List", "Listing", "Listed", "queued messages"], "queue-list"),
-  s3_queue_read: tool(["Read", "Reading", "Read", "a queued message"], "queue-read"),
-  s3_queue_edit: tool(["Edit", "Editing", "Edited", "a queued message"], "queue-edit"),
-  s3_queue_cancel: tool(
+  t3_queue_list: tool(["List", "Listing", "Listed", "queued messages"], "queue-list"),
+  t3_queue_read: tool(["Read", "Reading", "Read", "a queued message"], "queue-read"),
+  t3_queue_edit: tool(["Edit", "Editing", "Edited", "a queued message"], "queue-edit"),
+  t3_queue_cancel: tool(
     ["Cancel", "Canceling", "Requested cancellation of", "a queued run"],
     "queue-cancel",
   ),
-  s3_queue_reorder: tool(["Reorder", "Reordering", "Reordered", "a queued run"], "queue-reorder"),
-  s3_queue_promote_to_steer: tool(
+  t3_queue_reorder: tool(["Reorder", "Reordering", "Reordered", "a queued run"], "queue-reorder"),
+  t3_queue_promote_to_steer: tool(
     ["Steer with", "Steering with", "Requested steering with", "a queued message"],
     "queue-steer",
   ),
-  s3_pending_request_list: tool(
+  t3_pending_request_list: tool(
     ["List", "Listing", "Listed", "pending questions"],
     "question-list",
   ),
-  s3_pending_request_read: tool(["Read", "Reading", "Read", "pending questions"], "question-read"),
-  s3_pending_request_respond: tool(
+  t3_pending_request_read: tool(["Read", "Reading", "Read", "pending questions"], "question-read"),
+  t3_pending_request_respond: tool(
     ["Answer", "Answering", "Answered", "pending questions"],
     "question-respond",
   ),
-  s3_thread_configuration: tool(
+  t3_thread_configuration: tool(
     ["Read", "Reading", "Read", "thread configuration"],
     "thread-configuration",
   ),
-  s3_thread_configure: tool(["Use", "Using", "Used", "thread model settings"], "thread-configure"),
-  s3_thread_transfer: tool(["Use", "Using", "Used", "thread transfers"], "thread-fork"),
-  s3_thread_fork: tool(["Fork", "Forking", "Requested a fork of", "this thread"], "thread-fork"),
-  s3_thread_merge_back: tool(
+  t3_thread_configure: tool(["Use", "Using", "Used", "thread model settings"], "thread-configure"),
+  t3_thread_transfer: tool(["Use", "Using", "Used", "thread transfers"], "thread-fork"),
+  t3_thread_fork: tool(["Fork", "Forking", "Requested a fork of", "this thread"], "thread-fork"),
+  t3_thread_merge_back: tool(
     ["Merge", "Merging", "Requested a merge of", "thread context"],
     "thread-merge",
   ),
-  s3_thread_search: tool(["Search", "Searching", "Searched", "thread content"], "thread-search"),
-  s3_thread_transfers: tool(["Read", "Reading", "Read", "thread transfers"], "thread-transfers"),
-  s3_thread_organize: tool(["Organize", "Organizing", "Organized", "a thread"], "thread-organize"),
-  s3_thread_update: tool(["Update", "Updating", "Updated", "T3 thread metadata"], "thread-update"),
-  s3_worktree_list: tool(["List", "Listing", "Listed", "workspace branches"], "worktree-list"),
-  s3_preview_list: tool(["List", "Listing", "Listed", "preview tabs"], "browser", "browser"),
-  s3_preview_close: tool(["Close", "Closing", "Closed", "a preview tab"], "browser", "browser"),
-  s3_environment_read: tool(
+  t3_thread_search: tool(["Search", "Searching", "Searched", "thread content"], "thread-search"),
+  t3_thread_transfers: tool(["Read", "Reading", "Read", "thread transfers"], "thread-transfers"),
+  t3_thread_organize: tool(["Organize", "Organizing", "Organized", "a thread"], "thread-organize"),
+  t3_thread_update: tool(["Update", "Updating", "Updated", "T3 thread metadata"], "thread-update"),
+  t3_worktree_list: tool(["List", "Listing", "Listed", "workspace branches"], "worktree-list"),
+  t3_preview_list: tool(["List", "Listing", "Listed", "preview tabs"], "browser", "browser"),
+  t3_preview_close: tool(["Close", "Closing", "Closed", "a preview tab"], "browser", "browser"),
+  t3_environment_read: tool(
     ["Read", "Reading", "Read", "environment preferences"],
     "environment-read",
   ),
-  s3_environment_links: tool(
+  t3_environment_links: tool(
     ["List", "Listing", "Listed", "linked environments"],
     "environment-links",
   ),
-  s3_environment_link: tool(
+  t3_environment_link: tool(
     ["Ask to link", "Asking to link", "Asked to link", "an environment"],
     "environment-link",
   ),
-  s3_environment_unlink: tool(
+  t3_environment_unlink: tool(
     ["Forget", "Forgetting", "Forgot", "a linked environment"],
     "environment-unlink",
   ),
-  s3_environment_preferences_update: tool(
+  t3_environment_preferences_update: tool(
     ["Update", "Updating", "Updated", "environment preferences"],
     "environment-update",
   ),
-  s3_thread_launch: tool(["Launch", "Launching", "Launched", "a project thread"], "thread-create"),
-  s3_project_list: tool(["List", "Listing", "Listed", "projects"], "project-list"),
-  s3_project_read: tool(["Read", "Reading", "Read", "a project"], "project-read"),
-  s3_project_create: tool(["Register", "Registering", "Registered", "a project"], "project-create"),
-  s3_project_update: tool(["Update", "Updating", "Updated", "a project"], "project-update"),
-  s3_project_delete: tool(["Delete", "Deleting", "Deleted", "a project"], "project-delete"),
-  s3_project_clone: tool(["Clone", "Cloning", "Cloned", "a repository"], "project-clone"),
-  s3_attachment_prepare_upload: tool(
+  t3_thread_launch: tool(["Launch", "Launching", "Launched", "a project thread"], "thread-create"),
+  t3_project_list: tool(["List", "Listing", "Listed", "projects"], "project-list"),
+  t3_project_read: tool(["Read", "Reading", "Read", "a project"], "project-read"),
+  t3_project_create: tool(["Register", "Registering", "Registered", "a project"], "project-create"),
+  t3_project_update: tool(["Update", "Updating", "Updated", "a project"], "project-update"),
+  t3_project_delete: tool(["Delete", "Deleting", "Deleted", "a project"], "project-delete"),
+  t3_project_clone: tool(["Clone", "Cloning", "Cloned", "a repository"], "project-clone"),
+  t3_attachment_prepare_upload: tool(
     ["Prepare", "Preparing", "Prepared", "an attachment upload"],
     "attachment-prepare",
   ),
-  s3_attachment_discard: tool(
+  t3_attachment_discard: tool(
     ["Discard", "Discarding", "Discarded", "a pending attachment"],
     "attachment-discard",
   ),
-  s3_thread_send_attachments: tool(["Send", "Sending", "Sent", "attachments"], "attachment-send"),
+  t3_thread_send_attachments: tool(["Send", "Sending", "Sent", "attachments"], "attachment-send"),
   html_preview: tool(["Preview", "Previewing", "Previewed", "an HTML page"], "html-preview"),
   html_render: tool(["Render", "Rendering", "Rendered", "an HTML page"], "html-render"),
 };
@@ -392,7 +396,7 @@ function resolveT3McpToolName(value: string): string | null {
   const candidate = prefixed?.groups?.tool ?? label;
   if (Object.hasOwn(BLOBS_MCP_TOOLS, candidate)) return candidate;
   // OpenCode 2 thread prefixes can contain underscores; choose the longest known tool-name suffix.
-  if (!/^blobs-/i.test(label)) return null;
+  if (!/^(?:blobs|t3-code)-/i.test(label)) return null;
   let longest: string | null = null;
   for (const tool of Object.keys(BLOBS_MCP_TOOLS)) {
     if (label.endsWith(`_${tool}`) && tool.length > (longest?.length ?? 0)) longest = tool;
@@ -414,9 +418,9 @@ const asSummaryInput = (input: unknown): SummaryInput | undefined =>
 const ACTION_TOOLS: Readonly<Record<string, (action: string) => string | undefined>> = {
   preview_act: (action) => `preview_${action}`,
   t3_queue: (action) => `t3_queue_${action}`,
-  s3_pending_request: (action) => `s3_pending_request_${action}`,
-  s3_thread_transfer: (action) =>
-    ({ fork: "s3_thread_fork", merge_back: "s3_thread_merge_back", status: "s3_thread_transfers" })[
+  t3_pending_request: (action) => `t3_pending_request_${action}`,
+  t3_thread_transfer: (action) =>
+    ({ fork: "t3_thread_fork", merge_back: "t3_thread_merge_back", status: "t3_thread_transfers" })[
       action
     ],
 };
@@ -439,7 +443,7 @@ export function resolveT3McpToolDefinition(
 const ACTION_SUMMARIES: Readonly<
   Record<string, (input: SummaryInput) => T3McpToolSummaryAction | undefined>
 > = {
-  s3_thread_configure: ({ modelSelection }) =>
+  t3_thread_configure: ({ modelSelection }) =>
     modelSelection === undefined ? "thread-configuration" : "thread-configure",
   schedule_task: ({ scheduledTaskId }) =>
     scheduledTaskId === undefined ? "schedule-create" : "schedule-update",

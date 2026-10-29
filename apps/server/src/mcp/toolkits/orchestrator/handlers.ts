@@ -40,7 +40,7 @@ const handlers = {
       return yield* service.cancelTask(scope, input);
     }),
   ),
-  s3_workflow_stop: McpToolAccess.writesThreads(
+  t3_workflow_stop: McpToolAccess.writesThreads(
     (input) => [input.threadId],
     (input) =>
       Effect.gen(function* () {
@@ -135,24 +135,31 @@ const handlers = {
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.McpInvocationContext;
       const service = yield* OrchestratorMcpService.OrchestratorMcpService;
+      if (!McpInvocationContext.ordinarySecretRequestsEnabled()) {
+        return yield* new OrchestratorMcpFailure({
+          code: "invalid_request",
+          message:
+            "Bots must use t3_bot_request_secret in their own conversation. Bot subagents cannot request secrets.",
+        });
+      }
       return yield* service.requestSecret(scope, input);
     }),
   ),
-  s3_thread_list: McpToolAccess.reads((input) =>
+  t3_thread_list: McpToolAccess.reads((input) =>
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.McpInvocationContext;
       const service = yield* OrchestratorMcpService.OrchestratorMcpService;
       return yield* service.listThreads(scope, input);
     }),
   ),
-  s3_thread_read: McpToolAccess.reads((input) =>
+  t3_thread_read: McpToolAccess.reads((input) =>
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.McpInvocationContext;
       const service = yield* OrchestratorMcpService.OrchestratorMcpService;
       return yield* service.readThread(scope, input);
     }),
   ),
-  s3_thread_update: McpToolAccess.writesThreads(
+  t3_thread_update: McpToolAccess.writesThreads(
     (input) => [input.threadId],
     (input) =>
       Effect.gen(function* () {
@@ -161,7 +168,7 @@ const handlers = {
         return yield* service.update(scope, input);
       }),
   ),
-  s3_thread_send: McpToolAccess.writesThreads(
+  t3_thread_send: McpToolAccess.writesThreads(
     (input) => [input.threadId],
     (input) =>
       Effect.gen(function* () {
@@ -170,14 +177,14 @@ const handlers = {
         return yield* service.sendToThread(scope, input);
       }),
   ),
-  s3_thread_wait: McpToolAccess.reads((input) =>
+  t3_thread_wait: McpToolAccess.reads((input) =>
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.McpInvocationContext;
       const service = yield* OrchestratorMcpService.OrchestratorMcpService;
       return yield* service.waitForThread(scope, input);
     }),
   ),
-  s3_environment_links: McpToolAccess.reads(() =>
+  t3_environment_links: McpToolAccess.reads(() =>
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.McpInvocationContext;
       const forwarding = yield* PeerForwarding.PeerForwarding;
@@ -186,14 +193,14 @@ const handlers = {
   ),
   // A link lets every agent here reach the other environment, so it is an
   // environment setting: full access, and never for linked work.
-  s3_environment_link: McpToolAccess.writesEnvironment((input) =>
+  t3_environment_link: McpToolAccess.writesEnvironment((input) =>
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.McpInvocationContext;
       const requests = yield* PeerLinkRequests.PeerLinkRequests;
       return yield* requests.request(scope, input);
     }),
   ),
-  s3_environment_unlink: McpToolAccess.writesEnvironment(({ environmentId }) =>
+  t3_environment_unlink: McpToolAccess.writesEnvironment(({ environmentId }) =>
     Effect.gen(function* () {
       const links = yield* PeerLinks.PeerLinks;
       const removed = yield* links
@@ -207,7 +214,7 @@ const handlers = {
       return { environmentId, removed };
     }),
   ),
-  s3_thread_interrupt: McpToolAccess.writesThreads(
+  t3_thread_interrupt: McpToolAccess.writesThreads(
     (input) => [input.threadId],
     (input) =>
       Effect.gen(function* () {

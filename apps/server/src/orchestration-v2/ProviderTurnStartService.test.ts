@@ -605,7 +605,7 @@ function makeLocalCommandHarness(input: {
     () => Effect.void,
   );
   const delegatedContext = vi.fn<BotChat.BotChat["Service"]["delegatedContext"]>(() =>
-    Effect.succeed(undefined),
+    Effect.sync(() => undefined),
   );
   const prepareMemory = vi.fn<BotChat.BotChat["Service"]["prepare"]>((request) =>
     Effect.succeed({
@@ -1601,7 +1601,7 @@ effectIt.effect.each(["pi", "claudeAgent", "codex"] as const)(
       const delivered = harness.startTurn.mock.calls[0]?.[0];
       expect(delivered?.message.text).toContain("Hello from Polaris");
       expect(delivered?.message.text).toContain("polaris-thread");
-      expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain("s3_thread_send");
+      expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain("t3_thread_send");
       expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain(controls.run.threadId);
     }),
 );
@@ -1641,6 +1641,31 @@ effectIt.effect.each([
     expect(harness.startRootRun.mock.calls[0]?.[0].runtimePolicy.botChat?.loadResources).toBe(
       loadResources,
     );
+  }),
+);
+
+effectIt.effect.each([
+  { label: "adds a Role section when the bot's project sets one", role: "  Release manager.  " },
+  { label: "adds nothing for a blank role", role: "   " },
+])("$label", ({ role }) =>
+  Effect.gen(function* () {
+    const harness = makeLocalCommandHarness({
+      text: "Hello",
+      botDriver: "claudeAgent",
+      fileSystem: FileSystem.makeNoop({
+        exists: () => Effect.succeed(true),
+        makeDirectory: () => Effect.void,
+      }),
+      settings: {
+        projectSettingsOverrides: {
+          [ProjectId.make("project-native-account-command")]: { botRole: role },
+        },
+      },
+    });
+    yield* harness.start;
+    const prompt = harness.startRootRun.mock.calls[0]?.[0].runtimePolicy.botChat?.systemPrompt;
+    if (role.trim() === "") expect(prompt).not.toContain("# Role");
+    else expect(prompt).toContain("# Role\nRelease manager.");
   }),
 );
 

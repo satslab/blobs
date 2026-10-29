@@ -1823,7 +1823,7 @@ export const makeMuseAdapterV2 = Effect.fn("makeMuseAdapterV2")(function* (
             ? {
                 mcpServers: {
                   // Muse's required default fails runs if T3 tools are unreachable; make them optional.
-                  blobs: {
+                  "t3-code": {
                     transport: "streamableHttp",
                     mode: "optional",
                     url: mcpSession.endpoint,

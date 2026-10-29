@@ -224,7 +224,10 @@ const make = Effect.gen(function* () {
     (effect, input) => storage.withBot(`thread:${input.threadId}`, effect),
     botError("create"),
   );
-  const commitProject = Effect.fn("BotChat.commitProject")(function* (command: ProjectCommand) {
+  const commitProject = Effect.fn("BotChat.commitProject")(function* (
+    command: ProjectCommand,
+    botId?: BotId,
+  ) {
     const current = Option.getOrUndefined(yield* projects.get(command.projectId));
     const now = yield* DateTime.now;
     const planned = planProjectCommand({
@@ -235,6 +238,7 @@ const make = Effect.gen(function* () {
     });
     if (Result.isFailure(planned)) return yield* planned.failure;
     const { receipt } = yield* sink.commitProjectCommand({
+      ...(botId === undefined ? {} : { botId }),
       commandId: command.commandId,
       projectId: command.projectId,
       commandType: command.type,
@@ -262,15 +266,15 @@ const make = Effect.gen(function* () {
       );
       yield* commitProject(
         Option.isSome(existing)
-          ? { type: "project.meta.update", commandId, projectId, title: name, isBot: true }
+          ? { type: "project.meta.update", commandId, projectId, title: name }
           : {
               type: "project.create",
               commandId,
               projectId,
               title: name,
-              isBot: true,
               workspaceRoot,
             },
+        id,
       );
       return projectId;
     },
@@ -770,7 +774,7 @@ const make = Effect.gen(function* () {
           const overrides = sourceSettings.projectSettingsOverrides[root.projectId] ?? {};
           const [proof] = yield* sql<{
             release_secret: string;
-          }>`SELECT release_secret FROM sats_bots WHERE id=${id}`;
+          }>`SELECT release_secret FROM sora_bots WHERE id=${id}`;
           if (!proof)
             return yield* new BotChatError({ operation: "transfer", reason: "invalid-transfer" });
           const transfer: BotTransfer = {

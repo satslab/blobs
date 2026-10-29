@@ -1452,7 +1452,6 @@ export default function ChatView(props: ChatViewProps) {
   const isWorking =
     threadRuntimeIsActive(activeRuntime) ||
     isSendBusy ||
-    isConnecting ||
     isCompacting ||
     runlessWorkStartedAt !== null;
   const activeContextWindow = deriveLatestContextWindowSnapshot(
@@ -3391,7 +3390,7 @@ export default function ChatView(props: ChatViewProps) {
                 onOpenThread={onOpenRelatedThreadStable}
                 parentThreadLink={parentThreadLink}
                 workflowOpening={workflowOpening}
-                onForkFromRun={onForkFromRunStable}
+                {...(isBotThread ? {} : { onForkFromRun: onForkFromRunStable })}
                 supportsConversationRollback={supportsConversationRollback}
                 threadStartCheckpointReady={threadStartCheckpointReady}
                 availableRevertTurnCounts={availableRevertTurnCounts}
@@ -3558,7 +3557,7 @@ export default function ChatView(props: ChatViewProps) {
                                             : projectCloneSendBlockReason
                               }
                               isPreparingWorktree={isPreparingWorktree && !sendQueuesBehindSetup}
-                              queuedRunsControl={queuedRunsControl}
+                              queuedRunsControl={isBotThread ? null : queuedRunsControl}
                               bannerItems={isDraftHeroState ? [] : composerBannerItems}
                               resumeCompactionTokens={resumeCompactionTokens}
                               keepFullHistory={keepFullHistory}

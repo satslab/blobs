@@ -4,6 +4,7 @@ import {
   McpCapabilityUnavailableError,
   PreviewAutomationUnavailableError,
   ProviderInstanceId,
+  RunId,
   ThreadId,
 } from "@satslab/contracts";
 import * as Effect from "effect/Effect";
@@ -63,3 +64,43 @@ it.effect("refuses thread-owned capabilities to a caller signed in from outside 
     expect(error.threadId).toBeUndefined();
   });
 });
+
+it.effect(
+  "offers secret requests only to ordinary threads or the bot owner, never bot children",
+  () =>
+    Effect.gen(function* () {
+      const base = {
+        environmentId: EnvironmentId.make("environment"),
+        requestNamespace: "session",
+        client: undefined,
+        capabilities: new Set(["orchestration"] as const),
+        issuedAt: 0,
+      };
+      const thread = {
+        threadId: ThreadId.make("bot"),
+        providerSessionId: "session",
+        providerInstanceId: ProviderInstanceId.make("codex"),
+      };
+      for (const [caller, botEnabled, ordinaryEnabled] of [
+        [thread, false, true],
+        [{ ...thread, botRunId: RunId.make("turn") }, true, false],
+        [{ ...thread, botRunId: RunId.make("turn"), subagent: true }, false, false],
+        [
+          { ...thread, botRunId: RunId.make("turn"), botThreadId: ThreadId.make("bot") },
+          false,
+          false,
+        ],
+      ] as const) {
+        const actual = yield* Effect.sync(() => [
+          McpInvocationContext.botSecretRequestsEnabled(),
+          McpInvocationContext.ordinarySecretRequestsEnabled(),
+        ]).pipe(
+          Effect.provideService(McpInvocationContext.McpInvocationContext, {
+            ...base,
+            thread: caller,
+          }),
+        );
+        expect(actual).toEqual([botEnabled, ordinaryEnabled]);
+      }
+    }),
+);

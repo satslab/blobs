@@ -1048,6 +1048,7 @@ export const PROJECT_SCOPED_SERVER_SETTING_KEYS = [
   "continueThreadsAfterServerUpdate",
   "responseStreamingMode",
   "botLoadResources",
+  "botRole",
 ] as const;
 export type ProjectScopedServerSettingKey = (typeof PROJECT_SCOPED_SERVER_SETTING_KEYS)[number];
 
@@ -1086,6 +1087,7 @@ export const ProjectSettingsOverrides = Schema.Struct({
   continueThreadsAfterServerUpdate: Schema.optionalKey(Schema.Boolean),
   responseStreamingMode: Schema.optionalKey(ResponseStreamingMode),
   botLoadResources: Schema.optionalKey(Schema.Boolean),
+  botRole: Schema.optionalKey(Schema.String),
   providerInstances: Schema.optionalKey(
     Schema.Record(ProviderInstanceId, ProjectProviderInstanceOverride),
   ),
@@ -1224,6 +1226,8 @@ export const ServerSettings = Schema.Struct({
    * instruction files and skills. Memory compaction never does.
    */
   botLoadResources: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
+  /** Becomes the "# Role" section of a bot's system prompt. */
+  botRole: Schema.String.pipe(Schema.withDecodingDefault(Effect.succeed(""))),
 
   enableAgentBrowserAccess: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
   projectAgentBrowserAccessOverrides: Schema.Record(ProjectId, Schema.Boolean).pipe(
@@ -1601,6 +1605,7 @@ export const ServerSettingsPatch = Schema.Struct({
   enableProviderUpdateChecks: Schema.optionalKey(Schema.Boolean),
   continueThreadsAfterServerUpdate: Schema.optionalKey(Schema.Boolean),
   botLoadResources: Schema.optionalKey(Schema.Boolean),
+  botRole: Schema.optionalKey(Schema.String),
   enableAgentBrowserAccess: Schema.optionalKey(Schema.Boolean),
   projectAgentBrowserAccessOverrides: Schema.optionalKey(
     Schema.Record(ProjectId, Schema.NullOr(Schema.Boolean)),

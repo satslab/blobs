@@ -1,6 +1,6 @@
 import { ProjectIdentitySettings } from "./ProjectIdentitySettings";
 import { useOrchestrationCommand } from "../../state/use-orchestration-command";
-import { AuthOrchestrationOperateScope, type EnvironmentId } from "@satslab/contracts";
+import { AuthOrchestrationOperateScope } from "@satslab/contracts";
 import { useEnvironmentsWithScope, readEnvironmentScope } from "../../state/session";
 import {
   isAtomCommandInterrupted,
@@ -12,11 +12,11 @@ import {
 import { scopeProjectRef, scopeThreadRef } from "@satslab/client-runtime/environment";
 import { planProjectRemoval } from "@satslab/client-runtime/state/projects";
 import { AsyncResult } from "effect/reactivity";
-import { type EnvironmentId, type ProjectIconOverride } from "@satslab/contracts";
+import { type EnvironmentId } from "@satslab/contracts";
 import { Navigate, useLocation, useNavigate } from "@tanstack/react-router";
 import * as Cause from "effect/Cause";
 import { InfoIcon, Trash2Icon } from "lucide-react";
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { useComposerDraftStore } from "../../composerDraftStore";
 import { releaseProjectDraftUploads } from "../../lib/composerDraftUploads";

@@ -1254,12 +1254,12 @@ describe("extractMcpToolCallIdentity", () => {
       kind: "execute",
       title: "mcp.blobs.orchestrator_capabilities",
       status: "in_progress",
-      rawInput: { server: "blobs", tool: "orchestrator_capabilities", arguments: {} },
+      rawInput: { server: "t3-code", tool: "orchestrator_capabilities", arguments: {} },
       _meta: { is_mcp_tool_call: true },
     });
 
     expect(extractMcpToolCallIdentity(toolCall)).toEqual({
-      server: "blobs",
+      server: "t3-code",
       tool: "orchestrator_capabilities",
     });
   });
@@ -1279,7 +1279,7 @@ describe("extractMcpToolCallIdentity", () => {
           '/usr/bin/node /srv/t3/bin.ts acp-mcp-call delegate_task {"task":"x"}',
         ],
       }),
-    ).toEqual({ server: "blobs", tool: "delegate_task", input: { task: "x" } });
+    ).toEqual({ server: "t3-code", tool: "delegate_task", input: { task: "x" } });
   });
 
   it("recovers T3 identity from pi-acp title-only fallback execs", () => {
@@ -1301,7 +1301,7 @@ describe("extractMcpToolCallIdentity", () => {
 
     expect(toolCall.title).toBe("Ran command");
     expect(extractMcpToolCallIdentity(toolCall)).toEqual({
-      server: "blobs",
+      server: "t3-code",
       tool: "orchestrator_capabilities",
       input: {},
     });
@@ -1326,7 +1326,7 @@ describe("extractMcpToolCallIdentity", () => {
     const merged = mergeToolCallState(created, completed);
 
     expect(extractMcpToolCallIdentity(merged)).toEqual({
-      server: "blobs",
+      server: "t3-code",
       tool: "orchestrator_capabilities",
     });
   });
@@ -1353,7 +1353,7 @@ describe("extractMcpToolCallIdentity", () => {
         status: "pending",
       });
       expect(extractMcpToolCallIdentity(toolCall), title).toEqual({
-        server: "blobs",
+        server: "t3-code",
         tool: "delegate_task",
       });
     }
@@ -1386,7 +1386,7 @@ describe("extractMcpToolCallIdentity", () => {
     });
 
     expect(extractMcpToolCallIdentity(toolCall)).toEqual({
-      server: "blobs",
+      server: "t3-code",
       tool: "task_status",
     });
   });
@@ -1399,12 +1399,12 @@ describe("extractMcpToolCallIdentity", () => {
       kind: "other",
       title: "unrelated display title",
       status: "pending",
-      _meta: { toolName: "mcp::blobs::s3_thread_send", serverId: "blobs", provenance: "mcp" },
+      _meta: { toolName: "mcp::blobs::t3_thread_send", serverId: "blobs", provenance: "mcp" },
     });
 
     expect(extractMcpToolCallIdentity(toolCall)).toEqual({
-      server: "blobs",
-      tool: "s3_thread_send",
+      server: "t3-code",
+      tool: "t3_thread_send",
     });
   });
 
