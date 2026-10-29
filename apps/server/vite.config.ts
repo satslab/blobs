@@ -85,11 +85,11 @@ export default mergeConfig(
         {
           name: "discord-optional-compression",
           resolveId(id) {
-            if (id === "zlib-sync") return "\0sora:discord-optional-compression";
+            if (id === "zlib-sync") return "\0blobs:discord-optional-compression";
           },
           load(id) {
             // Discord falls back to Node zlib when its optional native addon is absent.
-            if (id === "\0sora:discord-optional-compression") return "export default null;";
+            if (id === "\0blobs:discord-optional-compression") return "export default null;";
           },
         },
       ],

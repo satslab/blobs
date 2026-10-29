@@ -15,11 +15,11 @@ export const rpcRequestDuration = Metric.timer("blobs_rpc_request_duration", {
   description: "RPC request handling duration.",
 });
 
-export const orchestrationCommandsTotal = Metric.counter("sora_orchestration_commands_total", {
+export const orchestrationCommandsTotal = Metric.counter("blobs_orchestration_commands_total", {
   description: "Total orchestration commands dispatched, by outcome.",
 });
 
-export const orchestrationCommandDuration = Metric.timer("sora_orchestration_command_duration", {
+export const orchestrationCommandDuration = Metric.timer("blobs_orchestration_command_duration", {
   description: "Orchestration command handling duration, excluding thread dispatch lock wait.",
 });
 
