@@ -33,12 +33,10 @@ export function useBotResources(bot: BotIdentity) {
   const [busy, setBusy] = useState(false);
   async function save(action: BotResourceAction) {
     setBusy(true);
-    try {
-      const result = await change({ environmentId, input: { botId: bot.id, action } });
-      if (result._tag === "Success") query.refresh();
-    } finally {
-      setBusy(false);
-    }
+    const result = await change({ environmentId, input: { botId: bot.id, action } }).finally(() =>
+      setBusy(false),
+    );
+    if (result._tag === "Success") query.refresh();
   }
   return {
     query,
@@ -286,9 +284,12 @@ function CheckInSection({
         refresh();
       }
       setStatus(saved ? "idle" : "failed");
-    } finally {
+    } catch (error) {
       inFlight.current = false;
+      setStatus("failed");
+      throw error;
     }
+    inFlight.current = false;
   }
 
   function update(patch: Partial<CheckInSettings>) {
