@@ -1484,7 +1484,6 @@ export default function ChatView(props: ChatViewProps) {
   const isWorking =
     threadRuntimeIsActive(activeRuntime) ||
     isSendBusy ||
-    isConnecting ||
     isCompacting ||
     runlessWorkStartedAt !== null;
   const activeContextWindow = deriveLatestContextWindowSnapshot(
@@ -3521,7 +3520,7 @@ export default function ChatView(props: ChatViewProps) {
                   // Side chat runs keep no checkpoints to diff, and a fork would promote the side chat.
                   {...(embedded
                     ? {}
-                    : { onOpenTurnDiff: onOpenTurnDiffStable, onForkFromRun: onForkFromRunStable })}
+                    : { onOpenTurnDiff: onOpenTurnDiffStable, ...(isBotThread ? {} : { onForkFromRun: onForkFromRunStable }) })}
                   onOpenThread={onOpenRelatedThreadStable}
                   parentThreadLink={parentThreadLink}
                   workflowOpening={workflowOpening}
@@ -3702,7 +3701,7 @@ export default function ChatView(props: ChatViewProps) {
                                               : projectCloneSendBlockReason
                                 }
                                 isPreparingWorktree={isPreparingWorktree && !sendQueuesBehindSetup}
-                                queuedRunsControl={queuedRunsControl}
+                                queuedRunsControl={isBotThread ? null : queuedRunsControl}
                                 bannerItems={
                                   isDraftHeroState || composerBannerItems.length === 0
                                     ? EMPTY_COMPOSER_BANNER_ITEMS

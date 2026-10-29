@@ -162,6 +162,10 @@ const BLOBS_MCP_TOOLS: Readonly<Record<string, T3McpToolDefinition>> = {
     ["Delete", "Deleting", "Requested deletion of", "a scheduled task"],
     "schedule-delete",
   ),
+  t3_bot_request_secret: tool(
+    ["Ask for", "Asking for", "Asked for", "a bot secret"],
+    "secret-request",
+  ),
   request_secret: tool(["Ask for", "Asking for", "Asked for", "a secret"], "secret-request"),
   create_threads: tool(["Create", "Creating", "Created", "T3 threads"], "thread-create"),
   t3_thread_start: tool(["Start", "Starting", "Started", "a T3 thread"], "thread-create"),
@@ -425,7 +429,7 @@ function parseT3McpToolName(value: string): string | null {
   const candidate = prefixed?.groups?.tool ?? label;
   if (Object.hasOwn(BLOBS_MCP_TOOLS, candidate)) return candidate;
   // OpenCode 2 thread prefixes can contain underscores; choose the longest known tool-name suffix.
-  if (!/^blobs-/i.test(label)) return null;
+  if (!/^(?:blobs|t3-code)-/i.test(label)) return null;
   let longest: string | null = null;
   for (const tool of Object.keys(BLOBS_MCP_TOOLS)) {
     if (label.endsWith(`_${tool}`) && tool.length > (longest?.length ?? 0)) longest = tool;

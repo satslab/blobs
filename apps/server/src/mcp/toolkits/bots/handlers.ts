@@ -1,3 +1,4 @@
+import * as BotSecretRequests from "../../../bots/BotSecretRequests.ts";
 import { OrchestratorMcpFailure } from "@satslab/contracts";
 import * as Effect from "effect/Effect";
 import * as MemoryAccess from "../../../bots/MemoryAccess.ts";
@@ -58,6 +59,12 @@ const currentBot = Effect.gen(function* () {
   return { bots, bot };
 });
 export const layerDiscovery = McpToolAccess.toLayer(BotDiscoveryToolkit, {
+  t3_bot_request_secret: McpToolAccess.actsAsCaller((input) =>
+    Effect.gen(function* () {
+      const scope = yield* McpInvocationContext.McpInvocationContext;
+      return yield* (yield* BotSecretRequests.BotSecretRequests).request(scope, input);
+    }),
+  ),
   t3_bot_browser_fill_secret: McpToolAccess.actsAsCaller((input) =>
     Effect.gen(function* () {
       const scope = yield* McpInvocationContext.requireThreadMcpCapability("preview").pipe(

@@ -265,10 +265,13 @@ it.effect("returns an HTML render reference that Codex and Claude tool rows both
         Effect.provideService(McpSchema.McpServerClient, client),
       );
     const reference = htmlRenderFromToolItem({
-      toolName: "blobs.html_render",
+      toolName: "t3-code.html_render",
       output: result.structuredContent,
     });
     expect(reference).toMatchObject({ title: "Revenue", height: 240 });
+    expect(
+      htmlRenderFromToolItem({ toolName: "mcp__t3_code__html_render", output: result.content }),
+    ).toEqual(reference);
     expect(
       htmlRenderFromToolItem({ toolName: "mcp__t3-code__html_render", output: result.content }),
     ).toEqual(reference);
