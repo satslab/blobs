@@ -6,7 +6,7 @@ import * as NodePath from "node:path";
 const CLERK_TOKEN_DIRECTORY_MODE = 0o700;
 const CLERK_TOKEN_FILE_MODE = 0o600;
 const CLERK_TOKEN_DIRECTORY_NAME = "clerk";
-const CLERK_TOKEN_FILE_NAME = "clerk-tokens.json";
+const CLERK_TOKEN_FILE_NAME = "blobs-clerk-tokens.json";
 
 type Awaitable<T> = T | Promise<T>;
 
