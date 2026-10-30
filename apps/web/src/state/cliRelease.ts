@@ -1,6 +1,7 @@
 import { useAtomValue } from "@effect/atom-react";
 import {
   cliReleaseTagUrl,
+  cliReleaseDatabaseMigration,
   cliReleaseIndexPageUrl,
   newestCliReleaseVersion,
   type CliReleaseChannel,
@@ -81,3 +82,24 @@ export const latestCliReleaseAtom = Atom.family((channel: CliReleaseChannel) =>
 export function useLatestCliRelease(channel: CliReleaseChannel) {
   return useEnvironmentQuery(latestCliReleaseAtom(channel));
 }
+
+export const cliTrackReleaseAtom = Atom.family((channel: "latest" | "nightly") =>
+  Atom.make((get) =>
+    Effect.gen(function* () {
+      const version = yield* get.result(
+        latestCliReleaseAtom(channel === "latest" ? "stable" : "nightly"),
+      );
+      if (version === null) return null;
+      const response = yield* HttpClient.get(cliReleaseTagUrl(version));
+      const release = yield* HttpClientResponse.filterStatusOk(response).pipe(
+        Effect.flatMap(
+          HttpClientResponse.schemaBodyJson(Schema.Struct({ body: Schema.NullOr(Schema.String) })),
+        ),
+      );
+      return { version, databaseMigration: cliReleaseDatabaseMigration(release.body) };
+    }).pipe(
+      Effect.provideService(HttpClient.TracerPropagationEnabled, false),
+      Effect.provide(FetchHttpClient.layer),
+    ),
+  ).pipe(Atom.withRefresh("5 minutes"), Atom.withLabel(`cli-track-release:${channel}`)),
+);

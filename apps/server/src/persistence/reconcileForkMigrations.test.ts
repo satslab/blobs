@@ -17,19 +17,21 @@ import { runBlobsMigrations, blobsMigrationManifest } from "./BlobsMigrations.ts
 it.effect("runs Blobs upgrades independently of a newer upstream migration id", () =>
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient;
-    yield* runMigrations({ toMigrationInclusive: 72 });
+    yield* runMigrations({ toMigrationInclusive: migrationManifest.at(-1)?.[0] });
     yield* runBlobsMigrations(7);
+    const nextMigrationId = Math.max(...migrationManifest.map(([id]) => id)) + 1;
     yield* Migrator.make({})({
       loader: Migrator.fromRecord({
-        "73_NextUpstream": sql`CREATE TABLE next_upstream(id TEXT PRIMARY KEY)`,
+        [`${nextMigrationId}_NextUpstream`]: sql`CREATE TABLE next_upstream(id TEXT PRIMARY KEY)`,
       }),
     });
     yield* sql`INSERT INTO next_upstream VALUES ('retained')`;
     yield* runMigrations();
     assert.deepEqual(yield* sql`SELECT * FROM next_upstream`, [{ id: "retained" }]);
-    assert.deepEqual(yield* sql`SELECT name FROM effect_sql_migrations WHERE migration_id=73`, [
-      { name: "NextUpstream" },
-    ]);
+    assert.deepEqual(
+      yield* sql`SELECT name FROM effect_sql_migrations WHERE migration_id=${nextMigrationId}`,
+      [{ name: "NextUpstream" }],
+    );
     assert.deepEqual(yield* sql`SELECT name FROM sora_sql_migrations WHERE migration_id=8`, [
       { name: "NamespaceTables" },
     ]);
@@ -160,7 +162,7 @@ it.effect.each(
     `;
       assert.deepStrictEqual(
         history.map((row) => [row.migration_id, row.name] as const),
-        migrationManifest.filter(([id]) => id <= 72),
+        migrationManifest,
       );
       assert.deepStrictEqual(
         yield* sql`SELECT created_at FROM sora_sql_migrations WHERE migration_id = 1`,
