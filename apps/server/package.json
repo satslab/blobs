@@ -95,5 +95,5 @@
   "engines": {
     "node": "^22.16 || ^23.11 || >=24.10"
   },
-  "upstreamVersion": "0.1.3"
+  "upstreamVersion": "0.1.5"
 }

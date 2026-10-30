@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
+      database_migration: ${{ steps.version.outputs.database_migration }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -37,6 +38,7 @@ jobs:
           set -euo pipefail
           [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || { echo 'Use an exact stable version, such as v0.0.0.' >&2; exit 1; }
           echo "version=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
+          node --input-type=module -e 'import { readdirSync, appendFileSync } from "node:fs"; const ids = readdirSync("apps/server/src/persistence/Migrations").flatMap(name => { const match = /^(\d+)_\w+\.ts$/.exec(name); return match ? [Number(match[1])] : []; }); appendFileSync(process.env.GITHUB_OUTPUT, `database_migration=${Math.max(0, ...ids)}\n`);'
 
   quality:
     uses: ./.github/workflows/ci.yml
@@ -259,12 +261,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.metadata.outputs.version }}
           RELEASE_REPOSITORY: ${{ github.repository }}
+          DATABASE_MIGRATION: ${{ needs.metadata.outputs.database_migration }}
         run: |
           set -euo pipefail
           cp "cli-assets/blobs-$VERSION-linux-x64.tar.gz" "cli-assets/blobs-$VERSION-win32-x64.zip" release/
           cd release
           sha256sum blobs-*.tar.gz blobs-*.zip > SHA256SUMS
-          gh release create "v$VERSION" --repo "$RELEASE_REPOSITORY" --verify-tag --title "Blobs $VERSION" --notes "Blobs $VERSION" --draft ./*
+          gh release create "v$VERSION" --repo "$RELEASE_REPOSITORY" --verify-tag --title "Blobs $VERSION" --notes "$(printf 'Blobs %s\n<!-- blobs:database-migration=%s -->' "$VERSION" "$DATABASE_MIGRATION")" --draft ./*
           gh release edit "v$VERSION" --repo "$RELEASE_REPOSITORY" --draft=false --latest
 
   # npm publishing is paused; keep the launcher and trusted-publishing job for later.

@@ -2,12 +2,23 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   cliArchivePlatformKey,
+  cliReleaseDatabaseMigration,
   cliArchiveTarCommand,
   newestCliReleaseVersion,
   parseChecksums,
 } from "./cliRelease.ts";
 
 describe("cliRelease", () => {
+  it("reads the migration head from GitHub release notes and refuses unknown metadata", () => {
+    expect(cliReleaseDatabaseMigration("Blobs 0.0.3\n<!-- blobs:database-migration=73 -->")).toBe(
+      73,
+    );
+    expect(cliReleaseDatabaseMigration("Blobs 0.0.2")).toBeUndefined();
+    expect(cliReleaseDatabaseMigration(null)).toBeUndefined();
+    expect(
+      cliReleaseDatabaseMigration("<!-- blobs:database-migration=9007199254740992 -->"),
+    ).toBeUndefined();
+  });
   it("offers downloads only for supported Blobs targets", () => {
     expect(cliArchivePlatformKey("linux", "x64")).toBe("linux-x64");
     expect(cliArchivePlatformKey("darwin", "arm64")).toBe("darwin-arm64");

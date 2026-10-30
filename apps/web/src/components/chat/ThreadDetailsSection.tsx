@@ -29,7 +29,9 @@ export function ThreadDetailsSection({
       aria-label={showHeading ? undefined : title}
       className={cn(
         variant === "card" ? "space-y-1.5" : "px-2 pt-2 pb-2.5 has-[>div:last-child:empty]:hidden",
-        variant === "inline" && separated && "border-border/65 [section:not(:has(>div:last-child:empty))~&]:border-t",
+        variant === "inline" &&
+          separated &&
+          "border-border/65 [section:not(:has(>div:last-child:empty))~&]:border-t",
       )}
     >
       <div

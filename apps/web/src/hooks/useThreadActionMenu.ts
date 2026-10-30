@@ -68,7 +68,15 @@ export function useThreadActionMenu(input: {
   readonly actions?: ReadonlyArray<ThreadActionMenuId>;
   readonly projectSettingsLabel?: string;
 }) {
-  const { threadRef, projectCwd, onStartRename, onFind, canShareWithGuest, actions, projectSettingsLabel } = input;
+  const {
+    threadRef,
+    projectCwd,
+    onStartRename,
+    onFind,
+    canShareWithGuest,
+    actions,
+    projectSettingsLabel,
+  } = input;
   const router = useRouter();
   const botContext = useBotThreadContext(threadRef);
   const projects = useProjects({ includeBot: true });
