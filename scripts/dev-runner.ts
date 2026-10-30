@@ -968,7 +968,7 @@ const devRunnerCli = Command.make("dev-runner", {
   ),
   seed: Flag.Boolean("seed").pipe(
     Flag.withDescription(
-      "Seed an empty worktree database from ~/.t3 on first start (read-only, via migrate-dev-db) if the source is at most 500 MiB. On by default; --no-seed or BLOBS_DEV_SEED=0 skips it.",
+      "Seed an empty worktree database from ~/.blobs on first start (read-only, via migrate-dev-db) if the source is at most 500 MiB. On by default; --no-seed or BLOBS_DEV_SEED=0 skips it.",
     ),
     Flag.withFallbackConfig(optionalBooleanConfig("BLOBS_DEV_SEED")),
   ),
