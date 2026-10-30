@@ -168,7 +168,12 @@ describe("DesktopClerk", () => {
         "createClerkBridge",
       ]);
       assert.deepEqual(storageMock.mock.calls, [
-        [{ path: NodePath.join(NodePath.resolve(clerkStateDir), "clerk") }],
+        [
+          {
+            path: NodePath.join(NodePath.resolve(clerkStateDir), "clerk"),
+            name: "blobs-clerk-tokens",
+          },
+        ],
       ]);
       assert.notStrictEqual(createClerkBridgeMock.mock.calls[0]?.[0]?.storage, storageAdapter);
     },

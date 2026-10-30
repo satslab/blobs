@@ -1,4 +1,4 @@
-/** Worktrees use isolated .t3 state; ambient BLOBS_HOME could otherwise select the live userdata database. */
+/** Worktrees use isolated .blobs state; ambient BLOBS_HOME could otherwise select the live userdata database. */
 
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
