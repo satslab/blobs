@@ -22,12 +22,12 @@ Codex 0.160.0 or newer, Claude Code, Pi, and local OpenCode support bot replies.
 Each Codex instance keeps its configured home, login, models, and composer options.
 Older Codex instances are disabled for bot chat. If the version cannot be verified, bot turns stop before inference starts.
 Bot replies keep the provider’s native tools and your configured native MCP servers. Other provider integrations do not support bot replies yet.
-Files attached to a message are available through `t3_attachment_read`. Images use the provider's normal image input.
+Files attached to a message reach the bot through the provider's normal attachment input.
 
 ## Coordinate work
 
 A bot handles brief tasks directly and delegates longer work in the background so the conversation stays available.
-Subagents use the bot conversation's workspace and receive its frozen memory view with tools to recall details and read attachments.
+Subagents use the bot conversation's workspace and receive its frozen memory view with tools to recall details.
 That view stays fixed while the parent conversation continues. Ordinary threads do not inherit memory.
 For work in another project, the bot starts an ordinary thread in that project.
 It uses your configured providers, models, and options, and receives delegated results through T3 Code's existing notifications.
