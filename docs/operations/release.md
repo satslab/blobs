@@ -49,10 +49,9 @@ commit. The workflow creates a draft on the existing tag, uploads the final
 artifacts and `SHA256SUMS`, then publishes it as the latest release. Publication
 uses the same ad hoc macOS signing as build-only runs.
 
-A tag run then publishes the `@satslab/blobs` launcher to npm after the GitHub
-release is available. Configure npm trusted publishing for this repository and
-`.github/workflows/release.yml` first. The launcher downloads the matching CLI
-from the GitHub release and verifies its checksum.
+npm publishing is paused. The launcher and trusted-publishing job remain in the
+repository for later use. GitHub release notes carry the upstream database migration
+head so update-track switches can refuse an incompatible downgrade.
 
 Marketing, hosted web deployment, relay deployment, mobile releases, AUR
 publication, Discord announcements, and scheduled nightlies are disabled.

@@ -129,3 +129,10 @@ export function npmReleaseDatabaseMigration(manifest: unknown): number | undefin
   return Option.getOrUndefined(decodeNpmReleaseMigrationManifest(manifest))?.t3code
     .databaseMigration;
 }
+
+export function cliReleaseDatabaseMigration(body: string | null | undefined): number | undefined {
+  const value = /<!-- blobs:database-migration=(\d+) -->/.exec(body ?? "")?.[1];
+  if (value === undefined) return undefined;
+  const migration = Number(value);
+  return Number.isSafeInteger(migration) ? migration : undefined;
+}
