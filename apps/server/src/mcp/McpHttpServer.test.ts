@@ -1311,10 +1311,8 @@ it.effect(
         const ordinary = yield* list("/mcp", "ordinaryToken");
         const memoryTools = yield* list("/bot-mcp", "botToken");
         expect(ordinary).toContain('"ordinary_probe"');
-        expect(ordinary).not.toContain('"t3_attachment_read"');
         expect(memoryTools).toContain('"zoom"');
         expect(memoryTools).toContain('"date"');
-        expect(memoryTools).toContain('"t3_attachment_read"');
         expect(memoryTools).toContain('"ordinary_probe"');
       }),
     ).pipe(Effect.provide([NodeHttpServer.layerTest, ServerSettings.layerTest()])),

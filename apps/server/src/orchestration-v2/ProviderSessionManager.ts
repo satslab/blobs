@@ -1,4 +1,3 @@
-import { botInput } from "../bots/BotInput.ts";
 import { BOT_CHAT_PROVIDER_DRIVERS } from "@satslab/contracts";
 import { AgentScope } from "@satslab/shared/AgentScope";
 import * as KeyedLock from "@satslab/shared/KeyedLock";
@@ -1679,7 +1678,6 @@ export const layerWithOptions = (
         >,
         runtimePolicy: ProviderAdapter.ProviderAdapterV2RuntimePolicy,
       ): ProviderAdapter.ProviderAdapterV2SessionRuntime => {
-        const botChat = runtimePolicy.botChat !== undefined;
         const providerSessionId = runtime.providerSessionId;
         const subscribeEvents = makeEventSubscription(eventSubscribers);
         const turnMetrics = (operation: string, model?: string) =>
@@ -1840,21 +1838,7 @@ export const layerWithOptions = (
             ),
           steerTurn: (input) =>
             observeActivity(providerSessionId, touchActivity(providerSessionId)).pipe(
-              Effect.andThen(
-                runtime
-                  .steerTurn(
-                    botChat
-                      ? {
-                          ...input,
-                          message: {
-                            ...input.message,
-                            ...botInput(input.message.text, input.message.attachments),
-                          },
-                        }
-                      : input,
-                  )
-                  .pipe(turnMetrics("steer")),
-              ),
+              Effect.andThen(runtime.steerTurn(input).pipe(turnMetrics("steer"))),
             ),
           interruptTurn: (input) =>
             observeActivity(providerSessionId, touchActivity(providerSessionId)).pipe(

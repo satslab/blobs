@@ -1,5 +1,5 @@
 import * as DiscordPrompt from "@satslab/bot-discord/DiscordPrompt";
-import { botInput, botMessageText } from "../bots/BotInput.ts";
+import { botMessageText } from "../bots/BotInput.ts";
 import { makeEnsureWorkspace } from "../bots/BotWorkspace.ts";
 import * as ThreadCommandExecutor from "./ThreadCommandExecutor.ts";
 import * as BotChat from "../bots/BotChat.ts";
@@ -1550,10 +1550,7 @@ export const layer: Layer.Layer<
               ...turnInput,
               message: {
                 ...turnInput.message,
-                ...botInput(
-                  `${memorySnapshot.view}\n\nIncoming message:\n${botUserText}`,
-                  turnInput.message.attachments,
-                ),
+                text: `${memorySnapshot.view}\n\nIncoming message:\n${botUserText}`,
               },
             });
           }

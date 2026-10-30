@@ -37,26 +37,6 @@ export const MemoryToolkit = Toolkit.make(
     parameters: Schema.Struct({ id: index }),
     success: Schema.String,
   }).annotate(Tool.Readonly, true),
-  Tool.make("t3_attachment_read", {
-    ...shared,
-    description:
-      "Read bytes of a non-image attachment belonging to this memory by attachment ID. Use utf8 for text or base64 for binary. Offsets and lengths are bytes; continue from nextOffset.",
-    parameters: Schema.Struct({
-      attachmentId: Schema.String,
-      offset: Schema.optional(index),
-      length: Schema.optional(
-        Schema.Int.check(Schema.isGreaterThan(0), Schema.isLessThanOrEqualTo(65536)),
-      ),
-      encoding: Schema.optional(Schema.Literals(["utf8", "base64"])),
-    }),
-    success: Schema.Struct({
-      name: Schema.String,
-      mimeType: Schema.String,
-      offset: index,
-      nextOffset: index,
-      content: Schema.String,
-    }),
-  }).annotate(Tool.Readonly, true),
 );
 
 export const BotDiscoveryToolkit = Toolkit.make(
