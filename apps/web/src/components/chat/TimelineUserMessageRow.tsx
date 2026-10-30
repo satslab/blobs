@@ -738,10 +738,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
 
   return (
     <div
-      className={cn(
-        "group flex min-w-0 flex-col gap-1",
-        folded ? "items-start px-1 py-0.5" : "items-end",
-      )}
+      className="group flex flex-col items-end gap-1"
       data-user-message-attribution={folded ? "agent" : undefined}
     >
       {userMessage.attribution === "blobs" ? (
@@ -769,8 +766,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
       ) : null}
       <div
         className={cn(
-          "relative min-w-0",
-          folded ? "w-full" : "max-w-[80%] rounded-2xl text-message-foreground",
+          "relative min-w-0 max-w-[80%] rounded-2xl text-message-foreground",
           mediaAboveText && "rounded-tr-md",
           BUBBLE_CHIP_CLASS_NAME,
           userMessage.attribution === "guest"

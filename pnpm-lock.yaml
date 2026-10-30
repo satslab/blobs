@@ -1978,7 +1978,7 @@ importers:
 
   packages/secret-provider-core:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -2000,25 +2000,25 @@ importers:
 
   packages/secret-provider-definitions:
     dependencies:
-      '@t3tools/secret-provider-core':
+      '@satslab/secret-provider-core':
         specifier: workspace:*
         version: link:../secret-provider-core
-      '@t3tools/secret-provider-onepassword':
+      '@satslab/secret-provider-onepassword':
         specifier: workspace:*
         version: link:../secret-provider-onepassword
 
   packages/secret-provider-onepassword:
     dependencies:
-      '@t3tools/contracts':
+      '@satslab/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@t3tools/provider-core':
+      '@satslab/provider-core':
         specifier: workspace:*
         version: link:../provider-core
-      '@t3tools/secret-provider-core':
+      '@satslab/secret-provider-core':
         specifier: workspace:*
         version: link:../secret-provider-core
-      '@t3tools/shared':
+      '@satslab/shared':
         specifier: workspace:*
         version: link:../shared
       effect:

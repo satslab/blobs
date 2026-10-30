@@ -8,7 +8,7 @@ import {
   resolvePullRequestPreviewTarget,
 } from "@satslab/client-runtime/change-request-links";
 
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 
 import { canOpenLinksInApp } from "../browser/browserLinkTarget";
 import { useOpenLink } from "../browser/useOpenLink";

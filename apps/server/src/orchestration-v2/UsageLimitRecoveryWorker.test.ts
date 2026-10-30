@@ -1,5 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import type { OrchestrationV2DomainEvent } from "@t3tools/contracts";
+import type { OrchestrationV2DomainEvent } from "@satslab/contracts";
 import * as Clock from "effect/Clock";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";

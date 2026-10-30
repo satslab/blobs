@@ -6,7 +6,7 @@ import type {
   UploadChatAttachment,
 } from "@satslab/contracts";
 import { useAtomValue } from "@effect/atom-react";
-import { stripAttachmentOnlyBootstrapPrompt } from "@t3tools/shared/composerContextReferences";
+import { stripAttachmentOnlyBootstrapPrompt } from "@satslab/shared/composerContextReferences";
 import {
   makeQueuedRunEditStore,
   resolveQueuedEditExit,

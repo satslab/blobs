@@ -1,4 +1,4 @@
-import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretResolver";
+import * as SecretResolver from "@satslab/secret-provider-core/server/SecretResolver";
 import * as BotCheckIns from "./bots/BotCheckIns.ts";
 import * as BotChat from "./bots/BotChat.ts";
 import * as DiscordIntegration from "@satslab/bot-discord/DiscordIntegration";
