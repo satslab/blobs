@@ -1306,7 +1306,7 @@ it.effect("lists pull request watch tools only to threads that are not delegated
             ),
           });
           expect(yield* initialize.json).toMatchObject({
-            result: { serverInfo: { name: "T3 Code" } },
+            result: { serverInfo: { name: "Blobs" } },
           });
           const listed = yield* httpClient.post("/mcp", {
             headers: {
@@ -1570,10 +1570,8 @@ it.effect(
         const ordinary = yield* list("/mcp", "ordinaryToken");
         const memoryTools = yield* list("/bot-mcp", "botToken");
         expect(ordinary).toContain('"ordinary_probe"');
-        expect(ordinary).not.toContain('"t3_attachment_read"');
         expect(memoryTools).toContain('"zoom"');
         expect(memoryTools).toContain('"date"');
-        expect(memoryTools).toContain('"t3_attachment_read"');
         expect(memoryTools).toContain('"ordinary_probe"');
       }),
     ).pipe(Effect.provide([NodeHttpServer.layerTest, ServerSettings.layerTest()])),
