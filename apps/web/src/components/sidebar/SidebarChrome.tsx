@@ -30,7 +30,11 @@ import {
 } from "../ui/sidebar";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { readPullRequestListPreferences } from "../pullRequest/pullRequestListPreferences";
-import { isSidebarUtilityPage, useNavigateToMainApp } from "./mainAppLocation";
+import {
+  isSidebarUtilityPage,
+  useNavigateToMainApp,
+  useNavigateToThreads,
+} from "./mainAppLocation";
 import { SidebarThreadUndoNotice } from "./SidebarThreadUndoNotice";
 import { SidebarProviderUpdatePill } from "./SidebarProviderUpdatePill";
 import { SidebarUpdateArchitectureWarning, SidebarUpdatePill } from "./SidebarUpdatePill";
@@ -171,6 +175,7 @@ function SidebarUtilityItem({
 const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
   const navigate = useNavigate();
   const navigateToMainApp = useNavigateToMainApp();
+  const navigateToThreads = useNavigateToThreads();
   const { isMobile, setOpenMobile } = useSidebar();
   const isOnUtilityPage = useLocation({
     select: (location) => isSidebarUtilityPage(location.pathname),
@@ -213,7 +218,8 @@ const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
         label={isOnBots ? "Threads" : "Bots"}
         onClick={() => {
           closeMobileSidebar();
-          void navigate({ to: isOnBots ? "/" : "/bots" });
+          if (isOnBots) void navigateToThreads();
+          else void navigate({ to: "/bots" });
         }}
       />
       {isOnUtilityPage ? (
