@@ -100,7 +100,7 @@ Connecting from another device does not move ownership or inference to that devi
 
 Ask a bot to keep track of something, such as a release waiting for CI. Its **Work** panel lists follow-ups with notes and source links. Resolve an item when finished, reopen it if needed, or dismiss it to stop tracking.
 
-Enable **Automatic check-ins** in the bot's **Autonomy** panel. The timezone defaults to the owning server's system timezone. Choose a frequency, quiet hours, and daily message limit. Changes save automatically. The bot checks open follow-ups while idle and reports developments that need your attention. **Check in now** bypasses quiet hours and the daily limit. Check-ins require the owning environment to be running.
+Enable **Automatic check-ins** in the bot's **Autonomy** panel. The timezone defaults to the owning server's system timezone. Choose a frequency, active hours, active days, and daily message limit. Changes save automatically. The bot checks open follow-ups while idle and reports developments that need your attention. **Check in now** bypasses active hours, active days, and the daily limit. Check-ins require the owning environment to be running.
 
 Check-ins use the bot's current chat model. Memory compaction continues to use the global model in **Settings → Bots**.
 
