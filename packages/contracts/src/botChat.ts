@@ -3,6 +3,7 @@ import { ApplicationProjectCreatedPayload } from "./applicationEvent.ts";
 import { ThreadEnvMode } from "./environment.ts";
 import { StoredProjectIcon } from "./project.ts";
 import { ProjectSettingsOverrides } from "./settings.ts";
+import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import { EnvironmentId, ThreadId, RunId, BotId } from "./baseSchemas.ts";
 
@@ -169,12 +170,18 @@ export const BotSkill = Schema.Struct({
   key: BotResourceKey,
   description: Schema.String.check(Schema.isMaxLength(1024)),
 });
+// Retained quiet names store the active complement (start = quietEnd, end = quietStart); equal
+// boundaries mean a full day.
 export const BotCheckInSettings = Schema.Struct({
   enabled: Schema.Boolean,
   everyHours: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 24 })),
   timezone: Schema.String,
   quietStart: Schema.String.check(Schema.isPattern(/^([01]\d|2[0-3]):[0-5]\d$/)),
   quietEnd: Schema.String.check(Schema.isPattern(/^([01]\d|2[0-3]):[0-5]\d$/)),
+  /** Sunday is 0; an empty selection stops automatic check-ins. */
+  activeDays: Schema.Array(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 6 }))).pipe(
+    Schema.withDecodingDefault(Effect.succeed([0, 1, 2, 3, 4, 5, 6])),
+  ),
   maxPerDay: Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 50 })),
 });
 export const DEFAULT_BOT_CHECK_IN: typeof BotCheckInSettings.Type = {
@@ -183,6 +190,7 @@ export const DEFAULT_BOT_CHECK_IN: typeof BotCheckInSettings.Type = {
   timezone: "UTC",
   quietStart: "22:00",
   quietEnd: "08:00",
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
   maxPerDay: 3,
 };
 export const BotResources = Schema.Struct({
