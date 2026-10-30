@@ -29,19 +29,6 @@ export const layer = McpToolAccess.toLayer(
           Effect.mapError(failure),
         ),
       ),
-      t3_attachment_read: McpToolAccess.readsAsCaller((input) =>
-        caller.pipe(
-          Effect.flatMap((scope) =>
-            access.attachment(scope, {
-              attachmentId: input.attachmentId,
-              offset: input.offset ?? 0,
-              length: input.length ?? 32768,
-              encoding: input.encoding ?? "utf8",
-            }),
-          ),
-          Effect.mapError(failure),
-        ),
-      ),
     };
   }),
 );
