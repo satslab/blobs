@@ -160,7 +160,7 @@ export function Inspector(props: {
     deactivateRef.current = registerWorkspaceInspector(content, route?.key, props.revealKey);
   });
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Navigation focus events own the inspector registration lifetime.
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- Navigation focus events own the inspector registration lifetime.
   useEffect(() => {
     if (navigation === undefined) return;
     const focus = () => {
@@ -184,7 +184,7 @@ export function Inspector(props: {
     };
   }, [navigation]);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Changed column content replaces the focused inspector registration.
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- Changed column content replaces the focused inspector registration.
   useEffect(() => {
     if (focusedRef.current) {
       syncRegistration();

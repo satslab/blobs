@@ -4,6 +4,8 @@ import type {
   PreviewStreamEvents,
   PreviewStreamInput,
 } from "@satslab/client-runtime/preview/server-browser-stream";
+
+import "~/index.css";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 
