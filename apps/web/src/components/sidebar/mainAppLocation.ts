@@ -1,4 +1,4 @@
-import { useNavigate, type AnyRouter } from "@tanstack/react-router";
+import { useNavigate, useRouter, type AnyRouter } from "@tanstack/react-router";
 
 import { GUEST_PAGE_PATH } from "../../guestPage";
 import { withoutAssistantCitationHash } from "../../lib/assistantCitationNavigation";
@@ -6,6 +6,11 @@ import { withoutAssistantCitationHash } from "../../lib/assistantCitationNavigat
 /** Settings and Usage open as modals over the last main-app view. */
 export function isAppModalPage(pathname: string) {
   return pathname === "/settings" || pathname.startsWith("/settings/") || pathname === "/usage";
+}
+
+/** Bot conversations and their settings share the bots workspace; everything else is threads. */
+function isBotPage(pathname: string) {
+  return pathname === "/bots" || pathname.startsWith("/bots/");
 }
 
 export function isSidebarUtilityPage(pathname: string) {
@@ -22,6 +27,7 @@ export function isSidebarUtilityPage(pathname: string) {
 const SHELL_LESS_PATHS = new Set(["/pair", "/connect", "/connect-agent", GUEST_PAGE_PATH]);
 
 let mainAppHref: string | null = null;
+let threadsAppHref: string | null = null;
 let appModalReturnHref: string | null = null;
 
 /** Remembers where Settings, Usage, and the utility pages lead back to. */
@@ -31,7 +37,10 @@ export function startMainAppLocationTracking(router: AnyRouter): () => void {
     if (isAppModalPage(pathname) || SHELL_LESS_PATHS.has(pathname)) return;
     const href = withoutAssistantCitationHash(router.state.location.href);
     appModalReturnHref = href;
-    if (!isSidebarUtilityPage(pathname)) mainAppHref = href;
+    if (isSidebarUtilityPage(pathname)) return;
+    mainAppHref = href;
+    // Bots remember their own last conversation, so switching back to threads needs its own target.
+    if (!isBotPage(pathname)) threadsAppHref = href;
   };
   record();
   return router.subscribe("onResolved", record);
@@ -40,6 +49,15 @@ export function startMainAppLocationTracking(router: AnyRouter): () => void {
 export function useNavigateToMainApp() {
   const navigate = useNavigate();
   return () => navigate({ href: mainAppHref ?? "/" });
+}
+
+export function navigateToThreads(router: AnyRouter) {
+  return router.navigate({ href: threadsAppHref ?? "/" });
+}
+
+export function useNavigateToThreads() {
+  const router = useRouter();
+  return () => navigateToThreads(router);
 }
 
 /** Leaves Settings or Usage for the page that opened it. */
