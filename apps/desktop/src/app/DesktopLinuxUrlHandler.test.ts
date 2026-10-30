@@ -440,7 +440,7 @@ describe("DesktopLinuxUrlHandler", () => {
         }
         assert.deepEqual(
           recorded.commands.map(({ command }) => command),
-          ["update-desktop-database", "xdg-mime"],
+          ["update-desktop-database", ...Array<string>(6).fill("xdg-mime")],
         );
       }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
   );

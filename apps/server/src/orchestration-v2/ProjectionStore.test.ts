@@ -1,3 +1,4 @@
+import { loadSubscriberShellSnapshot } from "./ShellStream.ts";
 import { assert, it } from "@effect/vitest";
 import {
   EnvironmentId,
@@ -88,10 +89,18 @@ const assertShellIndexCoversShells = Effect.fnUntraced(function* () {
   const trimmed = (
     row: Pick<
       ProjectionStore.ActiveShellIndexEntry,
-      "id" | "projectId" | "lineage" | "settledOverride" | "settledAt" | "pinnedAt" | "snoozedUntil"
+      | "id"
+      | "projectId"
+      | "lineage"
+      | "settledOverride"
+      | "settledAt"
+      | "pinnedAt"
+      | "snoozedUntil"
+      | "botId"
     >,
   ) => ({
     id: row.id,
+    botId: row.botId,
     projectId: row.projectId,
     lineage: row.lineage,
     settledOverride: row.settledOverride,
@@ -1488,6 +1497,24 @@ it.effect("SQL list older settled threads below a cursor", () =>
     assert.deepEqual(next.threadIds, [id("c"), id("d"), id("snoozed")]);
     assert.deepEqual(yield* list(before, 25, []), { threadIds: [], counts: [] });
     yield* assertShellIndexCoversShells();
+    const sql = yield* SqlClient.SqlClient;
+    const subscriber = yield* loadSubscriberShellSnapshot({
+      sql,
+      listShellIndex: store.listActiveShellIndex(),
+      readThreads: (threadIds) =>
+        store.readShellSnapshot({
+          location: "active",
+          ...(threadIds === undefined ? {} : { threadIds }),
+        }),
+      listProjects: Effect.succeed([]),
+      latestSequence: Effect.succeed(0),
+      options: { omitIdleSubagents: true, omitOlderSettled: true, separateBotThreads: true },
+    });
+    assert.deepEqual(
+      subscriber.snapshot.botThreads?.map((thread) => thread.id),
+      [id("bot")],
+    );
+    assert.isFalse(subscriber.snapshot.threads.some((thread) => thread.id === id("bot")));
     const scoped = yield* list(before, 0, [ProjectId.make("project:b")]);
     assert.deepEqual(scoped, {
       threadIds: [],

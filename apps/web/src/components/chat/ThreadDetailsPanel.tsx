@@ -153,7 +153,8 @@ export function ThreadDetailsPanel(props: ThreadDetailsPanelProps) {
           scripts: !botId && visible.scripts && props.activeProjectScripts !== undefined,
           branch: !botId && props.gitCwd !== null && props.isGitRepo && visible.branch,
           git:
-            !botId && props.gitCwd !== null &&
+            !botId &&
+            props.gitCwd !== null &&
             props.activeProjectName !== undefined &&
             (visible.gitActions || (visible.changes && props.isGitRepo)),
         };

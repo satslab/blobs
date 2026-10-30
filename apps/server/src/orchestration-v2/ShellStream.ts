@@ -231,8 +231,12 @@ function trimShellSnapshot(
   facts: ShellTrimFacts,
   options: ShellSubscriberOptions & { readonly now: DateTime.Utc },
 ): OrchestrationV2ShellSnapshot {
-  const botThreads = options.separateBotThreads ? base.threads.filter((thread) => thread.botId !== undefined) : undefined;
-  const ordinary = options.separateBotThreads ? base.threads.filter((thread) => thread.botId === undefined) : base.threads;
+  const botThreads = options.separateBotThreads
+    ? base.threads.filter((thread) => thread.botId !== undefined)
+    : undefined;
+  const ordinary = options.separateBotThreads
+    ? base.threads.filter((thread) => thread.botId === undefined)
+    : base.threads;
   const partition = botThreads === undefined ? {} : { botThreads };
   const threads = options.omitIdleSubagents
     ? omitIdleSubagentShellsWith(ordinary, facts)
@@ -253,7 +257,9 @@ function shellSubscriberThreadIds(
   index: ReadonlyArray<ActiveShellIndexEntry>,
   options: ShellSubscriberOptions,
 ): ReadonlyArray<ThreadId> {
-  const ordinary = options.separateBotThreads ? index.filter((entry) => entry.botId === undefined) : index;
+  const ordinary = options.separateBotThreads
+    ? index.filter((entry) => entry.botId === undefined)
+    : index;
   const facts = shellTrimFacts(ordinary);
   const subagents = ordinary.filter(
     (entry) =>
@@ -264,26 +270,36 @@ function shellSubscriberThreadIds(
   const keptSubagentIds = new Set(subagents.map((entry) => entry.id));
   const beforeMs = facts.olderSettledBeforeMs;
   return index.flatMap((entry) =>
-    options.separateBotThreads && entry.botId !== undefined ? [entry.id] : entry.lineage.relationshipToParent === "subagent"
-      ? keptSubagentIds.has(entry.id)
-        ? [entry.id]
-        : []
-      : !options.omitOlderSettled ||
-          beforeMs === undefined ||
-          !isOlderSettledThreadShell(entry, beforeMs) ||
-          entry.pinnedAt != null ||
-          entry.snoozedUntil != null ||
-          entry.mayBeLive ||
-          ancestorIds.has(entry.id)
-        ? [entry.id]
-        : [],
+    options.separateBotThreads && entry.botId !== undefined
+      ? [entry.id]
+      : entry.lineage.relationshipToParent === "subagent"
+        ? keptSubagentIds.has(entry.id)
+          ? [entry.id]
+          : []
+        : !options.omitOlderSettled ||
+            beforeMs === undefined ||
+            !isOlderSettledThreadShell(entry, beforeMs) ||
+            entry.pinnedAt != null ||
+            entry.snoozedUntil != null ||
+            entry.mayBeLive ||
+            ancestorIds.has(entry.id)
+          ? [entry.id]
+          : [],
   );
 }
 
-export function shellSnapshotForSubscriber(base: OrchestrationV2ShellSnapshot, options: ShellSubscriberOptions & { readonly now: DateTime.Utc }) {
-  const rows = options.separateBotThreads ? base.threads.filter((row) => row.botId === undefined) : base.threads;
+export function shellSnapshotForSubscriber(
+  base: OrchestrationV2ShellSnapshot,
+  options: ShellSubscriberOptions & { readonly now: DateTime.Utc },
+) {
+  const rows = options.separateBotThreads
+    ? base.threads.filter((row) => row.botId === undefined)
+    : base.threads;
   const facts = shellTrimFacts(rows);
-  return { snapshot: trimShellSnapshot(base, facts, options), subagentThreadIds: facts.subagentThreadIds };
+  return {
+    snapshot: trimShellSnapshot(base, facts, options),
+    subagentThreadIds: facts.subagentThreadIds,
+  };
 }
 
 /**
@@ -323,7 +339,9 @@ export const loadSubscriberShellSnapshot = Effect.fn("ShellStream.loadSubscriber
       snapshotSequence: read.snapshotSequence,
     });
     const rows = read.index ?? base.threads;
-    const facts = shellTrimFacts(input.options.separateBotThreads ? rows.filter((row) => row.botId === undefined) : rows);
+    const facts = shellTrimFacts(
+      input.options.separateBotThreads ? rows.filter((row) => row.botId === undefined) : rows,
+    );
     return {
       snapshot: trimShellSnapshot(base, facts, { ...input.options, now: yield* DateTime.now }),
       subagentThreadIds: facts.subagentThreadIds,

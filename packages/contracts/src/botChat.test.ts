@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vite-plus/test";
+import * as Schema from "effect/Schema";
 import { EnvironmentId, BotId, ThreadId } from "./baseSchemas.ts";
-import { selectBotIdentities, type BotIdentity } from "./botChat.ts";
+import { BotCheckInSettings, selectBotIdentities, type BotIdentity } from "./botChat.ts";
+
+const decodeCheckIn = Schema.decodeSync(BotCheckInSettings);
+const encodeCheckIn = Schema.encodeSync(BotCheckInSettings);
 
 const source: BotIdentity = {
   id: BotId.make("personal"),
@@ -52,4 +56,21 @@ it("keeps a deleted owner's tombstone ahead of stale remote identities", () => {
   const forwarded = { ...staged, status: "forwarded" as const };
   expect(selectBotIdentities([source, forwarded, deleted, staged])).toEqual([deleted]);
   expect(selectBotIdentities([deleted, source, staged, forwarded])).toEqual([deleted]);
+});
+
+it("gives a stored check-in schedule from before active days every weekday", () => {
+  const stored = {
+    enabled: true,
+    everyHours: 4,
+    timezone: "UTC",
+    quietStart: "22:00",
+    quietEnd: "08:00",
+    maxPerDay: 3,
+  };
+  const settings = decodeCheckIn(stored);
+  expect(settings.activeDays).toEqual([0, 1, 2, 3, 4, 5, 6]);
+  expect(encodeCheckIn(settings)).toEqual({
+    ...stored,
+    activeDays: [0, 1, 2, 3, 4, 5, 6],
+  });
 });

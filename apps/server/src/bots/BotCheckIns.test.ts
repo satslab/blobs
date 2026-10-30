@@ -28,7 +28,7 @@ import { assert, it } from "@effect/vitest";
 import { DEFAULT_BOT_CHECK_IN, type BotResources } from "@satslab/contracts";
 import { checkInDue } from "./BotCheckIns.ts";
 
-it("respects disabled check-ins, overnight quiet hours, timezone and frequency", () => {
+it("respects disabled check-ins, active hours, weekdays, timezone and frequency", () => {
   const state: BotResources = {
     followUps: [],
     skills: [],
@@ -58,6 +58,47 @@ it("respects disabled check-ins, overnight quiet hours, timezone and frequency",
       { ...state, checkIn: { ...state.checkIn, quietStart: "12:00", quietEnd: "12:00" } },
       noon,
     ),
+    true,
+  );
+  const allDay = { ...state.checkIn, timezone: "UTC", quietStart: "00:00", quietEnd: "00:00" };
+  const thursdayEvening = DateTime.toEpochMillis(DateTime.makeUnsafe("2026-10-29T20:00:00Z"));
+  assert.equal(
+    checkInDue({ ...state, checkIn: { ...allDay, activeDays: [4] } }, thursdayEvening),
+    true,
+  );
+  assert.equal(
+    checkInDue({ ...state, checkIn: { ...allDay, activeDays: [] } }, thursdayEvening),
+    false,
+  );
+  // The same instant is Friday in Tokyo, so only a Friday selection is active there.
+  assert.equal(
+    checkInDue(
+      { ...state, checkIn: { ...allDay, activeDays: [4], timezone: "Asia/Tokyo" } },
+      thursdayEvening,
+    ),
+    false,
+  );
+  assert.equal(
+    checkInDue(
+      { ...state, checkIn: { ...allDay, activeDays: [5], timezone: "Asia/Tokyo" } },
+      thursdayEvening,
+    ),
+    true,
+  );
+  // Active 22:00–08:00 wraps midnight, and each selected calendar day allows its own hours.
+  const overnight = { ...state.checkIn, timezone: "UTC", quietStart: "08:00", quietEnd: "22:00" };
+  const thursdayLate = DateTime.toEpochMillis(DateTime.makeUnsafe("2026-10-29T23:00:00Z"));
+  const fridayEarly = DateTime.toEpochMillis(DateTime.makeUnsafe("2026-10-30T02:00:00Z"));
+  assert.equal(
+    checkInDue({ ...state, checkIn: { ...overnight, activeDays: [4] } }, thursdayLate),
+    true,
+  );
+  assert.equal(
+    checkInDue({ ...state, checkIn: { ...overnight, activeDays: [4] } }, fridayEarly),
+    false,
+  );
+  assert.equal(
+    checkInDue({ ...state, checkIn: { ...overnight, activeDays: [5] } }, fridayEarly),
     true,
   );
 });

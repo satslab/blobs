@@ -11,7 +11,7 @@ import { Button } from "../ui/button";
 import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../ui/select";
 import { Switch } from "../ui/switch";
 import { PanelCard, PanelEmpty, PanelField, PanelGroup, PanelList } from "./BotPanelParts";
-import { QuietHoursField } from "./QuietHoursField";
+import { ActiveHoursField } from "./ActiveHoursField";
 
 type CheckInSettings = typeof BotCheckInSettings.Type;
 
@@ -262,6 +262,8 @@ function CheckInSection({
 
   const settings = draft?.value ?? server;
   const disabled = !canChange || bot.status !== "active";
+  const activeStart = settings.quietEnd;
+  const activeEnd = settings.quietStart;
 
   async function flush() {
     if (inFlight.current) return;
@@ -404,12 +406,14 @@ function CheckInSection({
                   </SelectPopup>
                 </Select>
               </PanelField>
-              <QuietHoursField
-                id={`${id}-quiet`}
-                start={settings.quietStart}
-                end={settings.quietEnd}
+              <ActiveHoursField
+                id={`${id}-active`}
+                start={activeStart}
+                end={activeEnd}
+                days={settings.activeDays}
                 disabled={disabled}
-                onChange={update}
+                onHoursChange={(start, end) => update({ quietEnd: start, quietStart: end })}
+                onDaysChange={(activeDays) => update({ activeDays })}
               />
               <div className="flex items-center gap-2">
                 <Button
