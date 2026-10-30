@@ -1758,9 +1758,7 @@ export function claudeMcpQueryOverrides(input: {
   const mcpAllowedTools = input.readOnlySandbox
     ? [
         ...CLAUDE_READ_ONLY_BLOBS_MCP_ALLOWED_TOOLS,
-        ...(session.botRunId === undefined
-          ? []
-          : ["mcp__t3-code__zoom", "mcp__t3-code__date", "mcp__t3-code__t3_attachment_read"]),
+        ...(session.botRunId === undefined ? [] : ["mcp__t3-code__zoom", "mcp__t3-code__date"]),
       ]
     : [CLAUDE_BLOBS_MCP_TOOL_WILDCARD];
   return {

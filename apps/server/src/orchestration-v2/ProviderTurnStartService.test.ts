@@ -1501,7 +1501,7 @@ for (const previousMessages of [[], ["/compact", " /COMPACT "]]) {
 }
 
 effectIt.effect.each(["pi", "claudeAgent"] as const)(
-  "delivers the frozen memory and attachment IDs to %s without ordinary history",
+  "delivers the frozen memory and attachments to %s without ordinary history",
   (botDriver) =>
     Effect.gen(function* () {
       const harness = makeLocalCommandHarness({
@@ -1553,8 +1553,7 @@ effectIt.effect.each(["pi", "claudeAgent"] as const)(
       const delivered = harness.startTurn.mock.calls[0]?.[0];
       expect(delivered?.message.text).toContain("<chat>frozen memory</chat>");
       expect(delivered?.message.text).toContain("Read the file");
-      expect(delivered?.message.text).toContain("notes");
-      expect(delivered?.message.attachments).toEqual([image]);
+      expect(delivered?.message.attachments).toEqual([file, image]);
       expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain("zoom");
       expect(delivered?.runtimePolicy.botChat?.systemPrompt).toContain("You are Atlas,");
       expect(delivered?.message.text).not.toContain("# Turns");
@@ -1737,7 +1736,7 @@ effectIt.effect.each(["pi", "claudeAgent"] as const)(
       expect(delivered.message.text).toContain(
         "Start the task\n\nUse these notes\n\nThen report the result",
       );
-      expect(delivered.message.text).toContain("buffered-notes");
+      expect(delivered.message.attachments).toEqual([file]);
       expect(harness.prepareMemory.mock.calls.map(([request]) => request.message.id)).toEqual([
         original.id,
         ...buffered.map((message) => message.id),

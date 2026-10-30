@@ -16111,6 +16111,5 @@ it("keeps frozen memory recall available in Claude's read-only mode", () => {
     },
   });
   assert.include(overrides.allowedTools ?? [], "mcp__t3-code__zoom");
-  assert.include(overrides.allowedTools ?? [], "mcp__t3-code__t3_attachment_read");
   assert.notInclude(overrides.allowedTools ?? [], "mcp__t3-code__delegate_task");
 });
