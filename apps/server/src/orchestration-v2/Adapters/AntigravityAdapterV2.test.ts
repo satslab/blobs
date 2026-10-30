@@ -149,7 +149,7 @@ describe("AntigravityAdapterV2 compaction", () => {
               command: process.execPath,
               args: [mockAgentPath],
               cwd: input.cwd,
-              env: { T3_ACP_ANTIGRAVITY: "1" },
+              env: { BLOBS_ACP_ANTIGRAVITY: "1" },
             },
           }).pipe(Effect.provideService(Crypto.Crypto, crypto)),
         withProcess: (_stop, task) => task,
