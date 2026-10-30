@@ -65,7 +65,7 @@ Running `vp run dev` through an agent's own shell tool does not attach it to thi
 ### State and ports
 
 Linked worktrees default to their own `.blobs/userdata`, even when `BLOBS_HOME` is set.
-The main checkout defaults to `~/.t3/dev/userdata`. An explicit `--home-dir` wins in both cases.
+The main checkout uses `~/.t3/dev` if `~/.t3` exists, or `~/.blobs/dev` otherwise. An explicit `--home-dir` wins in both cases.
 The first start in a worktree seeds its empty database from a read-only copy of
 `~/.blobs/userdata/statev2.sqlite` if the source is at most 500 MiB. Larger sources warn
 and dev starts with an empty database. `--no-seed` or `BLOBS_DEV_SEED=0` skips seeding.
