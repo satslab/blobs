@@ -68,8 +68,13 @@ it.layer(NodeServices.layer)("root CLI commands", (it) => {
         }),
       ).toBe(`sudo env "PATH=$PATH" blobs browser setup --base-dir '/srv/t3 home'`);
       expect(
-        yield* rootCommand({ node: "/opt/t3/t3", entry: "/opt/t3/t3", executable: true, args }),
-      ).toBe("sudo /opt/t3/blobs browser setup --base-dir '/srv/t3 home'");
+        yield* rootCommand({
+          node: "/opt/blobs/blobs",
+          entry: "/opt/blobs/blobs",
+          executable: true,
+          args,
+        }),
+      ).toBe("sudo /opt/blobs/blobs browser setup --base-dir '/srv/t3 home'");
     }).pipe(Effect.scoped),
   );
 
