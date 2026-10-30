@@ -17,10 +17,15 @@ import * as BotStorage from "./BotStorage.ts";
 import * as Threads from "../orchestration-v2/ThreadManagementService.ts";
 import * as Scheduler from "../scheduling/Scheduler.ts";
 
+/** Sunday-first weekday (0–6) of `now` on the bot's own calendar. */
+const localWeekday = (timeZone: string, now: number) =>
+  DateTime.getPart(DateTime.makeZonedUnsafe(now, { timeZone }), "weekDay");
+
 export function checkInDue(state: Resources, now: number) {
   const settings = state.checkIn;
   if (
     !settings.enabled ||
+    !settings.activeDays.includes(localWeekday(settings.timezone, now)) ||
     (state.lastCheckIn !== null && now - state.lastCheckIn < settings.everyHours * 3_600_000)
   )
     return false;
@@ -30,10 +35,13 @@ export function checkInDue(state: Resources, now: number) {
     minute: "2-digit",
     hourCycle: "h23",
   }).format(DateTime.toDateUtc(DateTime.makeUnsafe(now)));
-  const { quietStart: start, quietEnd: end } = settings;
-  return (
-    start === end || !(start < end ? parts >= start && parts < end : parts >= start || parts < end)
-  );
+  // Stored quiet boundaries hold the active complement, so a time is active outside them.
+  const { quietStart, quietEnd } = settings;
+  const quiet =
+    quietStart < quietEnd
+      ? parts >= quietStart && parts < quietEnd
+      : parts >= quietStart || parts < quietEnd;
+  return quietStart === quietEnd || !quiet;
 }
 
 const isBotChatError = Schema.is(BotChatError);

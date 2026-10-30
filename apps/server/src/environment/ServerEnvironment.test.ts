@@ -115,8 +115,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("ServerEnvironmen
         expect(descriptor.capabilities.serverSelfUpdate).toBe(
           mode === "web" ? undefined : "desktop-managed",
         );
-        expect(descriptor.capabilities.desktopAppUpdate).toBeUndefined();
-        expect(descriptor.capabilities.serverSelfUpdateProgress).toBeUndefined();
+        expect(descriptor.capabilities.desktopAppUpdate).toBe(
+          mode === "desktop" ? true : undefined,
+        );
+        expect(descriptor.capabilities.serverSelfUpdateProgress).toBe(
+          mode === "desktop" ? true : undefined,
+        );
         expect(descriptor.capabilities).toMatchObject({
           settledWorktreeCleanup: true,
           storageCleanupRun: true,
