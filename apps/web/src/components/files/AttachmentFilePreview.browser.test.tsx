@@ -2518,7 +2518,7 @@ function pdfScroll(screen: Screen) {
   return { region, canvas, offset, scrollTo };
 }
 
-it("keeps workspace PDF scroll and zoom after reloads", async () => {
+it("keeps workspace PDF scroll and zoom after a file change", async () => {
   using fixture = await workspacePdfPreview();
   const { preview, urls } = fixture;
   await using screen = await render(preview(urls.original, "one"));
@@ -2549,8 +2549,17 @@ it("keeps workspace PDF scroll and zoom after reloads", async () => {
     expect(region().scrollLeft).toBe(80);
     expect(offset(3)).toBeCloseTo(savedOffset, 0);
   });
-  await screen.getByRole("button", { name: "Previous page", exact: true }).click();
+});
+
+it("keeps workspace PDF fit-width scroll and first-page zoom after reloads", async () => {
+  using fixture = await workspacePdfPreview();
+  const { preview, urls } = fixture;
+  await using screen = await render(preview(urls.original, "one"));
+  await expect.element(screen.getByText("1 / 3 pages", { exact: true })).toBeVisible();
+  await screen.getByRole("button", { name: "Next page", exact: true }).click();
   await vi.waitFor(() => expect(screen.container.textContent).toContain("2 / 3 pages"));
+  const { region, offset, scrollTo } = pdfScroll(screen);
+  await screen.getByRole("button", { name: "Zoom in", exact: true }).click();
   await screen.getByRole("button", { name: "Fit width", exact: true }).click();
   await scrollTo({ top: region().scrollTop + 30 });
   const fitOffset = offset(2);
@@ -2568,8 +2577,17 @@ it("keeps workspace PDF scroll and zoom after reloads", async () => {
   await screen.rerender(preview(urls.original, "first-page"));
   await expect.element(screen.getByText("1 / 3 pages", { exact: true })).toBeVisible();
   await vi.waitFor(() => expect(screen.container.textContent).toContain(firstPageZoom));
+});
+
+it("resets workspace PDF scroll and zoom when the path changes", async () => {
+  using fixture = await workspacePdfPreview();
+  const { preview, urls } = fixture;
+  await using screen = await render(preview(urls.original, "one"));
+  await expect.element(screen.getByText("1 / 3 pages", { exact: true })).toBeVisible();
+  await screen.getByRole("button", { name: "Zoom in", exact: true }).click();
   await screen.getByRole("button", { name: "Next page", exact: true }).click();
   await vi.waitFor(() => expect(screen.container.textContent).toContain("2 / 3 pages"));
+  const { region } = pdfScroll(screen);
   await screen.rerender(preview(urls.original, "one", "/repo/another.pdf"));
   await expect.element(screen.getByText("1 / 3 pages", { exact: true })).toBeVisible();
   await vi.waitFor(() => {
