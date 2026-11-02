@@ -1944,14 +1944,17 @@ describe("AcpAdapterV2", () => {
     { modeIds: "plain", environment: {}, planModeId: "architect", buildModeId: "ask" },
     {
       modeIds: "Copilot URL",
-      environment: { T3_ACP_COPILOT_MODES: "1" },
+      environment: { BLOBS_ACP_COPILOT_MODES: "1" },
       planModeId: "https://agentclientprotocol.com/protocol/session-modes#plan",
       buildModeId: "https://agentclientprotocol.com/protocol/session-modes#agent",
     },
     {
       // Without a `mode` category, T3 derives no mode state and only the config option switches.
       modeIds: "Copilot URL collaboration_mode",
-      environment: { T3_ACP_COPILOT_MODES: "1", T3_ACP_MODE_OPTION_CATEGORY: "collaboration_mode" },
+      environment: {
+        BLOBS_ACP_COPILOT_MODES: "1",
+        BLOBS_ACP_MODE_OPTION_CATEGORY: "collaboration_mode",
+      },
       planModeId: "https://agentclientprotocol.com/protocol/session-modes#plan",
       buildModeId: "https://agentclientprotocol.com/protocol/session-modes#agent",
     },
@@ -3526,7 +3529,7 @@ describe("AcpAdapterV2", () => {
           makeRuntime: makeMockRuntime({
             childProcessSpawner,
             mockAgentPath,
-            environment: { T3_ACP_EMIT_TERMINAL_OUTPUT_BYTES: String(1024 * 1024) },
+            environment: { BLOBS_ACP_EMIT_TERMINAL_OUTPUT_BYTES: String(1024 * 1024) },
           }),
         },
         selfInvocation: yield* resolveSelfInvocation(),
@@ -4622,7 +4625,7 @@ describe("AcpAdapterV2", () => {
       const makeRuntime = makeMockRuntime({
         childProcessSpawner,
         mockAgentPath,
-        environment: { T3_ACP_HANG_PROMPT_FOREVER: "1" },
+        environment: { BLOBS_ACP_HANG_PROMPT_FOREVER: "1" },
         wrapRuntime: (runtime) => ({
           ...runtime,
           handleRequestPermission: (handler) =>
@@ -9005,7 +9008,7 @@ describe("AcpAdapterV2", () => {
               ),
             environment: (runtimeOrdinal) => {
               runtimeOrdinalSeen = runtimeOrdinal;
-              return runtimeOrdinal === 1 ? { T3_ACP_HANG_PROMPT_FOREVER: "1" } : {};
+              return runtimeOrdinal === 1 ? { BLOBS_ACP_HANG_PROMPT_FOREVER: "1" } : {};
             },
             protocolEvents,
           }),
