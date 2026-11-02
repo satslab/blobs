@@ -1243,7 +1243,10 @@ function ScheduledTaskEditorForm({
   const allProjects = useProjects({ includeBot: true });
   const projectsOn = (id: EnvironmentId) =>
     allProjects.filter(
-      (project) => project.environmentId === id && (!project.isBot || project.id === task?.projectId) && matchesScheduledTaskScope(scope, id, project.id),
+      (project) =>
+        project.environmentId === id &&
+        (!project.isBot || project.id === task?.projectId) &&
+        matchesScheduledTaskScope(scope, id, project.id),
     );
   const scopedProjects = projectsOn(environmentId);
   const settings = useEnvironmentSettings(environmentId);
@@ -1620,7 +1623,10 @@ function ScheduledTaskEditorForm({
                     onChange={(event) =>
                       setDraft((current) => ({
                         ...current,
-                        existingWorktreePath: event.target.value,
+                        existingWorktreePath: resolvePastedPath(
+                          current.existingWorktreePath,
+                          event.target.value,
+                        ),
                       }))
                     }
                   />
