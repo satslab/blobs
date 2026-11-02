@@ -12,7 +12,6 @@ import type {
   OrchestrationV2Subagent,
   OrchestrationV2TurnItem,
   ServerConfig,
-  ServerProvider,
 } from "@satslab/contracts";
 import { Pressable, View, type ColorValue } from "react-native";
 

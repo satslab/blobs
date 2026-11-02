@@ -512,12 +512,19 @@ function resolveTextGenerationProvider(
   isDriverAllowed: DriverAllowed = anyDriver,
 ): ServerSettings {
   const memory = settings.memoryCompactionModelSelection;
-  if (memory !== null && (!isModelSelectionProviderEnabled(settings, memory) || !selectionSupportsTextGeneration(settings, memory)))
+  if (
+    memory !== null &&
+    (!isModelSelectionProviderEnabled(settings, memory) ||
+      !selectionSupportsTextGeneration(settings, memory))
+  )
     settings = { ...settings, memoryCompactionModelSelection: null };
   const selection = settings.textGenerationModelSelection;
   return isModelSelectionProviderEnabled(settings, selection) &&
     selectionSupportsTextGeneration(settings, selection) &&
-    isDriverAllowed(settings.providerInstances[selection.instanceId]?.driver ?? ProviderDriverKind.make(selection.instanceId))
+    isDriverAllowed(
+      settings.providerInstances[selection.instanceId]?.driver ??
+        ProviderDriverKind.make(selection.instanceId),
+    )
     ? settings
     : fallbackTextGenerationProvider(settings, isDriverAllowed);
 }

@@ -51,7 +51,6 @@ export const childThreadApprovalsAtom = createChildThreadApprovalsAtom({
   pendingRequestsAtom: environmentThreadDetails.pendingRequestsAtom,
 });
 
-
 // Long enough for the opened screen to subscribe; its subscription keeps the thread after this.
 const OPENING_THREAD_HOLD_MS = 3_000;
 
