@@ -239,7 +239,7 @@ import { proposedPlanTitle } from "@satslab/shared/proposedPlanText";
 import { hasProviderSetup } from "./ProviderStatusBanner";
 import { type AppModelOption, getAppModelOptionsForInstance } from "../../modelSelection";
 import type { UnifiedSettings } from "@satslab/contracts/settings";
-import { isVideoAttachment, type ChatMessage, type SessionPhase, type Thread, type ThreadShell } from "../../types";
+import { isVideoAttachment, type SessionPhase, type Thread, type ThreadShell } from "../../types";
 import { type ComposerPromptHistoryPosition } from "./composerPromptHistory";
 import type { PendingUserInputDraftAnswer } from "@satslab/client-runtime/state/pending-user-input";
 import type {
@@ -253,7 +253,6 @@ import {
   type ComposerDispatchMode,
 } from "@satslab/client-runtime/state/composer-dispatch";
 import { deriveLatestContextWindowSnapshot } from "../../lib/contextWindow";
-import type { ContextWindowSnapshot } from "../../lib/contextWindow";
 import {
   resolveProviderSkillsForCwd,
   resolveProviderSlashCommandsForCwd,

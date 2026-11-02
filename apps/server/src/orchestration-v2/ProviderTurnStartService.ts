@@ -1699,10 +1699,15 @@ export const layer: Layer.Layer<
           ],
         });
       });
-      const botUserText = [message, ...bufferedMessages].map((input) => {
-        const text = projectComposerContextForProvider({ text: input.text, records: input.context?.records ?? [] });
-        return projection.thread.botId === undefined ? text : botMessageText({ ...input, text });
-      }).join("\n\n");
+      const botUserText = [message, ...bufferedMessages]
+        .map((input) => {
+          const text = projectComposerContextForProvider({
+            text: input.text,
+            records: input.context?.records ?? [],
+          });
+          return projection.thread.botId === undefined ? text : botMessageText({ ...input, text });
+        })
+        .join("\n\n");
       const inputAttachments = [message, ...bufferedMessages].flatMap((input) => input.attachments);
       const startWithHandoffs = Effect.fn("ProviderTurnStartService.startWithHandoffs")(
         function* (turnInput: Parameters<typeof session.startTurn>[0], compact = false) {
@@ -1738,7 +1743,9 @@ export const layer: Layer.Layer<
           const start = compact ? session.compactThread! : session.startTurn;
           // Like history, the side chat context waits for a turn that sends a prompt.
           const sideChatContext =
-            sideChatHandoff === undefined || compact || goalCommand ? "" : sideChatHandoff.summaryText;
+            sideChatHandoff === undefined || compact || goalCommand
+              ? ""
+              : sideChatHandoff.summaryText;
           const context = [delegatedBotPrompt, delivery.context, sideChatContext, restartNote]
             .filter((part) => part !== "")
             .join("\n\n");

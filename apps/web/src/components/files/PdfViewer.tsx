@@ -158,7 +158,7 @@ export default function PdfViewer(props: {
   const find = useRef<HTMLInputElement>(null);
   const zoomAnchor = useRef<{ page: number; offset: number; width: number } | null>(null);
   const initialPage = initialView.page;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the PDF fetch, load timeout, and pdf.js document task across source changes, retries, and unmounts.
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- Own the PDF fetch, load timeout, and pdf.js document task across source changes, retries, and unmounts.
   useEffect(() => {
     const controller = new AbortController();
     let disposed = false;
@@ -211,7 +211,7 @@ export default function PdfViewer(props: {
       void task?.destroy();
     };
   }, [props.src, revision, initialPage, savedPosition]);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Measure the PDF viewport before paint and observe resizes for fit-width sizing and visible-page selection.
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- Measure the PDF viewport before paint and observe resizes for fit-width sizing and visible-page selection.
   useLayoutEffect(() => {
     const node = scroll.current;
     if (!node) return;
@@ -267,7 +267,7 @@ export default function PdfViewer(props: {
     setScrollTop(node.scrollTop);
     saveView(node);
   });
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Restore the saved PDF scroll position after the loaded document's page layout commits.
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- Restore the saved PDF scroll position after the loaded document's page layout commits.
   useLayoutEffect(() => {
     if (pdf) restoreView();
   }, [pdf]);

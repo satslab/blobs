@@ -19,7 +19,6 @@ import {
   resolveSpawnCommand,
   withPathDirectoryListings,
 } from "@satslab/shared/shell";
-import * as Clock from "effect/Clock";
 import * as Config from "effect/Config";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";

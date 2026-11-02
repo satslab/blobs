@@ -10,7 +10,6 @@ import {
   type StaticScreenProps,
 } from "@react-navigation/native";
 import { SymbolView } from "../../components/ui/AppSymbol";
-import { availableScratchWorkspaceRoot } from "@satslab/client-runtime/operations/projects";
 import { pickableProjectGroups } from "@satslab/client-runtime/state/project-grouping";
 import { isScratchProject } from "@satslab/client-runtime/state/projects";
 import {
