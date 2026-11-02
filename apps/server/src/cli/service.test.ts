@@ -112,8 +112,8 @@ it.layer(Layer.mergeAll(NodeServices.layer, NetService.layer))("service commands
     {
       label: "a set host",
       installed: false,
-      env: "T3CODE_HOST=::\n",
-      expected: "T3CODE_HOST=::\n",
+      env: "BLOBS_HOST=::\n",
+      expected: "BLOBS_HOST=::\n",
     },
   ])("install keeps $label off the local network only when it is new", (input) =>
     Effect.gen(function* () {
