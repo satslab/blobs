@@ -198,14 +198,14 @@ describe("ServerBrowserSurface history", () => {
       mocks.painted?.();
       handlers.onViewport({ width: 400, height: 300 });
     });
-    const { left, top } = canvas.getBoundingClientRect();
+    const { left, top, width, height } = canvas.getBoundingClientRect();
     const press = (type: "pointerdown" | "pointerup", button: number) =>
       canvas.dispatchEvent(
         new PointerEvent(type, {
           button,
           buttons: type === "pointerdown" ? 1 << button : 0,
-          clientX: left + 10,
-          clientY: top + 10,
+          clientX: left + width / 2,
+          clientY: top + height / 2,
           pointerType: "mouse",
           bubbles: true,
         }),
