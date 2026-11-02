@@ -71,6 +71,7 @@ vi.mock("../state/entities", async (original) => ({
   useHiddenThreadKeys: () => new Set(),
   useAnyEnvironmentHiding: () => false,
   useEnvironmentThreadRefs: () => [],
+  useQuietThreadShell: () => null,
   useServerConfigs: () => new Map(),
   waitForProject: async () => undefined,
 }));
