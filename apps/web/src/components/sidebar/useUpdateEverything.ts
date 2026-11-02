@@ -6,7 +6,7 @@ import { isDesktopLocalConnectionTarget } from "~/connection/desktopLocal";
 import { isElectron } from "~/env";
 import { useEnvironments } from "~/state/environments";
 import { cliReleaseChannelOf } from "@satslab/shared/cliRelease";
-import { useLatestCliRelease } from "~/state/cliRelease";
+import { useCliReleasePublished, useLatestCliRelease } from "~/state/cliRelease";
 import { environmentIdsKey } from "~/state/environmentAtomList";
 import { environmentUpdateStatesAtom } from "~/state/server";
 import { environmentSessionStatesAtom } from "~/state/session";
@@ -69,9 +69,28 @@ export function useUpdateEverything(
     canMaintain: canUpdateServer(sessionStates[index]!),
     updateState: updateStates[index]!,
   }));
-  const { targets: servers, skipped } = channelSwitch
+  const { targets, skipped: unavailable } = channelSwitch
     ? collectChannelSwitchTargets(machines, channelSwitch)
     : collectServerUpdateTargets(machines, targetVersion);
+  const needsPublishedRelease =
+    !channelSwitch &&
+    localUpdateVersion !== null &&
+    targets.some((target) => target.selfUpdate !== "desktop-managed");
+  const published = useCliReleasePublished(needsPublishedRelease ? targetVersion : null);
+  const servers =
+    needsPublishedRelease && !published
+      ? targets.filter((target) => target.selfUpdate === "desktop-managed")
+      : targets;
+  const skipped = [
+    ...unavailable,
+    ...targets
+      .filter((target) => !servers.includes(target))
+      .map((target) => ({
+        environmentId: target.environmentId,
+        label: target.serverLabel,
+        reason: `${targetVersion} is not released on GitHub yet`,
+      })),
+  ];
   // Track-only hosts save a setting and restart nothing, so they are neither listed nor counted.
   const moving = servers.filter((server) => server.trackOnly !== true);
   const restarts = collectRestartingMachines(machines, moving, localUpdateVersion !== null);
