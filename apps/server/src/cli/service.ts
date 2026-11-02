@@ -103,9 +103,9 @@ export const reconcileService = Effect.fn("cli.service.reconcile")(function* (op
     return { changed: false, status } satisfies ServiceReconcileResult;
   }
   if (status.supported && !status.installed) {
-    // A new service listens on this machine only, until `t3 up` opens the local network.
+    // A new service listens on this machine only, until `blobs up` opens the local network.
     const { entries } = yield* readServiceEnv(baseDir);
-    if (entries.T3CODE_LAN === undefined && entries.T3CODE_HOST === undefined) {
+    if (entries.T3CODE_LAN === undefined && entries.BLOBS_HOST === undefined) {
       yield* writeServiceEnv(baseDir, { T3CODE_LAN: "false" });
     }
   }
@@ -231,7 +231,7 @@ const serviceInstallCommand = Command.make("install", serviceReconcileFlags).pip
         }
         yield* Console.log(formatServiceChange(result));
         if (!result.previouslyInstalled) {
-          yield* Console.log("Run `t3 up` to choose how your other devices reach it.");
+          yield* Console.log("Run `blobs up` to choose how your other devices reach it.");
         }
       }),
     ),
