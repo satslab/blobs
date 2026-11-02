@@ -113,7 +113,6 @@ function startWithMissingWorktree(
       projectId: ProjectId.make("project_provider_turn_start_projection_failure"),
       branch: "feature/restore",
       worktreePath,
-      lineage: { parentThreadId: null, relationshipToParent: null, rootThreadId: threadId },
     },
     runs: [
       {
@@ -397,7 +396,6 @@ function makeLocalCommandHarness(input: {
       projectId: ProjectId.make("project-native-account-command"),
       branch: input.worktreePath === undefined ? null : "feature/restore",
       worktreePath: input.worktreePath ?? null,
-      lineage: { parentThreadId: null, relationshipToParent: null, rootThreadId: threadId },
     } as OrchestrationV2ThreadProjection["thread"],
     runs: [
       ...(input.previousNativeSession
@@ -796,9 +794,16 @@ function makeLocalCommandHarness(input: {
     ensureThread: fallbackEnsureThread,
   };
   const providerSession = {
-    id: providerSessionId, driver: providerThread.driver, providerInstanceId: newInstanceId,
-    status: "ready", cwd: "/tmp/native-account-command", model: null,
-    capabilities: CodexProviderCapabilitiesV2, createdAt: now, updatedAt: now, lastError: null,
+    id: providerSessionId,
+    driver: providerThread.driver,
+    providerInstanceId: newInstanceId,
+    status: "ready",
+    cwd: "/tmp/native-account-command",
+    model: null,
+    capabilities: CodexProviderCapabilitiesV2,
+    createdAt: now,
+    updatedAt: now,
+    lastError: null,
   };
   const startTurn = vi.fn((_turn: ProviderAdapter.ProviderAdapterV2TurnInput) => Effect.void);
   const sideChatThread = {
@@ -821,7 +826,7 @@ function makeLocalCommandHarness(input: {
     startTurn,
   };
   const delegatedContext = vi.fn<BotChat.BotChat["Service"]["delegatedContext"]>(() =>
-    Effect.succeed(undefined),
+    Effect.sync(() => undefined),
   );
   const prepareMemory = vi.fn<BotChat.BotChat["Service"]["prepare"]>((request) =>
     Effect.succeed({
@@ -854,8 +859,17 @@ function makeLocalCommandHarness(input: {
                     ),
                   ),
                 )
-              : input.failReadsAfterRunning === true || input.previousTurn !== undefined || input.botDriver !== undefined || input.delegatedWorker === true
-                ? Effect.succeed({ driver: providerThread.driver, providerSession, ensureThread: () => Effect.succeed(providerThread), resumeThread: () => Effect.succeed(projection.providerThreads[0]), startTurn } as never)
+              : input.failReadsAfterRunning === true ||
+                  input.previousTurn !== undefined ||
+                  input.botDriver !== undefined ||
+                  input.delegatedWorker === true
+                ? Effect.succeed({
+                    driver: providerThread.driver,
+                    providerSession,
+                    ensureThread: () => Effect.succeed(providerThread),
+                    resumeThread: () => Effect.succeed(projection.providerThreads[0]),
+                    startTurn,
+                  } as never)
                 : Effect.die("A local command must not open a native session."),
   );
   const startRootRun = vi.fn<
@@ -864,10 +878,12 @@ function makeLocalCommandHarness(input: {
     input.sideChat !== undefined
       ? runInput.session.startTurn(runInput as never).pipe(Effect.orDie)
       : input.failReadsAfterRunning === true || input.previousTurn !== undefined
-        ? Effect.suspend(() => providerBusy ? Effect.die("The previous provider turn is still running.") : Effect.void)
+        ? Effect.suspend(() =>
+            providerBusy ? Effect.die("The previous provider turn is still running.") : Effect.void,
+          )
         : input.botDriver !== undefined || input.delegatedWorker === true
           ? Effect.void
-        : Effect.die("A local command must not start a native turn."),
+          : Effect.die("A local command must not start a native turn."),
   );
   const failReadIfRunning = Effect.suspend(() =>
     input.failReadsAfterRunning === true &&
@@ -1052,7 +1068,6 @@ function makeLocalCommandHarness(input: {
     fallbackEnsureThread,
     writeIfRunCurrent,
     startRootRun,
-    startTurn,
     forkThread,
     interruptTurn,
     tryHandlePromptCommand,

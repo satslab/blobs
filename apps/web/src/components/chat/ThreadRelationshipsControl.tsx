@@ -52,7 +52,6 @@ import {
   CornerLeftUpIcon,
   GitForkIcon,
   MessagesSquareIcon,
-  MessageSquarePlusIcon,
   MoreHorizontalIcon,
   PlusIcon,
   SquareIcon,
@@ -300,7 +299,6 @@ function RemoteSubagentRow(props: {
             fallbackIcon={BotIcon}
             status={status}
           />
-          {edge.kind === "launch" && node?.thread?.botId ? <BotAvatar botId={node.thread.botId} className="size-5 rounded-md" /> : null}
           <span className="min-w-0 flex-1">
             <span className="block truncate text-left text-sm font-medium leading-4 text-foreground/85">
               {title}
@@ -550,8 +548,10 @@ export function ThreadRelationshipsPanel(props: {
     sideChats = [], activeThreads = [], previousThreads = [],
   } = groupBy(visibleRelationships, ({ threadId, edge }) => {
     const isParent = isParentThreadRelationship(edge, props.threadId);
-    if (!isParent && graph.nodes.get(threadId)?.thread?.lineage.sideChat === true) return "sideChats";
-    if (edge.kind === "launch" && !isParent) return isFinished(edge) ? "previousThreads" : "activeThreads";
+    if (!isParent && graph.nodes.get(threadId)?.thread?.lineage.sideChat === true)
+      return "sideChats";
+    if (edge.kind === "launch" && !isParent)
+      return isFinished(edge) ? "previousThreads" : "activeThreads";
     if (edge.kind !== "subagent" || isParent) return "related";
     return isFinishedAgentStatus(edge.status) ? "previous" : "active";
   });
@@ -800,13 +800,17 @@ export function ThreadRelationshipsPanel(props: {
     );
     const relationshipContent = (
       <>
-        <ThreadRelationshipIcon
-          driver={isSubagent && !isParent ? providerDriver : undefined}
-          provider={provider}
-          providerEntries={providerEntries}
-          fallbackIcon={RelationshipIcon}
-          status={rowStatus}
-        />
+        {edge.kind === "launch" && node?.thread?.botId ? (
+          <BotAvatar botId={node.thread.botId} className="size-5 rounded-md" />
+        ) : (
+          <ThreadRelationshipIcon
+            driver={isSubagent && !isParent ? providerDriver : undefined}
+            provider={provider}
+            providerEntries={providerEntries}
+            fallbackIcon={RelationshipIcon}
+            status={rowStatus}
+          />
+        )}
         <span className="min-w-0 flex-1">
           <span className="block truncate text-left text-sm font-medium leading-4 text-foreground/85">
             {threadTitle}
@@ -1004,14 +1008,20 @@ export function ThreadRelationshipsPanel(props: {
           }
         >
           {delegatedFrom === undefined ? null : (
-            <ThreadLineageRowList card={props.sectionVariant === "card"} hiddenCount={0} onShowMore={() => {}}>
+            <ThreadLineageRowList
+              card={props.sectionVariant === "card"}
+              hiddenCount={0}
+              onShowMore={() => {}}
+            >
               <DelegatedFromRow
                 delegatedFrom={delegatedFrom}
                 fallbackLabel={currentThread?.linkOrigin?.label}
               />
             </ThreadLineageRowList>
           )}
-          {props.showEmpty && relationshipRows.length === 0 && runningCount === 0 ? <p className="px-3 py-3 text-xs text-muted-foreground">No related threads</p> : null}
+          {props.showEmpty && relationshipRows.length === 0 && runningCount === 0 ? (
+            <p className="px-3 py-3 text-xs text-muted-foreground">No related threads</p>
+          ) : null}
           {groups.map((group) => (
             <ThreadLineageGroup
               card={props.sectionVariant === "card"}
@@ -1047,6 +1057,7 @@ export function ThreadRelationshipsPanel(props: {
           <ThreadLineageGroup
             key={`${scopedThreadKey(ref)}:side-chats`}
             label={null}
+            card={props.sectionVariant === "card"}
             rows={sideChats}
             expanded
           >

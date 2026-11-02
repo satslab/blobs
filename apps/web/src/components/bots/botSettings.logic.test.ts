@@ -46,6 +46,8 @@ const local = member(source);
 const remote = member(destination);
 const group: SidebarProjectSnapshot = {
   ...local,
+  pinned: false,
+  archived: false,
   projectKey: "bot-group",
   displayName: "Bot",
   memberProjects: [remote, local],

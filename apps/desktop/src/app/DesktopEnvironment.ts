@@ -231,7 +231,6 @@ const make = Effect.fn("desktop.environment.make")(function* (
       isDevelopment ? "xyz.satslab.blobs.dev" : "xyz.satslab.blobs",
     ),
     linuxDesktopEntryName: resolveLinuxDesktopEntryName(isDevelopment),
-    linuxWmClass: isDevelopment ? "blobs-dev" : "blobs",
     linuxApplicationsDir,
     desktopLauncherPath: config.desktopLauncherPath,
     appImagePath: config.appImagePath,

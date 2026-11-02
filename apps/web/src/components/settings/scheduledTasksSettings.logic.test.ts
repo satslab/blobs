@@ -112,7 +112,7 @@ describe("scheduled task settings scope", () => {
       archivedAt,
     });
     const all = resolveSettingsScope({}, groups, environments);
-    const scoped = resolveSettingsScope({ project: "t3code" }, groups, environments);
+    const scoped = resolveSettingsScope({ project: "blobs" }, groups, environments);
     expect(
       defaultScheduledTaskProjectId([project("a", null, null), project("b", at, null)], all),
     ).toBe("b");
