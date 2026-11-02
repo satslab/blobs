@@ -1,13 +1,7 @@
 name: Deploy marketing
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "apps/marketing/**"
-      - "scripts/install.sh"
-      - "scripts/install.ps1"
-      - ".github/workflows/deploy-marketing.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read

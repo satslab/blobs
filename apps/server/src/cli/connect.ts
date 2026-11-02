@@ -9,7 +9,6 @@ import {
   type RelayClientInstallProgressStage,
 } from "@satslab/contracts";
 import { RelayOkResponse } from "@satslab/contracts/relay";
-import * as HostProcess from "@satslab/shared/HostProcess";
 import * as RelayClient from "@satslab/shared/relayClient";
 import { withRelayClientTracing } from "@satslab/shared/relayTracing";
 import * as Cause from "effect/Cause";

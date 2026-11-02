@@ -8,8 +8,8 @@ to keep a terminal open.
 Install the `blobs` CLI first ([Install Blobs](./install.md#command-line)), then
 run these commands on the machine that will host Blobs:
 
-| Task                                  | Command                |
-| ------------------------------------- | ---------------------- |
+| Task                                  | Command                   |
+| ------------------------------------- | ------------------------- |
 | Set up access from your other devices | `blobs up`                |
 | See how your other devices reach it   | `blobs status`            |
 | Install and start                     | `blobs service install`   |
