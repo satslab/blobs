@@ -1,3 +1,4 @@
+import { useComposerMenuState } from "../chat/useComposerMenuState";
 import { useOrchestrationCommand } from "../../state/use-orchestration-command";
 import { AuthOrchestrationOperateScope } from "@satslab/contracts";
 import { useEnvironmentsWithScope } from "../../state/session";
@@ -13,7 +14,7 @@ import {
 } from "../../hooks/useProjectGroupUpdate";
 import { Navigate, useLocation, useNavigate } from "@tanstack/react-router";
 import { InfoIcon, Trash2Icon } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { lazy, Suspense, useRef, useState, type ReactNode } from "react";
 
 import { useComposerDraftStore } from "../../composerDraftStore";
 import { releaseProjectDraftUploads } from "../../lib/composerDraftUploads";
@@ -22,16 +23,26 @@ import {
   type SidebarProjectGroupMember,
   type SidebarProjectSnapshot,
 } from "../../sidebarProjectGrouping";
-import { useEnvironments } from "../../state/environments";
+import { useEnvironments, usePrimaryEnvironmentId } from "../../state/environments";
 import { useThreadShells, waitForProjectRemoval } from "../../state/entities";
 import { projectEnvironment } from "../../state/projects";
+import { ProjectFavicon } from "../ProjectFavicon";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { toastManager } from "../ui/toast";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
-import { SettingsPageContainer, SettingsRow, SettingsSection } from "./settingsLayout";
+import {
+  SettingResetButton,
+  SettingsPageContainer,
+  SettingsRow,
+  SettingsSection,
+} from "./settingsLayout";
+import {
+  canPickExternalProjectFavicon,
+  ProjectFaviconPickerDialog,
+} from "./ProjectFaviconPickerDialog";
 import { ProjectActionsSettings } from "./ProjectActionsSettings";
 import { ProjectDefaultsSettings } from "./ProjectDefaultsSettings";
 import {
@@ -43,6 +54,12 @@ import {
 import { useSettingsProjectGroups } from "./useSettingsProjectGroups";
 import { readUnloadedThreadCount } from "../../state/olderSettledShelf";
 import { settingsScopeEnvironmentLabels } from "./settingsScopeAxis";
+
+const ProjectIconPickerDialog = lazy(() =>
+  import("./ProjectIconPickerDialog").then((module) => ({
+    default: module.ProjectIconPickerDialog,
+  })),
+);
 
 export type ProjectSettingsCategory = "general" | "source-control" | "project";
 
@@ -177,14 +194,19 @@ function ProjectDetail({
   hasOtherMembers: boolean;
 }) {
   const navigate = useNavigate({ from: "/settings" });
-  const editableIds = useEnvironmentsWithScope(allMembers, AuthOrchestrationOperateScope);
-  const canEditGroup = group.memberProjects.every((member) =>
-    editableIds.has(member.environmentId),
-  );
+  const primaryEnvironmentId = usePrimaryEnvironmentId();
   const { environments } = useEnvironments();
   const environmentById = new Map(
     environments.map((environment) => [environment.environmentId, environment]),
   );
+  const editableIds = useEnvironmentsWithScope(allMembers, AuthOrchestrationOperateScope);
+  const canEditGroup = group.memberProjects.every((member) =>
+    editableIds.has(member.environmentId),
+  );
+  const representative =
+    group.memberProjects.find(
+      (member) => environmentById.get(member.environmentId)?.serverConfig != null,
+    ) ?? group.memberProjects[0]!;
   const threads = useThreadShells();
   const deleteProject = useOrchestrationCommand(projectEnvironment.delete, {
     reportFailure: false,
@@ -587,6 +609,30 @@ function ProjectDetail({
           />
         </SettingsSection>
       </SettingsPageContainer>
+
+      <ProjectFaviconPickerDialog
+        key={`${representative.environmentId}:${representative.workspaceRoot}:${faviconPickerOpen}`}
+        cwd={representative.workspaceRoot}
+        environmentId={representative.environmentId}
+        onOpenChange={setFaviconPickerOpen}
+        {...(pickProjectFavicon
+          ? { onPickExternal: () => pickProjectFavicon(representative.workspaceRoot) }
+          : {})}
+        onSelect={(path) => void setProjectIcon({ faviconPath: path, projectIcon: null })}
+        open={faviconPickerOpen && canEditGroup}
+        projectName={group.displayName}
+      />
+      {iconPickerOpen && canEditGroup ? (
+        <Suspense fallback={null}>
+          <ProjectIconPickerDialog
+            current={projectIcon}
+            projectName={representative.title}
+            open
+            onOpenChange={setIconPickerOpen}
+            onSelect={(icon) => void setProjectIcon({ faviconPath: null, projectIcon: icon })}
+          />
+        </Suspense>
+      ) : null}
     </>
   );
 }

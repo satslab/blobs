@@ -2961,13 +2961,26 @@ export const makeOpenCodeAdapterV2 = Effect.fn("makeOpenCodeAdapterV2")(function
           return {
             ...(agent === undefined ? {} : { agent }),
             ...(variant === undefined ? {} : { variant }),
-            system: turn.runtimePolicy.botChat === undefined
-              ? [orchestrationSystemPrompt, buildRuntimeInstructions({ harness: "OpenCode", model: turn.modelSelection.model })].filter(Boolean).join("\n\n")
-              : buildBotSystemPrompt({
-                  botPrompt: turn.runtimePolicy.botChat.systemPrompt,
-                  runtime: { harness: "OpenCode", model: turn.modelSelection.model, reasoningEffort: variant },
-                  mcpSession,
-                }),
+            system:
+              turn.runtimePolicy.botChat === undefined
+                ? [
+                    orchestrationSystemPrompt,
+                    buildRuntimeInstructions({
+                      harness: "OpenCode",
+                      model: turn.modelSelection.model,
+                    }),
+                  ]
+                    .filter(Boolean)
+                    .join("\n\n")
+                : buildBotSystemPrompt({
+                    botPrompt: turn.runtimePolicy.botChat.systemPrompt,
+                    runtime: {
+                      harness: "OpenCode",
+                      model: turn.modelSelection.model,
+                      reasoningEffort: variant,
+                    },
+                    mcpSession,
+                  }),
           };
         };
 

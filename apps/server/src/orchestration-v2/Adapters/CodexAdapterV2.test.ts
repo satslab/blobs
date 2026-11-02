@@ -8661,6 +8661,7 @@ describe("CodexAdapterV2 memory process spawning", () => {
         },
       };
       const params = CodexAdapterV2.codexThreadRuntimeParams({
+        threadId: null,
         mcpSession: undefined,
         modelSelection: { model: "custom-codex" },
         runtimePolicy: policy,
@@ -8672,6 +8673,7 @@ describe("CodexAdapterV2 memory process spawning", () => {
       assert.equal(params.config["tools.update_plan.enabled"], true);
       assert.equal(params.config.project_doc_max_bytes, 0);
       const loading = CodexAdapterV2.codexThreadRuntimeParams({
+        threadId: null,
         mcpSession: undefined,
         modelSelection: { model: "custom-codex" },
         runtimePolicy: {

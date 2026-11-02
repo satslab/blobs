@@ -408,7 +408,7 @@ it.effect("production bot and normal sessions retain project agent capabilities"
           Layer.provide(SqlitePersistence.layerMemory),
           Layer.provide(GitVcsDriver.layer.pipe(Layer.provide(layerVcsDriverRegistryTest))),
           Layer.provide(layerCheckpointStoreTest),
-          Layer.provide(layerServerConfig),
+          Layer.provide(Layer.mergeAll(layerServerConfig, ManagedPolicy.layerTest())),
           Layer.provide(
             ServerSettings.layerTest({
               projectSettingsOverrides: {

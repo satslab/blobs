@@ -45,10 +45,6 @@ import { RightPanelSurfaceContent } from "./chat/RightPanelSurfaceContent";
 import { usePendingThreadRequests } from "./chat/usePendingThreadRequests";
 import { isScratchProject } from "@satslab/client-runtime/state/projects";
 import { visibleThreadPullRequests } from "@satslab/shared/threadPullRequests";
-import {
-  latestExecutedRun,
-  latestRootProviderFailure,
-} from "@satslab/shared/orchestrationV2ThreadError";
 import type { UsageLimitSourceSnapshots } from "@satslab/contracts";
 import { feedbackBannerItem } from "./chat/ComposerFeedback";
 import { useUsageLimitsPanel } from "./chat/useUsageLimitsPanel";
@@ -3484,7 +3480,10 @@ export default function ChatView(props: ChatViewProps) {
                 // Side chat runs keep no checkpoints to diff, and a fork would promote the side chat.
                 {...(embedded
                   ? {}
-                  : { onOpenTurnDiff: onOpenTurnDiffStable, ...(isBotThread ? {} : { onForkFromRun: onForkFromRunStable }) })}
+                  : {
+                      onOpenTurnDiff: onOpenTurnDiffStable,
+                      ...(isBotThread ? {} : { onForkFromRun: onForkFromRunStable }),
+                    })}
                 onOpenThread={onOpenRelatedThreadStable}
                 parentThreadLink={parentThreadLink}
                 workflowOpening={workflowOpening}
@@ -3655,8 +3654,11 @@ export default function ChatView(props: ChatViewProps) {
                                             : projectCloneSendBlockReason
                               }
                               isPreparingWorktree={isPreparingWorktree && !sendQueuesBehindSetup}
-                              queuedRunsControl={isBotThread ? null : queuedRunsControl}
-                              bannerItems={isDraftHeroState || composerBannerItems.length === 0 ? EMPTY_COMPOSER_BANNER_ITEMS : composerBannerItems}
+                              bannerItems={
+                                isDraftHeroState || composerBannerItems.length === 0
+                                  ? EMPTY_COMPOSER_BANNER_ITEMS
+                                  : composerBannerItems
+                              }
                               resumeCompactionTokens={resumeCompactionTokens}
                               keepFullHistory={keepFullHistory}
                               onToggleKeepFullHistory={toggleKeepFullHistoryStable}
@@ -3863,75 +3865,77 @@ export default function ChatView(props: ChatViewProps) {
                 />
 
                 {!isBotThread ? (
-                <ThreadDetailsPanel
-                  anchor={threadPanelPopoverAnchorRef}
-                  handle={threadPanelPopoverHandle}
-                  forceNewWorktree={multipleModelSelections !== null}
-                  environmentId={activeThread.environmentId}
-                  threadId={activeThread.id}
-                  projectId={activeThread.projectId}
-                  worktreePath={activeThread.worktreePath}
-                  isServerThread={isServerThread}
-                  {...(draftId ? { draftId } : {})}
-                  activeProjectName={activeProject?.title}
-                  activeProjectScripts={activeProject ? activeProjectScripts : undefined}
-                  preferredScriptId={
-                    activeProject ? (lastInvokedScriptByProjectId[activeProject.id] ?? null) : null
-                  }
-                  keybindings={keybindings}
-                  availableEditors={availableEditors}
-                  showOpenInPicker={showOpenInPicker}
-                  openInShortcutEnabled={
-                    !(
-                      rightPanelOpen &&
-                      renderedRightPanelSurface?.kind === "file" &&
-                      renderedRightPanelSurface.attachment === undefined
-                    )
-                  }
-                  gitCwd={gitCwd}
-                  isGitRepo={isGitRepo}
-                  envLocked={envLocked}
-                  availableEnvironments={logicalProjectEnvironments}
-                  autoEnvironmentLabel={autoEnvironmentLabel}
-                  onAutoEnvironment={
-                    draftId &&
-                    !envLocked &&
-                    canAutoBalanceEnvironments &&
-                    loadBalancingSettings.loadBalancingEnabled
-                      ? onAutoEnvironmentStable
-                      : undefined
-                  }
-                  {...(canChangeEnvironment
-                    ? { onEnvironmentChange: onEnvironmentChangeStable }
-                    : {})}
-                  onEnvModeChange={onEnvModeChangeStable}
-                  envMode={envMode}
-                  {...(canOverrideServerThreadEnvMode
-                    ? {
-                        activeThreadBranchOverride: activeThreadBranch,
-                        onActiveThreadBranchOverrideChange: setPendingServerThreadBranch,
-                      }
-                    : {})}
-                  startFromOrigin={startFromOrigin}
-                  onStartFromOriginChange={onStartFromOriginChange}
-                  {...(canCheckoutPullRequestIntoThread
-                    ? { onCheckoutPullRequestRequest: openPullRequestDialogStable }
-                    : {})}
-                  onComposerFocusRequest={scheduleComposerFocusStable}
-                  {...(isServerThread && isGitRepo
-                    ? { onOpenChanges: openChangesFromThreadPanelStable }
-                    : {})}
-                  onRunProjectScript={runProjectScriptStable}
-                  onAddProjectScript={saveProjectScriptStable}
-                  onUpdateProjectScript={updateProjectScriptStable}
-                  onDeleteProjectScript={deleteProjectScriptStable}
-                  usage={{
-                    providerInstanceId: activeProviderInstanceId,
-                    providers: providerStatuses,
-                    sources: serverConfig?.usageLimitSources ?? EMPTY_USAGE_LIMIT_SOURCES,
-                    contextWindow: activeContextWindow,
-                  }}
-                />
+                  <ThreadDetailsPanel
+                    anchor={threadPanelPopoverAnchorRef}
+                    handle={threadPanelPopoverHandle}
+                    forceNewWorktree={multipleModelSelections !== null}
+                    environmentId={activeThread.environmentId}
+                    threadId={activeThread.id}
+                    projectId={activeThread.projectId}
+                    worktreePath={activeThread.worktreePath}
+                    isServerThread={isServerThread}
+                    {...(draftId ? { draftId } : {})}
+                    activeProjectName={activeProject?.title}
+                    activeProjectScripts={activeProject ? activeProjectScripts : undefined}
+                    preferredScriptId={
+                      activeProject
+                        ? (lastInvokedScriptByProjectId[activeProject.id] ?? null)
+                        : null
+                    }
+                    keybindings={keybindings}
+                    availableEditors={availableEditors}
+                    showOpenInPicker={showOpenInPicker}
+                    openInShortcutEnabled={
+                      !(
+                        rightPanelOpen &&
+                        renderedRightPanelSurface?.kind === "file" &&
+                        renderedRightPanelSurface.attachment === undefined
+                      )
+                    }
+                    gitCwd={gitCwd}
+                    isGitRepo={isGitRepo}
+                    envLocked={envLocked}
+                    availableEnvironments={logicalProjectEnvironments}
+                    autoEnvironmentLabel={autoEnvironmentLabel}
+                    onAutoEnvironment={
+                      draftId &&
+                      !envLocked &&
+                      canAutoBalanceEnvironments &&
+                      loadBalancingSettings.loadBalancingEnabled
+                        ? onAutoEnvironmentStable
+                        : undefined
+                    }
+                    {...(canChangeEnvironment
+                      ? { onEnvironmentChange: onEnvironmentChangeStable }
+                      : {})}
+                    onEnvModeChange={onEnvModeChangeStable}
+                    envMode={envMode}
+                    {...(canOverrideServerThreadEnvMode
+                      ? {
+                          activeThreadBranchOverride: activeThreadBranch,
+                          onActiveThreadBranchOverrideChange: setPendingServerThreadBranch,
+                        }
+                      : {})}
+                    startFromOrigin={startFromOrigin}
+                    onStartFromOriginChange={onStartFromOriginChange}
+                    {...(canCheckoutPullRequestIntoThread
+                      ? { onCheckoutPullRequestRequest: openPullRequestDialogStable }
+                      : {})}
+                    onComposerFocusRequest={scheduleComposerFocusStable}
+                    {...(isServerThread && isGitRepo
+                      ? { onOpenChanges: openChangesFromThreadPanelStable }
+                      : {})}
+                    onRunProjectScript={runProjectScriptStable}
+                    onAddProjectScript={saveProjectScriptStable}
+                    onUpdateProjectScript={updateProjectScriptStable}
+                    onDeleteProjectScript={deleteProjectScriptStable}
+                    usage={{
+                      providerInstanceId: activeProviderInstanceId,
+                      providers: providerStatuses,
+                      sources: serverConfig?.usageLimitSources ?? EMPTY_USAGE_LIMIT_SOURCES,
+                      contextWindow: activeContextWindow,
+                    }}
+                  />
                 ) : null}
 
                 <PullRequestThreadDialogHost

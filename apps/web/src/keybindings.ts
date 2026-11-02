@@ -22,7 +22,7 @@ import { isElectron } from "./env";
 import { isEditableFocused } from "./lib/editableFocus";
 import { projectScriptIdFromCommand } from "./projectScripts";
 
-export type { ShortcutEventLike, ShortcutModifierStateLike } from "@satslab/shared/keybindings";
+export type { ShortcutModifierStateLike } from "@satslab/shared/keybindings";
 export { shortcutKeyFromEvent } from "@satslab/shared/keybindings";
 
 export interface ShortcutEventLike extends SharedShortcutEventLike {
