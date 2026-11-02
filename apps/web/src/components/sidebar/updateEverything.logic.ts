@@ -140,7 +140,7 @@ function unavailableReason(machine: UpdateEverythingMachine): string | null {
   return null;
 }
 
-/** The latest release on the track a fleet switches to, as npm reports it. */
+/** The latest release on the track a fleet switches to. */
 export interface ChannelSwitchRelease {
   readonly channel: DesktopUpdateChannel;
   readonly version: string;
@@ -297,7 +297,7 @@ export function collectChannelSwitchTargets(
       compareSemverVersions(release.version, serverVersion) <= 0
     ) {
       skip(
-        `run \`t3 update --channel ${release.channel === "nightly" ? "nightly" : "stable"} --allow-downgrade\` there`,
+        `run \`blobs update --channel ${release.channel === "nightly" ? "nightly" : "stable"} --allow-downgrade\` there`,
       );
       continue;
     }
