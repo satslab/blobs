@@ -2508,11 +2508,12 @@ function pdfScroll(screen: Screen) {
   const scrollTo = (options: ScrollToOptions) =>
     act(async () => {
       const node = region();
+      const before = { top: node.scrollTop, left: node.scrollLeft };
       const scrolled = new Promise<void>((resolve) =>
         node.addEventListener("scroll", () => resolve(), { once: true }),
       );
       node.scrollTo(options);
-      await scrolled;
+      if (node.scrollTop !== before.top || node.scrollLeft !== before.left) await scrolled;
     });
   return { region, canvas, offset, scrollTo };
 }
