@@ -44,6 +44,7 @@ NodeTest.test(
       "pull_request",
     ]);
     NodeAssert.deepEqual(Object.keys(release.on), ["push", "workflow_dispatch"]);
+    NodeAssert.deepEqual(Object.keys(workflow("deploy-marketing.yml").on), ["workflow_dispatch"]);
     NodeAssert.deepEqual(release.on.push.tags, ["v*"]);
     // GitHub reads these filters as globs, where `+` is a literal character, so
     // assert the pattern really matches a release tag instead of trusting its shape.

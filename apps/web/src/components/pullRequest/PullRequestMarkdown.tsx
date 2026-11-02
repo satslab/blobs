@@ -1,9 +1,6 @@
 import { ExternalLinkIcon, PaperclipIcon } from "lucide-react";
 import { markdownImageSourceFragment } from "@satslab/client-runtime/markdown-images";
-import {
-  sourceControlClients,
-  type ReferenceAutolink,
-} from "@satslab/client-runtime/source-control-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import {
   SOURCE_CONTROL_MEDIA_ASSET,
   type AssetResource,
