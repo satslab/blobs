@@ -36,7 +36,6 @@ const makeEnvironment = (path: Path.Path, overrides: Record<string, unknown> = {
     isDevelopment: false,
     displayName: "Blobs (Alpha)",
     linuxDesktopEntryName: "xyz.satslab.Blobs.desktop",
-    linuxWmClass: "blobs",
     linuxApplicationsDir: "/home/alice/.local/share/applications",
     desktopLauncherPath: Option.none(),
     appImagePath: Option.some("/home/alice/Applications/T3-Code.AppImage"),
@@ -441,7 +440,10 @@ describe("DesktopLinuxUrlHandler", () => {
           }
           assert.deepEqual(
             recorded.commands.map(({ command }) => command),
-            ["update-desktop-database", "xdg-mime"],
+            [
+              "update-desktop-database",
+              ...Array<string>(stalledHelper === "xdg-mime" ? 1 : 6).fill("xdg-mime"),
+            ],
           );
         }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
     );

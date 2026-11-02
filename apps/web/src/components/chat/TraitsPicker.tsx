@@ -5,8 +5,6 @@ import {
   replaceDescriptorCurrentValue,
   selectableProviderOptionChoices,
   isReasoningSelect,
-  REASONING_SELECT_DESCRIPTOR_IDS,
-  ULTRATHINK_PROMPT_PREFIX,
 } from "@satslab/client-runtime/model-traits";
 import {
   type ModelSelection,
@@ -17,7 +15,6 @@ import {
   type ScopedThreadRef,
   type ServerProviderModel,
 } from "@satslab/contracts";
-import type { EffortDisplay } from "@satslab/contracts/settings";
 import {
   buildProviderOptionSelectionsFromDescriptors,
   getProviderOptionCurrentLabel,
@@ -25,8 +22,8 @@ import {
   isClaudeUltrathinkPrompt,
   normalizeModelSlug,
 } from "@satslab/shared/model";
-import { memo, type ReactNode, useRef } from "react";
-import { GaugeIcon, ZapIcon } from "lucide-react";
+import { memo } from "react";
+import { GaugeIcon } from "lucide-react";
 import {
   Menu,
   MenuGroup,

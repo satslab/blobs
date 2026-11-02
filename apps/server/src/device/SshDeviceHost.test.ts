@@ -148,6 +148,7 @@ it.effect("preserves installed status after probes and cleans failed agent activ
     expect(ready).not.toBeNull();
     if (ready) {
       const failed = yield* ready.run("emulator", ["-list-avds"]);
+      expect(commandArgs.at(-1)?.join(" ")).toContain(`$HOME/.blobs/device/hosts/${owners[0]}`);
       expect(failed.code).toBe(1);
       expect(failed.stdout).toMatch(/^\[truncated\]/);
       expect(failed.stderr).toBe(failed.stdout.trim());

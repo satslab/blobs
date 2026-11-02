@@ -268,7 +268,7 @@ export const make = Effect.gen(function* () {
       ignoredFileListing: true,
       triage: true,
       oneTimeSchedules: true,
-      npmReleaseLookup: true,
+      npmReleaseLookup: false,
       ...(serverSelfUpdate === null ? {} : { serverSelfUpdate }),
       ...(serverInstallation === null ? {} : { serverInstallation }),
       ...(serverSelfUpdate === "boot-service" || desktopAppUpdate

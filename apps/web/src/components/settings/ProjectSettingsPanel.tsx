@@ -1,3 +1,4 @@
+import { useComposerMenuState } from "../chat/useComposerMenuState";
 import { useOrchestrationCommand } from "../../state/use-orchestration-command";
 import { AuthOrchestrationOperateScope } from "@satslab/contracts";
 import { useEnvironmentsWithScope } from "../../state/session";
@@ -13,7 +14,7 @@ import {
 } from "../../hooks/useProjectGroupUpdate";
 import { Navigate, useLocation, useNavigate } from "@tanstack/react-router";
 import { InfoIcon, Trash2Icon } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { lazy, Suspense, useRef, useState, type ReactNode } from "react";
 
 import { useComposerDraftStore } from "../../composerDraftStore";
 import { releaseProjectDraftUploads } from "../../lib/composerDraftUploads";
@@ -26,9 +27,10 @@ import {
   type SidebarProjectGroupMember,
   type SidebarProjectSnapshot,
 } from "../../sidebarProjectGrouping";
-import { useEnvironments } from "../../state/environments";
+import { useEnvironments, usePrimaryEnvironmentId } from "../../state/environments";
 import { useThreadShells, waitForProjectRemoval } from "../../state/entities";
 import { projectEnvironment } from "../../state/projects";
+import { ProjectFavicon } from "../ProjectFavicon";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -36,7 +38,16 @@ import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../
 import { Switch } from "../ui/switch";
 import { stackedThreadToast, toastManager } from "../ui/toast";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
-import { SettingsPageContainer, SettingsRow, SettingsSection } from "./settingsLayout";
+import {
+  SettingResetButton,
+  SettingsPageContainer,
+  SettingsRow,
+  SettingsSection,
+} from "./settingsLayout";
+import {
+  canPickExternalProjectFavicon,
+  ProjectFaviconPickerDialog,
+} from "./ProjectFaviconPickerDialog";
 import { ProjectActionsSettings } from "./ProjectActionsSettings";
 import { ProjectDefaultsSettings } from "./ProjectDefaultsSettings";
 import {
@@ -54,78 +65,6 @@ const ProjectIconPickerDialog = lazy(() =>
     default: module.ProjectIconPickerDialog,
   })),
 );
-
-function isGroupingSelection(value: unknown): value is SidebarProjectGroupingMode | "inherit" {
-  return (
-    value === "inherit" ||
-    value === "repository" ||
-    value === "repository_path" ||
-    value === "separate"
-  );
-}
-
-// Grouping overrides are client settings, so they stay editable without project write access.
-function CheckoutGroupingSelect({ member }: { member: SidebarProjectGroupMember }) {
-  const overrideKey = derivePhysicalProjectKey(member);
-  const globalMode = useClientSettings((settings) => settings.sidebarProjectGroupingMode);
-  const selection = useClientSettings(
-    (settings) => settings.sidebarProjectGroupingOverrides?.[overrideKey] ?? "inherit",
-  );
-  return (
-    <Select
-      value={selection}
-      onValueChange={(value) => {
-        if (!isGroupingSelection(value)) return;
-        persistClientSettingsUpdate((current) => ({
-          ...current,
-          sidebarProjectGroupingOverrides: withProjectGroupingOverride(
-            current.sidebarProjectGroupingOverrides,
-            overrideKey,
-            value,
-          ),
-        })).catch((error) => {
-          console.error("Failed to save checkout grouping rule", error);
-          toastManager.add(
-            stackedThreadToast({
-              type: "error",
-              title: "Could not save grouping rule",
-              description: error instanceof Error ? error.message : "An error occurred.",
-            }),
-          );
-        });
-      }}
-    >
-      <SelectTrigger
-        size="sm"
-        aria-label={`Grouping rule for ${member.workspaceRoot} on ${
-          member.environmentLabel
-            ? `${member.environmentLabel} (${member.environmentId})`
-            : member.environmentId
-        }`}
-      >
-        <SelectValue>
-          {selection === "inherit"
-            ? `Default (${PROJECT_GROUPING_MODE_LABELS[globalMode]})`
-            : PROJECT_GROUPING_MODE_LABELS[selection]}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectPopup align="end" alignItemWithTrigger={false}>
-        <SelectItem hideIndicator value="inherit">
-          Use global default
-        </SelectItem>
-        <SelectItem hideIndicator value="repository">
-          {PROJECT_GROUPING_MODE_LABELS.repository}
-        </SelectItem>
-        <SelectItem hideIndicator value="repository_path">
-          {PROJECT_GROUPING_MODE_LABELS.repository_path}
-        </SelectItem>
-        <SelectItem hideIndicator value="separate">
-          {PROJECT_GROUPING_MODE_LABELS.separate}
-        </SelectItem>
-      </SelectPopup>
-    </Select>
-  );
-}
 
 export type ProjectSettingsCategory = "general" | "source-control" | "project";
 
@@ -260,14 +199,19 @@ function ProjectDetail({
   hasOtherMembers: boolean;
 }) {
   const navigate = useNavigate({ from: "/settings" });
-  const editableIds = useEnvironmentsWithScope(allMembers, AuthOrchestrationOperateScope);
-  const canEditGroup = group.memberProjects.every((member) =>
-    editableIds.has(member.environmentId),
-  );
+  const primaryEnvironmentId = usePrimaryEnvironmentId();
   const { environments } = useEnvironments();
   const environmentById = new Map(
     environments.map((environment) => [environment.environmentId, environment]),
   );
+  const editableIds = useEnvironmentsWithScope(allMembers, AuthOrchestrationOperateScope);
+  const canEditGroup = group.memberProjects.every((member) =>
+    editableIds.has(member.environmentId),
+  );
+  const representative =
+    group.memberProjects.find(
+      (member) => environmentById.get(member.environmentId)?.serverConfig != null,
+    ) ?? group.memberProjects[0]!;
   const threads = useThreadShells();
   const deleteProject = useOrchestrationCommand(projectEnvironment.delete, {
     reportFailure: false,
@@ -683,6 +627,30 @@ function ProjectDetail({
           />
         </SettingsSection>
       </SettingsPageContainer>
+
+      <ProjectFaviconPickerDialog
+        key={`${representative.environmentId}:${representative.workspaceRoot}:${faviconPickerOpen}`}
+        cwd={representative.workspaceRoot}
+        environmentId={representative.environmentId}
+        onOpenChange={setFaviconPickerOpen}
+        {...(pickProjectFavicon
+          ? { onPickExternal: () => pickProjectFavicon(representative.workspaceRoot) }
+          : {})}
+        onSelect={(path) => void setProjectIcon({ faviconPath: path, projectIcon: null })}
+        open={faviconPickerOpen && canEditGroup}
+        projectName={group.displayName}
+      />
+      {iconPickerOpen && canEditGroup ? (
+        <Suspense fallback={null}>
+          <ProjectIconPickerDialog
+            current={projectIcon}
+            projectName={representative.title}
+            open
+            onOpenChange={setIconPickerOpen}
+            onSelect={(icon) => void setProjectIcon({ faviconPath: null, projectIcon: icon })}
+          />
+        </Suspense>
+      ) : null}
     </>
   );
 }
