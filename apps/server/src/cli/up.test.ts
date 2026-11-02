@@ -179,6 +179,16 @@ it.layer(Layer.mergeAll(NodeServices.layer, NetService.layer))("t3 up", (it) => 
       envAfter: "T3CODE_LAN=false\n",
     },
     {
+      label: "an explicit host overrides the network choice",
+      installed: true,
+      env: "BLOBS_HOST=127.0.0.1\nT3CODE_LAN=false\n",
+      args: ["--lan"],
+      prints: "overridden · BLOBS_HOST=127.0.0.1",
+      installs: 0,
+      restarts: 1,
+      envAfter: "BLOBS_HOST=127.0.0.1\nT3CODE_LAN=true\n",
+    },
+    {
       label: "the local network opens",
       installed: true,
       env: "T3CODE_LAN=false\n",
@@ -218,7 +228,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NetService.layer))("t3 up", (it) => 
     {
       label: "a failed update keeps service.env matching the old service",
       // The old service still runs, so no foreground server is offered.
-      prints: "Fix that, then run `t3 up` again.",
+      prints: "Fix that, then run `blobs up` again.",
       installed: true,
       status: { current: false },
       installFails: true,
@@ -349,7 +359,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NetService.layer))("t3 up", (it) => 
 
 it("rewrites only the named service.env keys and keeps the user's lines", () => {
   const before = ["# my settings", "T3CODE_PORT=4000", "export T3CODE_LAN=0", "T3CODE_LAN=1", ""];
-  expect(upsertServiceEnv(before.join("\n"), { T3CODE_LAN: "true", T3CODE_HOST: undefined })).toBe(
+  expect(upsertServiceEnv(before.join("\n"), { T3CODE_LAN: "true", BLOBS_HOST: undefined })).toBe(
     ["# my settings", "T3CODE_PORT=4000", "T3CODE_LAN=true", ""].join("\n"),
   );
   expect(upsertServiceEnv("", { T3CODE_LAN: "false" })).toBe("T3CODE_LAN=false\n");
