@@ -17,7 +17,7 @@ import { Command, Flag } from "effect/cli";
 
 import * as ProjectionStore from "../src/orchestration-v2/ProjectionStore.ts";
 import { rebuildMessageSearch } from "../src/orchestration-v2/messageSearchIndex.ts";
-import { migrationManifest, runMigrations } from "../src/persistence/Migrations.ts";
+import { runMigrations } from "../src/persistence/Migrations.ts";
 import * as NodeSqliteClient from "@satslab/shared/nodeSqliteClient";
 
 export class MigrateDevDbNotInWorktreeError extends Schema.TaggedError<MigrateDevDbNotInWorktreeError>()(

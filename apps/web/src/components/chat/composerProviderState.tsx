@@ -7,7 +7,6 @@ import {
   type ScopedThreadRef,
   type ServerProviderModel,
 } from "@satslab/contracts";
-import type { EffortDisplay } from "@satslab/contracts/settings";
 import {
   buildExplicitProviderOptionSelectionsFromDescriptors,
   getProviderOptionCurrentValue,
@@ -15,7 +14,6 @@ import {
   isClaudeUltrathinkPrompt,
   normalizeModelSlug,
 } from "@satslab/shared/model";
-import type { ReactNode } from "react";
 
 import type { DraftId } from "../../composerDraftStore";
 import { getProviderModelCapabilities } from "../../providerModels";

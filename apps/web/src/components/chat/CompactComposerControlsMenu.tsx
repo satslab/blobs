@@ -1,5 +1,5 @@
 import { ProviderInteractionMode, RuntimeMode } from "@satslab/contracts";
-import { memo, type ReactNode, useRef } from "react";
+import { memo, useRef } from "react";
 import { EllipsisIcon } from "lucide-react";
 import {
   Menu,
