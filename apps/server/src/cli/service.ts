@@ -135,8 +135,8 @@ function formatProtection(
   if (protection === undefined) return [];
   return [
     protection.unprotected === undefined
-      ? `  Memory protection: on${protection.setByProtect ? " (t3 service protect)" : ""}`
-      : `  Memory protection: off, ${protection.unprotected} grants none. Run \`t3 service protect\`.`,
+      ? `  Memory protection: on${protection.setByProtect ? " (blobs service protect)" : ""}`
+      : `  Memory protection: off, ${protection.unprotected} grants none. Run \`blobs service protect\`.`,
     ...(protection.oomScoreAdj === undefined ? [] : [`  OOM score: ${protection.oomScoreAdj}`]),
   ];
 }
@@ -346,7 +346,7 @@ const serviceProtectCommand = Command.make("protect", {
   ),
 }).pipe(
   Command.withDescription(
-    "Protect the T3 Code server from agents under memory pressure (Linux with systemd). Asks for sudo.",
+    "Protect the Blobs server from agents under memory pressure (Linux with systemd). Asks for sudo.",
   ),
   Command.withHandler((flags) =>
     Effect.gen(function* () {
@@ -355,7 +355,7 @@ const serviceProtectCommand = Command.make("protect", {
       // Before resolving config, which creates T3 directories that root would then own.
       if ((yield* HostProcess.UserId) === 0) {
         return yield* Console.log(
-          "Run `t3 service protect` as the user that runs T3 Code, without sudo. It asks for sudo when it needs root.",
+          "Run `blobs service protect` as the user that runs Blobs, without sudo. It asks for sudo when it needs root.",
         );
       }
       return yield* runServiceCommand(
@@ -378,7 +378,7 @@ const serviceProtectCommand = Command.make("protect", {
               }),
             );
             if (installed === undefined) {
-              return yield* Console.log("T3 Code service protection is not set up.");
+              return yield* Console.log("Blobs service protection is not set up.");
             }
             yield* Console.log(
               [
@@ -389,19 +389,19 @@ const serviceProtectCommand = Command.make("protect", {
                 ),
               ].join("\n"),
             );
-            if (!(yield* confirm(flags.yes, "Remove T3 Code service protection?"))) return;
+            if (!(yield* confirm(flags.yes, "Remove Blobs service protection?"))) return;
             yield* ServiceProtection.removeProtection(installed);
             return yield* Console.log(
-              "Removed T3 Code service protection. The server's OOM score returns to normal after `t3 service restart`.",
+              "Removed Blobs service protection. The server's OOM score returns to normal after `blobs service restart`.",
             );
           }
 
           yield* Console.log(
             [
-              "Keeps T3 Code running when agents fill this machine's memory:",
-              "  - reserves memory for the T3 Code server, so the kernel takes memory from agents first",
+              "Keeps Blobs running when agents fill this machine's memory:",
+              "  - reserves memory for the Blobs server, so the kernel takes memory from agents first",
               "  - makes the out-of-memory killer pick agents before the server",
-              "It adds systemd drop-in files and changes nothing else. Undo with `t3 service protect --undo`.",
+              "It adds systemd drop-in files and changes nothing else. Undo with `blobs service protect --undo`.",
             ].join("\n"),
           );
           const names = remote.map((unit) => unit.replace(/\.service$/, "")).join(" and ");
@@ -427,7 +427,7 @@ const serviceProtectCommand = Command.make("protect", {
           if (!(yield* confirm(flags.yes, "Apply these settings?"))) return;
           yield* ServiceProtection.applyProtection(plan);
           yield* Console.log(
-            "Protected T3 Code. Memory protection applies now; the server takes its OOM score after `t3 service restart`. Undo with `t3 service protect --undo`.",
+            "Protected Blobs. Memory protection applies now; the server takes its OOM score after `blobs service restart`. Undo with `blobs service protect --undo`.",
           );
         }).pipe(Effect.provide(ProcessRunner.layer)),
       );

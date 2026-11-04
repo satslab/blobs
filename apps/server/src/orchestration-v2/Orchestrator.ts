@@ -4626,6 +4626,18 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
         cause: `Thread ${command.sourceThreadId} was deleted.`,
       });
     }
+    if (command.sideChat === true) {
+      const rootId = sourceProjection.thread.lineage.rootThreadId;
+      const root =
+        rootId === sourceProjection.thread.id ? sourceProjection.thread : yield* findThread(rootId);
+      if (sourceProjection.thread.botId !== undefined || root?.botId !== undefined) {
+        return yield* new OrchestratorDispatchError({
+          commandId: command.commandId,
+          commandType: command.type,
+          cause: "Bot conversations do not support side chats.",
+        });
+      }
+    }
     // The fork would copy no worktree path and run in the project checkout.
     if (
       command.sideChat === true &&

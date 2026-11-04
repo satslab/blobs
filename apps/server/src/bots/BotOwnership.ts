@@ -10,7 +10,7 @@ import {
   type EnvironmentId,
 } from "@satslab/contracts";
 import * as Context from "effect/Context";
-import * as Crypto from "effect/Crypto";
+import * as Crypto from "effect/crypto";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
@@ -32,11 +32,12 @@ const encodeState = Schema.encodeEffect(Schema.fromJsonString(MemoryState));
 const make = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient;
   const storage = yield* BotStorage.BotStorage;
-  const crypto = yield* Crypto.Crypto;
+  const crypto = yield* Crypto.SecureRandom.SecureRandom;
+  const digest = yield* Crypto.Digest.Digest;
   const hash = (secret: string) =>
-    crypto
-      .digest("SHA-256", new TextEncoder().encode(secret))
-      .pipe(Effect.map((digest) => Buffer.from(digest).toString("hex")));
+    digest
+      .digest(Crypto.Digest.sha256, new TextEncoder().encode(secret))
+      .pipe(Effect.map((bytes) => Buffer.from(bytes).toString("hex")));
   const invalid = () => new BotChatError({ operation: "transfer", reason: "invalid-transfer" });
   const wrap = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
     effect.pipe(
@@ -65,8 +66,8 @@ const make = Effect.gen(function* () {
           )
             return yield* invalid();
           if (identity.status === "active") {
-            const transferId = yield* crypto.randomUUIDv4();
-            const secret = yield* crypto.randomUUIDv4();
+            const transferId = yield* crypto.uuidV4();
+            const secret = yield* crypto.uuidV4();
             const digest = yield* hash(secret);
             yield* sql`UPDATE sora_bots SET status='transferring',destination_environment_id=${destination},transfer_id=${transferId},release_secret=${secret},release_hash=${digest},transfer_json=NULL,transfer_imported=0 WHERE id=${id}`;
           }

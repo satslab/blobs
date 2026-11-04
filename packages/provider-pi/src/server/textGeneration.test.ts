@@ -9,7 +9,6 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as ChildProcess from "effect/process/ChildProcess";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
-import * as ChildProcess from "effect/process/ChildProcess";
 
 import { makePiTextGeneration } from "./textGeneration.ts";
 
@@ -51,7 +50,7 @@ const makeFakePi = (
       });
     const launches: Array<ReadonlyArray<string>> = [];
     const spawner = ChildProcessSpawner.make((command) => {
-      if (ChildProcess.isStandardCommand(command)) launches.push(command.args);
+      if (ChildProcess.isStandardCommand(command)) launches.push(command.args.map(String));
       return Effect.succeed(
         ChildProcessSpawner.makeHandle({
           // Outside the valid pid range, so PiRpc's process-group kill never lands.

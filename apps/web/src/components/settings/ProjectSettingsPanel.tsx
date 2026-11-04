@@ -5,7 +5,7 @@ import { useEnvironmentsWithScope } from "../../state/session";
 import { mapAtomCommandResult, settlePromise } from "@satslab/client-runtime/state/runtime";
 import { scopeProjectRef, scopeThreadRef } from "@satslab/client-runtime/environment";
 import { planProjectRemoval } from "@satslab/client-runtime/state/projects";
-import { type EnvironmentId, type SidebarProjectGroupingMode } from "@satslab/contracts";
+import { type EnvironmentId } from "@satslab/contracts";
 import {
   checkProjectAccess,
   reportProjectFailure,
@@ -18,12 +18,8 @@ import { lazy, Suspense, useRef, useState, type ReactNode } from "react";
 
 import { useComposerDraftStore } from "../../composerDraftStore";
 import { releaseProjectDraftUploads } from "../../lib/composerDraftUploads";
-import { persistClientSettingsUpdate, useClientSettings } from "../../hooks/useSettings";
 import { readLocalApi } from "../../localApi";
-import { derivePhysicalProjectKey } from "@t3tools/client-runtime/state/project-grouping";
 import {
-  PROJECT_GROUPING_MODE_LABELS,
-  withProjectGroupingOverride,
   type SidebarProjectGroupMember,
   type SidebarProjectSnapshot,
 } from "../../sidebarProjectGrouping";
@@ -34,9 +30,8 @@ import { ProjectFavicon } from "../ProjectFavicon";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../ui/select";
 import { Switch } from "../ui/switch";
-import { stackedThreadToast, toastManager } from "../ui/toast";
+import { toastManager } from "../ui/toast";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import {
   SettingResetButton,
@@ -348,32 +343,19 @@ function ProjectDetail({
     if (members) members.push(member);
     else checkoutsByEnvironment.set(member.environmentId, [member]);
   }
-  // A lone checkout is removed from the Danger section, but it still needs its grouping
-  // rule here so "Keep separate" can be undone.
-  const checkoutControls = (member: SidebarProjectGroupMember) => (
-    <div className="flex w-full min-w-0 items-center gap-2 @min-[32rem]/settings-row:w-auto">
-      <div className="min-w-0 flex-1 @min-[32rem]/settings-row:w-72 @min-[32rem]/settings-row:flex-none">
-        <CheckoutGroupingSelect member={member} />
-      </div>
-      {hasMultipleCheckouts ? (
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!editableIds.has(member.environmentId)}
-          onClick={() => void removeMembers([member])}
-          aria-label={`Remove checkout ${member.workspaceRoot}`}
-        >
-          Remove
-        </Button>
-      ) : null}
-    </div>
+  const checkoutRemoveButton = (member: SidebarProjectGroupMember) => (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={!editableIds.has(member.environmentId)}
+      onClick={() => void removeMembers([member])}
+      aria-label={`Remove checkout ${member.workspaceRoot}`}
+    >
+      Remove
+    </Button>
   );
   const checkoutChoices = (
     <SettingsSection title="Checkouts">
-      <p className="px-3 py-2.5 text-xs text-muted-foreground sm:px-4">
-        Grouping rule decides how each checkout joins project groups in the sidebar. Changing it can
-        move a checkout to a different project.
-      </p>
       {Array.from(checkoutsByEnvironment, ([environmentId, members]) => {
         if (checkoutsByEnvironment.size === 1) {
           return members.map((member) => (
@@ -381,7 +363,7 @@ function ProjectDetail({
               key={member.physicalProjectKey}
               title={member.environmentLabel ?? "Environment"}
               description={member.workspaceRoot}
-              control={checkoutControls(member)}
+              control={checkoutRemoveButton(member)}
             />
           ));
         }
@@ -410,26 +392,26 @@ function ProjectDetail({
                 ) : null}
               </>
             }
-            control={hasMultiple ? undefined : checkoutControls(firstMember)}
+            control={hasMultiple ? undefined : checkoutRemoveButton(firstMember)}
           >
             {hasMultiple ? (
               <div className="space-y-3 pb-2 pt-1">
                 {members.map((member) => (
                   <div
                     key={member.physicalProjectKey}
-                    className="flex min-w-0 flex-col gap-1.5 @min-[36rem]/settings-row:flex-row @min-[36rem]/settings-row:items-center @min-[36rem]/settings-row:justify-between @min-[36rem]/settings-row:gap-3"
+                    className="flex min-w-0 items-center justify-between gap-3"
                   >
                     <Tooltip>
                       <TooltipTrigger
                         render={
-                          <span className="min-w-0 max-w-full truncate text-xs text-muted-foreground/80" />
+                          <span className="min-w-0 truncate text-xs text-muted-foreground/80" />
                         }
                       >
                         {member.workspaceRoot}
                       </TooltipTrigger>
                       <TooltipPopup>{member.workspaceRoot}</TooltipPopup>
                     </Tooltip>
-                    <div className="shrink-0">{checkoutControls(member)}</div>
+                    <div className="shrink-0">{checkoutRemoveButton(member)}</div>
                   </div>
                 ))}
               </div>
@@ -592,7 +574,7 @@ function ProjectDetail({
         </SettingsSection>
         <ProjectDefaultsSettings category="project" />
         <ProjectActionsSettings />
-        {checkoutChoices}
+        {hasMultipleCheckouts ? checkoutChoices : null}
         <SettingsSection title="Danger">
           <SettingsRow
             title={

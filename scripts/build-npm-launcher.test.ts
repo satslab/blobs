@@ -50,9 +50,9 @@ const run = Effect.fn("test.run")(function* (
 const serveFakeRelease = Effect.fn("test.serveFakeRelease")(function* (
   root: string,
   executable = `#!/bin/sh
-if [ -n "$T3CODE_TEST_CALLS" ]; then echo "$*|$T3CODE_NPM_LAUNCHER_PATH" >> "$T3CODE_TEST_CALLS"; fi
+if [ -n "$BLOBS_TEST_CALLS" ]; then echo "$*|$BLOBS_NPM_LAUNCHER_PATH" >> "$BLOBS_TEST_CALLS"; fi
 if [ "$1" = "--version" ]; then echo "${VERSION}"; exit 0; fi
-echo "stub $* launcher=$T3CODE_NPM_LAUNCHER_PATH"
+echo "stub $* launcher=$BLOBS_NPM_LAUNCHER_PATH"
 exit 7
 `,
 ) {
@@ -152,7 +152,7 @@ it.layer(NodeServices.layer)("build-npm-launcher", (it) => {
         assert.equal(first.stdout.trim(), `stub serve a b launcher=${launcher}`, first.stderr);
         assert.equal(first.exitCode, 7);
         assert.deepStrictEqual(
-          (yield* fs.readFileString(env.T3CODE_TEST_CALLS)).trim().split("\n"),
+          (yield* fs.readFileString(env.BLOBS_TEST_CALLS)).trim().split("\n"),
           ["--version|", `serve a b|${launcher}`],
         );
         const versionDir = path.join(home, "runtime/versions", VERSION);
@@ -171,11 +171,11 @@ it.layer(NodeServices.layer)("build-npm-launcher", (it) => {
         assert.equal(second.exitCode, 0);
         assert.equal(release.requests.length, requestsAfterFirst);
         assert.deepStrictEqual(
-          (yield* fs.readFileString(env.T3CODE_TEST_CALLS)).trim().split("\n"),
+          (yield* fs.readFileString(env.BLOBS_TEST_CALLS)).trim().split("\n"),
           ["--version|", `serve a b|${launcher}`, `--version|${launcher}`],
         );
 
-        yield* fs.writeFileString(path.join(versionDir, "t3"), "#!/t3-test-missing-loader\n");
+        yield* fs.writeFileString(path.join(versionDir, "blobs"), "#!/t3-test-missing-loader\n");
         for (const _attempt of [1, 2]) {
           const cached = yield* run(process.execPath, [launcher, "serve"], { cwd: root, env });
           assert.equal(cached.exitCode, 1, cached.stderr);
@@ -355,7 +355,7 @@ fs.readFileSync = (file, ...rest) => {
           "#!/t3-test-missing-loader\n",
           '#!/bin/sh\necho "runtime loader failed" >&2\nexit 42\n',
           "#!/bin/sh\nkill -TERM $$\n",
-          '#!/bin/sh\ntrap \'echo caught > "$T3CODE_TEST_TERM"; exit 42\' TERM\necho ready > "$T3CODE_TEST_READY"\nwhile :; do :; done\n',
+          '#!/bin/sh\ntrap \'echo caught > "$BLOBS_TEST_TERM"; exit 42\' TERM\necho ready > "$BLOBS_TEST_READY"\nwhile :; do :; done\n',
         ]) {
           const root = yield* fs.makeTempDirectoryScoped({ prefix: "t3-npm-validation-test-" });
           const output = yield* buildNpmLauncher({
@@ -378,12 +378,12 @@ syncBuiltinESMExports();
           );
           const env = {
             PATH: (yield* HostProcess.Environment).PATH,
-            T3CODE_HOME: home,
-            T3CODE_RELEASE_BASE_URL: release.baseUrl,
-            T3CODE_TEST_READY: path.join(root, "probe-ready"),
-            T3CODE_TEST_TERM: path.join(root, "probe-term"),
+            BLOBS_HOME: home,
+            BLOBS_RELEASE_BASE_URL: release.baseUrl,
+            BLOBS_TEST_READY: path.join(root, "probe-ready"),
+            BLOBS_TEST_TERM: path.join(root, "probe-term"),
           };
-          const launcher = path.join(output.packageDir, "bin/t3.mjs");
+          const launcher = path.join(output.packageDir, "bin/blobs.mjs");
           const failed = yield* run(
             process.execPath,
             ["--import", probeTimeoutHook, launcher, "serve"],
@@ -396,8 +396,8 @@ syncBuiltinESMExports();
             assert.include(failed.stderr, "runtime loader failed");
           }
           if (executable.includes("trap")) {
-            assert.isTrue(yield* fs.exists(env.T3CODE_TEST_READY));
-            assert.isFalse(yield* fs.exists(env.T3CODE_TEST_TERM));
+            assert.isTrue(yield* fs.exists(env.BLOBS_TEST_READY));
+            assert.isFalse(yield* fs.exists(env.BLOBS_TEST_TERM));
           }
           if ((yield* HostProcess.Platform) === "linux") {
             assert.include(failed.stderr, "glibc");

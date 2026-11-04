@@ -1,5 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import {
+  BotId,
   CheckpointId,
   CheckpointRef,
   CheckpointScopeId,
@@ -1025,6 +1026,41 @@ it.effect("a side chat waits for the parent's new worktree, also after its setup
       ).pipe(Effect.flip);
       assert.include(String(rejected.cause), "has no worktree yet", status);
     }
+  }).pipe(Effect.provide(forkCases[0]!.layer)),
+);
+
+it.effect("a bot conversation refuses side chats", () =>
+  Effect.gen(function* () {
+    const orchestrator = yield* Orchestrator.OrchestratorV2;
+    const eventSink = yield* EventSink.EventSinkV2;
+    const parentId = ThreadId.make("side-chat-bot-parent");
+    yield* createParent(parentId);
+    yield* writeParentRun({
+      threadId: parentId,
+      runId: RunId.make("side-chat-bot-parent-run"),
+      ordinal: 1,
+      status: "completed",
+      text: "Bot work",
+    });
+    const parent = yield* orchestrator.getThreadProjection(parentId);
+    yield* eventSink.write({
+      events: [
+        {
+          id: EventId.make("side-chat-bot-bind"),
+          type: "thread.metadata-updated",
+          threadId: parentId,
+          occurredAt: yield* DateTime.now,
+          payload: { ...parent.thread, botId: BotId.make("side-chat-bot") },
+        },
+      ],
+    });
+
+    const rejected = yield* forkSideChat(
+      "side-chat-bot-fork",
+      parentId,
+      ThreadId.make("side-chat-bot-child"),
+    ).pipe(Effect.flip);
+    assert.include(String(rejected.cause), "Bot conversations do not support side chats");
   }).pipe(Effect.provide(forkCases[0]!.layer)),
 );
 

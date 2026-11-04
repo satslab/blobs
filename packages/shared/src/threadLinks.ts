@@ -141,7 +141,11 @@ export function formatHostedThreadLink(
 }
 
 export function hasThreadLinks(markdown: string): boolean {
-  return markdown.includes(`${THREAD_LINK_PROTOCOL}://v`) || markdown.includes("t3-thread://v") || markdown.includes(HOSTED_PREFIX);
+  return (
+    markdown.includes(`${THREAD_LINK_PROTOCOL}://v`) ||
+    markdown.includes("t3-thread://v") ||
+    markdown.includes(HOSTED_PREFIX)
+  );
 }
 
 /** Every thread the markdown's links can name, so their titles are keyed reads. */

@@ -1,6 +1,6 @@
 # Blobs
 
-Blobs is an open-source fork of [T3 Code](https://github.com/pingdotgg/t3code) for running coding agents through a local web app or desktop app.
+Blobs is an open-source fork of [Blobs](https://github.com/pingdotgg/t3code) for running coding agents through a local web app or desktop app.
 
 It supports Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity, and fx, with persistent bots, memory, routines, and Discord integration.
 
