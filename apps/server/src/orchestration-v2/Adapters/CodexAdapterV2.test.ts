@@ -6,6 +6,7 @@ import {
 } from "./ProviderTextDeltaCoalescer.ts";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
+import * as Redacted from "effect/Redacted";
 import * as ServerConfig from "../../config.ts";
 import {
   CommandId,
@@ -932,6 +933,11 @@ describe("CodexAdapterV2 process exit", () => {
           ),
         ),
       ),
+      Layer.provide(
+        ServerConfig.layerTest(process.cwd(), { prefix: "blobs-codex-factory-" }).pipe(
+          Layer.provideMerge(NodeServices.layer),
+        ),
+      ),
     );
     return Effect.gen(function* () {
       const factory = yield* CodexAdapterV2.CodexAppServerClientFactory;
@@ -948,7 +954,7 @@ describe("CodexAdapterV2 process exit", () => {
           .pipe(Effect.tap(() => Effect.sync(() => assert.equal(runningAgents, 1)))),
       );
       assert.equal(runningAgents, 0);
-    }).pipe(Effect.provide(factoryLayer));
+    }).pipe(Effect.provide(Layer.merge(factoryLayer, NodeServices.layer)));
   });
 });
 
@@ -1124,7 +1130,7 @@ describe("CodexAdapterV2 session initialize", () => {
               frame: {
                 id: 1,
                 result: {
-                  userAgent: "T3 Code/0.144.3 (Mac OS 15.5.0; x86_64) unknown (T3 Code; 0.1.5)",
+                  userAgent: "Blobs/0.144.3 (Mac OS 15.5.0; x86_64) unknown (Blobs; 0.1.5)",
                   codexHome: "/tmp/codex-home",
                   platformFamily: "unix",
                   platformOs: "macos",
@@ -1148,7 +1154,7 @@ describe("CodexAdapterV2 session initialize", () => {
       assert.instanceOf(failure.cause, ProviderSetupError);
       assert.equal(
         failure.cause.message,
-        "Codex 0.144.3 does not work with this T3 Code release. Update Codex to >=0.159.0, then retry.",
+        "Codex 0.144.3 does not work with this Blobs release. Update Codex to >=0.159.0, then retry.",
       );
     }).pipe(
       Effect.scoped,
@@ -9897,9 +9903,10 @@ describe("CodexAdapterV2 memory process spawning", () => {
         Effect.gen(function* () {
           if (!ChildProcess.isStandardCommand(command))
             return yield* Effect.die("Expected standard command");
-          const home = command.options.env?.CODEX_HOME;
+          const env = command.options.env?.CODEX_HOME;
+          const home = Redacted.isRedacted(env) ? Redacted.value(env) : env;
           if (command.args[0] === "debug" || command.args[0] === "--version") {
-            if (command.args[0] === "debug") probes.push({ home, args: command.args });
+            if (command.args[0] === "debug") probes.push({ home, args: command.args.map(String) });
             const text =
               command.args[0] === "--version"
                 ? "codex-cli 0.163.0"
@@ -9926,7 +9933,7 @@ describe("CodexAdapterV2 memory process spawning", () => {
               getOutputFd: () => Stream.empty,
             });
           }
-          starts.push(command.args);
+          starts.push(command.args.map(String));
           assert.isDefined(home);
           botHomes.push(home!);
           return yield* PlatformError.systemError({
@@ -9972,6 +9979,9 @@ describe("CodexAdapterV2 memory process spawning", () => {
       Effect.provide(
         ServerConfig.layerTest(process.cwd(), { prefix: "blobs-codex-profiles-" }).pipe(
           Layer.provideMerge(NodeServices.layer),
+          Layer.provideMerge(
+            Layer.mock(PortScanner.PortDiscovery)({ trackAgent: () => () => undefined }),
+          ),
         ),
       ),
       Effect.scoped,

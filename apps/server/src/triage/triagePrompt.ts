@@ -170,7 +170,7 @@ export const buildTriageSeedPrompt = (input: {
   readonly contextFilePath: string;
   readonly entry: TriageEntry;
 }) => `A Blobs user is having a problem with their install and started this \
-session ${input.entry.kind === "cli" ? "with `t3 triage`" : "from the Blobs app"}.
+session ${input.entry.kind === "cli" ? "with `blobs triage`" : "from the Blobs app"}.
 
 Machine facts (versions, OS, paths, server liveness) are in the triage context file:
 
@@ -224,7 +224,7 @@ export interface TriageContextInput {
 const entryLines = (entry: TriageEntry) =>
   entry.kind === "cli"
     ? {
-        generatedBy: "`t3 triage`",
+        generatedBy: "`blobs triage`",
         before: `- Triage CLI version: ${entry.cliVersion} (the \`t3\` that ran this command; the bug may have happened on another build)`,
         after: `- CLI launched as: ${entry.launchedAs}`,
       }

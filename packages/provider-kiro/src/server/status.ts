@@ -4,11 +4,11 @@ import {
   type ProviderOptionDescriptor,
   type ServerProviderAuth,
   type ServerProviderModel,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import type { KiroSettings } from "../settings.ts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { createModelCapabilities } from "@t3tools/shared/model";
-import { resolveSpawnCommand } from "@t3tools/shared/shell";
+import * as HostProcess from "@satslab/shared/HostProcess";
+import { createModelCapabilities } from "@satslab/shared/model";
+import { resolveSpawnCommand } from "@satslab/shared/shell";
 import type * as SecureRandom from "effect/crypto/SecureRandom";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -34,7 +34,7 @@ import {
   type ServerProviderDraft,
   providerProbeEnvironment,
   spawnAndCollect,
-} from "@t3tools/provider-core/server/snapshotProbe";
+} from "@satslab/provider-core/server/snapshotProbe";
 
 const KIRO_DRIVER_KIND = ProviderDriverKind.make("kiro");
 const KIRO_PRESENTATION = {
@@ -105,7 +105,7 @@ export const buildInitialKiroProviderSnapshot = Effect.fn(
     auth: { status: "unknown" },
     message: settings.enabled
       ? "Checking Kiro CLI availability..."
-      : "Kiro is disabled in T3 Code settings.",
+      : "Kiro is disabled in Blobs settings.",
   });
 });
 
@@ -370,7 +370,7 @@ export const checkKiroProviderStatus = Effect.fn("checkKiroProviderStatus")(func
       version: null,
       status: "warning",
       auth: { status: "unknown" },
-      message: "Kiro is disabled in T3 Code settings.",
+      message: "Kiro is disabled in Blobs settings.",
     });
   }
 

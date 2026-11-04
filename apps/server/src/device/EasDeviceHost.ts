@@ -33,7 +33,7 @@ import { writeFileStringAtomically } from "@satslab/shared/atomicWrite";
 import * as HostProcess from "@satslab/shared/HostProcess";
 
 import * as ServerConfig from "../config.ts";
-import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretResolver";
+import * as SecretResolver from "@satslab/secret-provider-core/server/SecretResolver";
 import { requireSettingsSecret } from "../secrets/settingsSecretValue.ts";
 import { releaseAgentDeviceSession } from "./AgentDeviceTarget.ts";
 import * as DeviceHost from "./DeviceHost.ts";

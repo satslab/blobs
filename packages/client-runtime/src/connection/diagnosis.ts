@@ -154,7 +154,7 @@ function headline(host: string, located: Located, failure: ConnectionAttemptErro
 }
 
 function steps(host: string, located: Located, failure: ConnectionAttemptError | null): string[] {
-  const checkHost = `On ${host}, check Settings > Sharing & access or run \`t3 connect status\`.`;
+  const checkHost = `On ${host}, check Settings > Sharing & access or run \`blobs connect status\`.`;
   switch (located.cause) {
     case "offline":
       return ["Connect this device to the internet. Blobs reconnects on its own."];
@@ -239,7 +239,7 @@ function helpSection(
     case "offline":
       return "this-device-cant-reach-t3-connect";
     case "outdated":
-      return "the-host-runs-an-older-t3-code";
+      return "the-host-runs-an-older-blobs";
     case "clock_skew":
       return "the-clock-is-off";
     case "session_pending":
@@ -254,7 +254,7 @@ function helpSection(
       return "the-hosts-tunnel-is-offline";
     case "origin_unreachable":
     case "invalid_response":
-      return "the-tunnel-works-but-t3-code-does-not-answer";
+      return "the-tunnel-works-but-blobs-does-not-answer";
     case "dns":
     case "tls":
     case "refused":
@@ -280,7 +280,7 @@ function helpSection(
     case "server":
       return failure?.reason === "authentication" || failure?.reason === "permission"
         ? "sign-in-account-or-link-problems"
-        : "the-tunnel-works-but-t3-code-does-not-answer";
+        : "the-tunnel-works-but-blobs-does-not-answer";
   }
 }
 

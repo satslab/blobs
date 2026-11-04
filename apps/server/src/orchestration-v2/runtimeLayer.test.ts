@@ -1,4 +1,4 @@
-import { PullRequestProviderError } from "@t3tools/source-control-core/server/PullRequestProvider";
+import { PullRequestProviderError } from "@satslab/source-control-core/server/PullRequestProvider";
 import { AnalyticsService } from "../telemetry/AnalyticsService.ts";
 import { CloudManagedEndpointRuntime } from "../cloud/ManagedEndpointRuntime.ts";
 import { SourceControlProviderKind } from "@satslab/contracts";

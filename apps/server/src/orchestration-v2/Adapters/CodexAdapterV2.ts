@@ -1405,8 +1405,8 @@ export const CODEX_THREAD_CONFIG = {
 // T3 waits can block for an hour; keep Codex's MCP timeout above that.
 const CODEX_BLOBS_MCP_TOOL_TIMEOUT_SEC = 65 * 60;
 // Holds Blobs tools Codex must call directly, never from Code Mode. Calls arrive as
-// `blobs-direct.<tool>`; t3McpToolPresentation.ts must keep resolving that form.
-const CODEX_BLOBS_DIRECT_MCP_SERVER = "blobs-direct";
+// `t3-code-direct.<tool>`; t3McpToolPresentation.ts must keep resolving that form.
+const CODEX_T3_CODE_DIRECT_MCP_SERVER = "t3-code-direct";
 const CODEX_DIRECT_ONLY_BLOBS_TOOL = "t3_thread_wait";
 
 export function codexThreadRuntimeParams(input: {
@@ -1429,7 +1429,7 @@ export function codexThreadRuntimeParams(input: {
       ? undefined
       : {
           url: mcpSession.endpoint,
-          tool_timeout_sec: CODEX_T3_MCP_TOOL_TIMEOUT_SEC,
+          tool_timeout_sec: CODEX_BLOBS_MCP_TOOL_TIMEOUT_SEC,
           http_headers: { Authorization: mcpSession.authorizationHeader },
         };
   return {
@@ -1460,7 +1460,7 @@ export function codexThreadRuntimeParams(input: {
             "mcp_servers.t3-code": { ...t3Server, disabled_tools: [CODEX_DIRECT_ONLY_BLOBS_TOOL] },
             // Code Mode runs a blocking wait as a nested call, and the model keeps working
             // around it. A second, direct-only registration makes it a plain tool call.
-            [`mcp_servers.${CODEX_BLOBS_DIRECT_MCP_SERVER}`]: {
+            [`mcp_servers.${CODEX_T3_CODE_DIRECT_MCP_SERVER}`]: {
               ...t3Server,
               enabled_tools: [CODEX_DIRECT_ONLY_BLOBS_TOOL],
               omit_tools_from: ["code_mode", "deferred"],
@@ -1919,7 +1919,7 @@ export const makeCodexAdapterV2 = Effect.fn("makeCodexAdapterV2")(function* (
               return yield* new ProviderSetupError({
                 instanceId: adapterOptions.instanceId,
                 operation: "runtime",
-                detail: `Codex ${version} does not work with this T3 Code release. Update Codex to ${target}, then retry.`,
+                detail: `Codex ${version} does not work with this Blobs release. Update Codex to ${target}, then retry.`,
               });
             }
             yield* client.notify("initialized", undefined);
