@@ -2816,6 +2816,7 @@ export default function ChatView(props: ChatViewProps) {
     canOperateThread &&
     activeThread?.lineage.sideChat !== true &&
     !isSubagentThread &&
+    !isBotThread &&
     serverConfig?.environment.capabilities.sideChats === true;
   const sideChat = useSideChat({
     threadRef: sideChatsOffered && isServerThread ? activeThreadRef : null,
@@ -2834,19 +2835,21 @@ export default function ChatView(props: ChatViewProps) {
       ? "Side chats cannot start side chats."
       : isSubagentThread
         ? "Subagent threads cannot start side chats."
-        : serverConfig === null
-          ? "Side chats are not ready yet. Try again in a moment."
-          : serverConfig.environment.capabilities.sideChats !== true
-            ? "Update this environment's T3 Code server to use side chats."
-            : sideChatsOffered && !isServerThread
-              ? "Side chats start after the first message."
-              : sideChat.available &&
-                  orchestrationV2WorktreePending(
-                    activeThread?.worktreePath ?? null,
-                    serverProjection?.runs ?? [],
-                  )
-                ? "Available once the thread's worktree is set up."
-                : null;
+        : isBotThread
+          ? "Bot conversations do not support side chats."
+          : serverConfig === null
+            ? "Side chats are not ready yet. Try again in a moment."
+            : serverConfig.environment.capabilities.sideChats !== true
+              ? "Update this environment's Blobs server to use side chats."
+              : sideChatsOffered && !isServerThread
+                ? "Side chats start after the first message."
+                : sideChat.available &&
+                    orchestrationV2WorktreePending(
+                      activeThread?.worktreePath ?? null,
+                      serverProjection?.runs ?? [],
+                    )
+                  ? "Available once the thread's worktree is set up."
+                  : null;
   const openSideChatStable = useStableCallback(() => void sideChat.open());
   const sendSideChatStable = useStableCallback((prompt: string) => sideChat.open(prompt));
   const { onConfirmRevertStable, onForkFromRunStable, onRevertTimelineTurnStable } =
@@ -3516,7 +3519,10 @@ export default function ChatView(props: ChatViewProps) {
                   // Side chat runs keep no checkpoints to diff, and a fork would promote the side chat.
                   {...(embedded
                     ? {}
-                    : { onOpenTurnDiff: onOpenTurnDiffStable, ...(isBotThread ? {} : { onForkFromRun: onForkFromRunStable }) })}
+                    : {
+                        onOpenTurnDiff: onOpenTurnDiffStable,
+                        ...(isBotThread ? {} : { onForkFromRun: onForkFromRunStable }),
+                      })}
                   onOpenThread={onOpenRelatedThreadStable}
                   parentThreadLink={parentThreadLink}
                   workflowOpening={workflowOpening}

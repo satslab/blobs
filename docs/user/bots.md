@@ -30,7 +30,7 @@ A bot handles brief tasks directly and delegates longer work in the background s
 Subagents use the bot conversation's workspace and receive its frozen memory view with tools to recall details.
 That view stays fixed while the parent conversation continues. Ordinary threads do not inherit memory.
 For work in another project, the bot starts an ordinary thread in that project.
-It uses your configured providers, models, and options, and receives delegated results through T3 Code's existing notifications.
+It uses your configured providers, models, and options, and receives delegated results through Blobs's existing notifications.
 Launched threads report results back to the bot unless you choose to take over the thread.
 A bot can also show visualizations, inspect browser and device views when enabled, and track pull requests.
 When no reply is needed in Blobs, the bot can finish silently; `NO_UPDATES` responses are hidden from the transcript.

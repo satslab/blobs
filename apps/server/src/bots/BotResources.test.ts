@@ -5,6 +5,7 @@ import type { McpInvocationScope } from "../mcp/McpInvocationContext.ts";
 import { vi } from "vite-plus/test";
 import systemTimezoneMigration from "../persistence/BlobsMigrations/007_BotSystemTimezone.ts";
 import { NodeServices } from "@effect/platform-node";
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import { assert, it } from "@effect/vitest";
 import {
   BotId,
@@ -42,7 +43,7 @@ const layer = BotResources.layer.pipe(
     Layer.mock(SecretRequests.SecretRequests)({ consume: () => Effect.succeed("fixture-token") }),
   ),
   Layer.provideMerge(Config.layerTest(process.cwd(), { prefix: "t3-bot-resources-" })),
-  Layer.provideMerge(NodeServices.layer),
+  Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
 );
 const source = BotId.make("source");
 const destination = BotId.make("destination");

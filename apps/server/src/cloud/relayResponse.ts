@@ -62,7 +62,7 @@ export function relayRetryAfterMillis(error: unknown): number | undefined {
 function recoveryHint(error: RelayProtectedError): string {
   switch (error._tag) {
     case "RelayEnvironmentLinkLimitExceededError":
-      return "Unlink an unused environment in T3 Connect, then restart T3 Code on this machine.";
+      return "Unlink an unused environment in T3 Connect, then restart Blobs on this machine.";
     case "RelayAuthInvalidError":
       return "Run `blobs connect login` to check this machine's authorization. If the stored credential was revoked, sign out with `blobs connect logout`, then run `blobs connect` again. Restart Blobs after signing in.";
     case "RelayEnvironmentLinkProofExpiredError":
@@ -84,7 +84,7 @@ export const filterRelayResponse = Effect.fn("cloud.filter_relay_response")(func
   const requestId = ray && /^[a-zA-Z0-9-]{1,128}$/.test(ray) ? ` Cloudflare Ray ID: ${ray}.` : "";
   const description = Option.isSome(decoded)
     ? `T3 Connect: ${decoded.value.message}. ${recoveryHint(decoded.value)} Trace ID: ${decoded.value.traceId}.`
-    : `T3 Connect relay returned HTTP ${response.status} without a recognized error response. Check relay access and any proxy or firewall restrictions, then restart T3 Code.${requestId}`;
+    : `T3 Connect relay returned HTTP ${response.status} without a recognized error response. Check relay access and any proxy or firewall restrictions, then restart Blobs.${requestId}`;
 
   // Only a schema-decoded expired-proof 401 is retryable for clock skew; every other 401 is permanent.
   if (

@@ -86,7 +86,7 @@ function tool(
   return { displayName, labels, icon, summaryAction };
 }
 
-// Codex registers "t3-code-direct" for T3 tools kept out of Code Mode.
+// Codex registers "t3-code-direct" for Blobs tools kept out of Code Mode.
 const BLOBS_MCP_SERVER_ALIASES = new Set([
   "blobs",
   "t3-code",

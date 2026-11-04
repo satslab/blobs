@@ -96,7 +96,7 @@ async function install(dir, key) {
     if (extract.status !== 0) throw new Error(`could not extract ${archive}`);
     fs.rmSync(file);
     const validate = spawnSync(
-      path.join(staging, process.platform === "win32" ? "t3.exe" : "t3"),
+      path.join(staging, process.platform === "win32" ? "blobs.exe" : "blobs"),
       ["--version"],
       {
         stdio: ["ignore", "ignore", "pipe"],
@@ -203,7 +203,7 @@ async function main() {
 
 function executableError(key, detail) {
   return new Error(
-    `could not run T3 Code ${version} for ${key}: ${detail}` +
+    `could not run Blobs ${version} for ${key}: ${detail}` +
       (process.platform === "linux"
         ? "\nThe Linux release requires glibc; musl-based systems such as Alpine are not supported. Use a glibc-based Linux environment."
         : ""),

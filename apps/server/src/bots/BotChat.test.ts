@@ -7,6 +7,8 @@ import { ChildProcess, ChildProcessSpawner } from "effect/process";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
 import * as NodeServices from "@effect/platform-node/NodeServices";
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
+
 import { assert, it } from "@effect/vitest";
 import {
   DEFAULT_SERVER_SETTINGS,
@@ -214,7 +216,7 @@ const makeLayer = (
     Layer.provideMerge(dependencies(eventStream, environmentId, transfers)),
     Layer.provide(Layer.succeed(MemoryCompaction.MemoryCompaction, compaction)),
     Layer.provideMerge(ServerConfig.layerTest(process.cwd(), { prefix: "t3-bot-chat-" })),
-    Layer.provideMerge(NodeServices.layer),
+    Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
   );
 const layer = makeLayer({ open: () => Effect.die("Short messages need no inference") });
 const persist = Effect.fn("BotChat.test.persist")(function* (event: OrchestrationV2DomainEvent) {

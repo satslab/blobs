@@ -35,7 +35,7 @@ import {
 } from "@satslab/contracts";
 import * as Cache from "effect/Cache";
 import * as Context from "effect/Context";
-import * as Crypto from "effect/Crypto";
+import * as Crypto from "effect/crypto";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as FiberMap from "effect/FiberMap";
@@ -147,7 +147,7 @@ const make = Effect.gen(function* () {
   const projections = yield* ProjectionStore.ProjectionStoreV2;
   const ids = yield* IdAllocator.IdAllocatorV2;
   const sessions = yield* ProviderSessions.ProviderSessionManagerV2;
-  const crypto = yield* Crypto.Crypto;
+  const crypto = yield* Crypto.SecureRandom.SecureRandom;
   const sql = yield* SqlClient.SqlClient;
   const ownerEnvironmentId = yield* environment.getEnvironmentId;
   // Retain each lock across worker replacement so transfers and turns for one bot stay serialized.
@@ -190,7 +190,7 @@ const make = Effect.gen(function* () {
         return yield* new BotChatError({ operation: "create", reason: "busy" });
       const existing = yield* storage.forThread(input.threadId);
       const identity: BotIdentity = existing ?? {
-        id: input.id ?? BotId.make(yield* crypto.randomUUIDv4().pipe(Effect.orDie)),
+        id: input.id ?? BotId.make(yield* crypto.uuidV4()),
         name: input.name,
         ownerEnvironmentId,
         threadId: input.threadId,
@@ -258,12 +258,10 @@ const make = Effect.gen(function* () {
       const existing = yield* projects.findActiveByWorkspaceRoot(workspaceRoot);
       const projectId = Option.isSome(existing)
         ? existing.value.projectId
-        : ProjectId.make(yield* crypto.randomUUIDv4().pipe(Effect.orDie));
+        : ProjectId.make(yield* crypto.uuidV4());
       if (Option.isSome(existing) && existing.value.title === name && existing.value.isBot)
         return projectId;
-      const commandId = CommandId.make(
-        `bot-project:${yield* crypto.randomUUIDv4().pipe(Effect.orDie)}`,
-      );
+      const commandId = CommandId.make(`bot-project:${yield* crypto.uuidV4()}`);
       yield* commitProject(
         Option.isSome(existing)
           ? { type: "project.meta.update", commandId, projectId, title: name }
@@ -353,8 +351,7 @@ const make = Effect.gen(function* () {
         name = yield* Random.choice(candidates);
       }
       const id =
-        (yield* storage.forThread(input.threadId))?.id ??
-        BotId.make(yield* crypto.randomUUIDv4().pipe(Effect.orDie));
+        (yield* storage.forThread(input.threadId))?.id ?? BotId.make(yield* crypto.uuidV4());
       if (!existingThread) {
         const projectId = yield* ensureProject(id, name);
         const now = yield* DateTime.now;
@@ -628,7 +625,7 @@ const make = Effect.gen(function* () {
           for (const member of family) yield* ensureIdle(member.id);
           const thread = yield* projections.getThread(bot.threadId);
           const now = yield* DateTime.now;
-          const nextThreadId = ThreadId.make(yield* crypto.randomUUIDv4().pipe(Effect.orDie));
+          const nextThreadId = ThreadId.make(yield* crypto.uuidV4());
           const nextThread: OrchestrationV2AppThread = {
             ...thread,
             id: nextThreadId,
