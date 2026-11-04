@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import { visibleLinkedThreads } from "@t3tools/client-runtime/state/threads";
+import { visibleLinkedThreads } from "@satslab/client-runtime/state/threads";
 import { AsyncResult } from "effect/reactivity";
 import { settlePromise, squashAtomCommandFailure } from "@satslab/client-runtime/state/runtime";
 import * as Dialog from "../../components/ui/Dialog";

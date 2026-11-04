@@ -1,7 +1,7 @@
 import { CollapsibleSectionHeader } from "../ui/collapsible-section-header";
 import { resolveBotThreadContext } from "../../botThreadContext";
 import { useAtomValue } from "@effect/atom-react";
-import { threadKey } from "@t3tools/client-runtime/state/entities";
+import { threadKey } from "@satslab/client-runtime/state/entities";
 import { ThreadDetailsControl } from "./ThreadDetailsControl";
 import { ThreadHoverCardPopup } from "../ThreadHoverCard";
 import { ThreadDetailsSection } from "./ThreadDetailsSection";

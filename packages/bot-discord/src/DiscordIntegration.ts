@@ -6,7 +6,7 @@ import {
   type ThreadId,
 } from "@satslab/contracts";
 import * as Context from "effect/Context";
-import * as Crypto from "effect/Crypto";
+import * as Crypto from "effect/crypto";
 import * as Effect from "effect/Effect";
 import * as FiberMap from "effect/FiberMap";
 import * as Layer from "effect/Layer";
@@ -45,15 +45,15 @@ const make = Effect.gen(function* () {
   const host = yield* BotHost.BotHost;
   const sdk = yield* DiscordClient.DiscordClient;
   const storage = yield* DiscordStorage.DiscordStorage;
-  const crypto = yield* Crypto.Crypto;
+  const digest = yield* Crypto.Digest.Digest;
   const fibers = yield* FiberMap.make<BotId>();
   const configurationLocks = yield* PartitionedSemaphore.make<BotId>({ permits: 1 });
   const outputLocks = yield* PartitionedSemaphore.make<BotId>({ permits: 1 });
   const states = new Map<BotId, ConnectionState>();
 
   const nonce = Effect.fn("DiscordIntegration.nonce")(function* (value: string) {
-    const hash = yield* crypto
-      .digest("SHA-256", new TextEncoder().encode(value))
+    const hash = yield* digest
+      .digest(Crypto.Digest.sha256, new TextEncoder().encode(value))
       .pipe(
         Effect.mapError(
           (cause) => new BotIntegrationError({ operation: "nonce", reason: "delivery", cause }),

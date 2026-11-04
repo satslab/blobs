@@ -1,4 +1,4 @@
-import * as Crypto from "effect/Crypto";
+import * as Crypto from "effect/crypto";
 import * as Cache from "effect/Cache";
 import * as Cause from "effect/Cause";
 import * as Data from "effect/Data";
@@ -162,7 +162,7 @@ export const makeMemory = Effect.fn("MemoryWorker.make")(function* (
   onProcessing: (active: boolean) => Effect.Effect<void> = () => Effect.void,
 ) {
   const storage = yield* BotStorage.BotStorage;
-  const crypto = yield* Crypto.Crypto;
+  const crypto = yield* Crypto.SecureRandom.SecureRandom;
   const pumpGate = yield* Semaphore.make(1);
   const compactLimit = compactViewLimit(budget, compactBudget);
   // Built nodes are immutable. Missing nodes and failed reads must be retried.
@@ -254,10 +254,7 @@ export const makeMemory = Effect.fn("MemoryWorker.make")(function* (
     const view = yield* context(job);
     return yield* Effect.scoped(
       Effect.gen(function* () {
-        const session = yield* open(
-          view,
-          `${job.id}:${job.count}:${yield* crypto.randomUUIDv4().pipe(Effect.orDie)}`,
-        );
+        const session = yield* open(view, `${job.id}:${job.count}:${yield* crypto.uuidV4()}`);
         let best = "";
         let task = compactionTask(job);
         for (let attempt = 0; attempt < 5; attempt++) {
