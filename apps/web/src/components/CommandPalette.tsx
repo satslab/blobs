@@ -166,7 +166,8 @@ import {
   useCommandPaletteMount,
   useCommandPaletteStore,
 } from "../commandPaletteStore";
-import { PULL_REQUESTS_PANEL_REF, useRightPanelStore } from "../rightPanelStore";
+import { useRightPanelStore } from "../rightPanelStore";
+import { usePullRequestsPanelRef } from "./pullRequest/usePullRequestsPanelRef";
 import { getLatestThreadForProject, sortThreads } from "@satslab/client-runtime/state/thread-sort";
 import {
   cn,
@@ -486,10 +487,11 @@ function OpenCommandPaletteDialog(props: {
   );
   const selectedBot =
     bots.find((bot) => bot.id === (routeParams.botId ?? botContext?.botId)) ?? settingsBot;
+  const pullRequestsPanelRef = usePullRequestsPanelRef();
   const referenceThreadRef =
     pathname === "/pull-requests"
       ? environments.some((environment) => environment.serverConfig !== null)
-        ? PULL_REQUESTS_PANEL_REF
+        ? pullRequestsPanelRef
         : null
       : activeThread
         ? scopeThreadRef(activeThread.environmentId, activeThread.id)

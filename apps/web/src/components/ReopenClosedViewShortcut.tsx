@@ -1,10 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import {
-  scopeProjectRef,
-  scopedThreadKey,
-  scopeThreadRef,
-} from "@satslab/client-runtime/environment";
-import type { ScopedThreadRef } from "@satslab/contracts";
+import { scopeProjectRef, scopeThreadRef } from "@satslab/client-runtime/environment";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useEffectEvent, useRef } from "react";
 
@@ -23,7 +18,7 @@ import {
   reopenClosedView,
 } from "../reopenClosedView";
 import {
-  PULL_REQUESTS_PANEL_REF,
+  isPullRequestsPanelRef,
   selectActiveRightPanel,
   selectSelectedRightPanelSurface,
   selectThreadRightPanelState,
@@ -52,8 +47,7 @@ const PREVIEW_FORWARDED_COMMANDS = [
   "preview.focusUrl",
 ] as const;
 
-const isGlobalPullRequests = (ref: ScopedThreadRef) =>
-  scopedThreadKey(ref) === scopedThreadKey(PULL_REQUESTS_PANEL_REF);
+const isGlobalPullRequests = isPullRequestsPanelRef;
 
 export function ReopenClosedViewShortcut() {
   const navigate = useNavigate();

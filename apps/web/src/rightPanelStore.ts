@@ -86,6 +86,15 @@ export const PULL_REQUESTS_PANEL_REF = scopeThreadRef(
   ThreadId.make("pull-requests-panel"),
 );
 
+/** The workspace's Pull requests page keeps its own tabs, apart from the classic page's. */
+export const WORKSPACE_PULL_REQUESTS_PANEL_REF = scopeThreadRef(
+  EnvironmentId.make("workspace-pull-requests-panel"),
+  ThreadId.make("pull-requests-panel"),
+);
+
+export const isPullRequestsPanelRef = (ref: ScopedThreadRef) =>
+  ref.threadId === PULL_REQUESTS_PANEL_REF.threadId;
+
 const isPullRequestsPanelKey = (threadKey: string) => threadKey.endsWith(":pull-requests-panel");
 
 export interface ThreadRightPanelState {
