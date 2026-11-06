@@ -195,10 +195,12 @@ describe("remote editor links", () => {
     const { screen, pressOpenFavorite, FavoriteEditorFallback } = fixture;
     state.remote = { mode: "remote-links", host: { kind: "ssh-alias", host: "sol" } };
     await act(async () => screen.rerender(<FavoriteEditorFallback />));
+    using _timers = fakeTimers();
 
     expect((await pressOpenFavorite()).defaultPrevented).toBe(true);
     expect(state.openUrl).toHaveBeenCalledWith(expect.stringContaining("ssh-remote+sol"));
     expect(state.run).not.toHaveBeenCalled();
+    await act(async () => vi.runAllTimers());
   });
 });
 
@@ -219,6 +221,7 @@ describe("open in editor announcement", () => {
     const refuse = () =>
       state.run.mockResolvedValueOnce(AsyncResult.failure(Cause.fail(new Error("No editor"))));
 
+    for (const region of regions()) region.textContent = "";
     refuse();
     await pressOpenFavorite();
     expect(await spoken()).toBe("");
