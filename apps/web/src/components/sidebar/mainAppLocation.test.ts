@@ -45,10 +45,10 @@ function completeNavigation(router: AnyRouter) {
   });
 }
 
-it("keeps dedicated bot settings from replacing the remembered conversation", async () => {
+it("treats every bots page, settings included, as a main page", async () => {
   vi.resetModules();
   const { isSidebarUtilityPage } = await import("./mainAppLocation");
-  expect(isSidebarUtilityPage("/bots/settings/environment/bot")).toBe(true);
+  expect(isSidebarUtilityPage("/bots/settings/environment/bot")).toBe(false);
   expect(isSidebarUtilityPage("/bots/environment/root")).toBe(false);
   expect(isSidebarUtilityPage("/bots/environment/subagent")).toBe(false);
   expect(isSidebarUtilityPage("/bots")).toBe(false);

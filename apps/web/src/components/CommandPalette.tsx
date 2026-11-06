@@ -1690,9 +1690,6 @@ function OpenCommandPaletteDialog(props: {
         await navigate({
           to: "/bots/settings/$environmentId/$botId",
           params: { environmentId: selectedBot.ownerEnvironmentId, botId: selectedBot.id },
-          state: pathname.startsWith("/bots/settings/")
-            ? true
-            : { botSettingsReturnHref: location.href },
         });
       },
     });
@@ -1774,9 +1771,6 @@ function OpenCommandPaletteDialog(props: {
       if (item.id === "bot-load-resources") {
         await navigate({
           ...botSettingsSearchDestination(selectedBot),
-          state: pathname.startsWith("/bots/settings/")
-            ? true
-            : { botSettingsReturnHref: location.href },
         });
         return;
       }

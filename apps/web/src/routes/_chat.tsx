@@ -3,7 +3,7 @@ import { Outlet, createFileRoute, redirect, useMatches } from "@tanstack/react-r
 import { useState } from "react";
 
 import { ThreadRouteView } from "../components/ThreadRouteView";
-import { isAppModalPage } from "../components/sidebar/mainAppLocation";
+import { isAppModalPage, workspaceFramePathname } from "../components/sidebar/mainAppLocation";
 import { SidebarInset } from "../components/ui/sidebar";
 import { resolveThreadRouteTarget, type ThreadRouteTarget } from "../threadRoutes";
 import { retainThreadFindForRoute } from "../components/chat/threadFindStore";
@@ -28,6 +28,14 @@ function ChatRouteLayout() {
     setBackgroundTarget(threadTarget);
   }
   const shownTarget = modalOpen ? backgroundTarget : threadTarget;
+  // The workspace draws its own page behind the modal.
+  const overWorkspace = useMatches({
+    select: (matches) => {
+      const pathname = matches.at(-1)?.pathname ?? "";
+      return isAppModalPage(pathname) && workspaceFramePathname(pathname) !== null;
+    },
+  });
+  if (overWorkspace) return <Outlet />;
   return (
     <>
       {shownTarget?.kind === "server" && !modalOpen ? (

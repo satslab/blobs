@@ -1,7 +1,7 @@
 import { selectBotIdentities, type BotIdentity, type EnvironmentId } from "@satslab/contracts";
 import type { SidebarProjectSnapshot } from "../../sidebarProjectGrouping";
 
-export function resolveBotSettingsIdentity(
+function resolveBotSettingsIdentity(
   records: readonly { bot: BotIdentity; environmentId: EnvironmentId }[],
   botId: string,
   environmentHint: string,
@@ -103,37 +103,4 @@ export function resolveLegacyBotSettingsIdentity(
   });
   const bot = identities[0];
   return bot && identities.every((identity) => identity.id === bot.id) ? bot : null;
-}
-
-export function parseBotSettingsReturnThread(origin: string | undefined) {
-  const match = origin?.match(/^\/bots\/([^/?#]+)\/([^/?#]+)(?:[?#].*)?$/);
-  if (!match || match[1] === "settings") return null;
-  try {
-    return {
-      environmentId: decodeURIComponent(match[1]!),
-      threadId: decodeURIComponent(match[2]!),
-    };
-  } catch {
-    return null;
-  }
-}
-
-export function botSettingsReturnHref(
-  bot: BotIdentity | null,
-  origin: string | undefined,
-  context: { botId: string; threadId: string } | null,
-) {
-  if (origin && /^\/settings\/bots(?:[?#].*)?$/.test(origin)) return origin;
-  const thread = parseBotSettingsReturnThread(origin);
-  if (
-    origin &&
-    bot &&
-    thread?.environmentId === bot.ownerEnvironmentId &&
-    context?.botId === bot.id &&
-    context.threadId === bot.threadId
-  )
-    return origin;
-  return bot?.status === "active"
-    ? `/bots/${encodeURIComponent(bot.ownerEnvironmentId)}/${encodeURIComponent(bot.threadId)}`
-    : "/settings/bots";
 }

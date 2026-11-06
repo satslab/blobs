@@ -44,6 +44,7 @@ function PopoverPopup({
   keepMounted = false,
   anchor,
   touchBackdrop = false,
+  arrow = false,
   ...props
 }: PopoverPrimitive.Popup.Props & {
   padding?: keyof typeof popoverViewportPaddingClassName;
@@ -58,6 +59,8 @@ function PopoverPopup({
   anchor?: PopoverPrimitive.Positioner.Props["anchor"];
   width?: keyof typeof popoverPopupWidthClassName;
   touchBackdrop?: boolean;
+  /** Points at the trigger from whichever side the popup opens on. */
+  arrow?: boolean;
 }) {
   // Viewport rekeys on close; persistent single-trigger forms need stable containers for drafts and submit
   // guards.
@@ -96,7 +99,10 @@ function PopoverPopup({
               "w-fit text-balance rounded-md text-xs shadow-md/5 before:rounded-[calc(var(--radius-md)-1px)]",
             !tooltipStyle &&
               variant !== "panel" &&
+              !arrow &&
               "shadow-[0_16px_40px_-18px_rgb(0_0_0/55%)] dark:shadow-[0_18px_44px_-18px_rgb(0_0_0/80%)]",
+            // Arrow popups float like the docks they point from: white in light mode, glass in dark.
+            arrow && "shadow-lg before:hidden not-dark:glass-white",
             width !== "auto" && ["max-w-[calc(100vw-2rem)]", popoverPopupWidthClassName[width]],
             variant === "panel" &&
               "w-full overflow-visible rounded-none border-0 bg-transparent shadow-none before:hidden [backdrop-filter:none] [-webkit-backdrop-filter:none]",
@@ -119,6 +125,14 @@ function PopoverPopup({
           >
             {children}
           </Viewport>
+          {arrow ? (
+            // A square turned 45°, clipped to the half that sticks out, overlapping the popup's border by
+            // 1px so the border doesn't show across its base.
+            <PopoverPrimitive.Arrow
+              data-slot="popover-arrow"
+              className="dropdown-glass size-3 rotate-45 not-dark:glass-white rounded-[2px] data-[side=bottom]:-top-[5px] data-[side=bottom]:[clip-path:polygon(0_100%,0_0,100%_0)] data-[side=left]:-right-[5px] data-[side=left]:[clip-path:polygon(0_0,100%_0,100%_100%)] data-[side=right]:-left-[5px] data-[side=right]:[clip-path:polygon(0_0,0_100%,100%_100%)] data-[side=top]:-bottom-[5px] data-[side=top]:[clip-path:polygon(0_100%,100%_100%,100%_0)]"
+            />
+          ) : null}
         </PopoverPrimitive.Popup>
       </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>

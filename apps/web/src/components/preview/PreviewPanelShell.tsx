@@ -22,6 +22,8 @@ interface PreviewPanelShellProps {
   /** Use a distinct key per surface to keep remembered widths independent. */
   widthStorageKey?: string;
   defaultWidth?: number;
+  /** Paints the shell as window chrome, for content that draws its own rounded sheet. */
+  framed?: boolean;
   children: ReactNode;
 }
 
@@ -121,7 +123,8 @@ function PreviewPanelShellFrame(
       data-workspace-focus-key={props.workspaceFocusKey}
       data-workspace-unavailable={collapsible && !open ? "true" : undefined}
       className={cn(
-        "relative flex h-full min-h-0 min-w-0 max-w-full flex-col self-stretch bg-background",
+        "relative flex h-full min-h-0 min-w-0 max-w-full flex-col self-stretch",
+        props.framed ? "bg-accent" : "bg-background",
         isInline
           ? maximized
             ? // Maximizing meets the sidebar border or window edge; omit the duplicate border.

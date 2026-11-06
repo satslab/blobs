@@ -1,4 +1,4 @@
-import { SettingsGroup } from "./SettingsGroup";
+import { SettingsGroup, SettingsLookContext } from "./SettingsGroup";
 import { AuthSettingsWriteScope } from "@satslab/contracts";
 import { usePrimaryEnvironmentId, usePrimaryEnvironment } from "../../state/environments";
 import { useEnvironmentScope, useEnvironmentsWithScope } from "../../state/session";
@@ -11,7 +11,13 @@ import {
 } from "@satslab/contracts";
 import * as Equal from "effect/Equal";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { createContext, type ComponentPropsWithoutRef, type ReactNode, useContext } from "react";
+import {
+  createContext,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+  use,
+  useContext,
+} from "react";
 
 import {
   PRIMARY_SETTINGS_UNAVAILABLE_MESSAGE,
@@ -224,6 +230,7 @@ export function SettingsSection({
   children: ReactNode;
 }) {
   const targetRef = useSettingsSearchTarget<HTMLElement>(sectionProps.id);
+  const flat = use(SettingsLookContext) === "flat";
 
   return (
     <section
@@ -240,7 +247,14 @@ export function SettingsSection({
           className="flex min-h-7 items-start justify-between gap-4 px-3 sm:px-4"
         >
           <div className="flex min-w-0 items-center gap-1">
-            <h2 className="flex min-h-7 items-center gap-2 text-base font-semibold text-foreground">
+            <h2
+              className={cn(
+                "flex min-h-7 items-center gap-2 font-semibold",
+                flat
+                  ? "text-xs tracking-wide text-muted-foreground uppercase"
+                  : "text-base text-foreground",
+              )}
+            >
               {icon}
               {title}
             </h2>

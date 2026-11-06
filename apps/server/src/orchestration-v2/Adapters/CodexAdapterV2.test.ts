@@ -9643,6 +9643,8 @@ describe("CodexAdapterV2 memory process spawning", () => {
       assert.equal(params.developerInstructions, "");
       assert.deepEqual(params.environments, []);
       assert.equal(params.config["tools.update_plan.enabled"], true);
+      assert.equal(params.config["tools.experimental_request_user_input.enabled"], true);
+      assert.equal(params.config["features.default_mode_request_user_input"], true);
       assert.equal(params.config.project_doc_max_bytes, 0);
       const loading = CodexAdapterV2.codexThreadRuntimeParams({
         threadId: null,
@@ -9657,6 +9659,8 @@ describe("CodexAdapterV2 memory process spawning", () => {
       assert.notProperty(loading.config, "skills.include_instructions");
       assert.notProperty(loading.config, "features.skip_host_skill_discovery");
       assert.equal(loading.config["tools.update_plan.enabled"], true);
+      assert.equal(loading.config["tools.experimental_request_user_input.enabled"], true);
+      assert.equal(loading.config["features.default_mode_request_user_input"], true);
       assert.equal(loading.developerInstructions, "");
       assert.include(loading.baseInstructions ?? "", "Frozen memory instructions");
       const turn = yield* CodexAdapterV2.buildCodexTurnStartParams({

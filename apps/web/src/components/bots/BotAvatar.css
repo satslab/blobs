@@ -1,0 +1,22 @@
+@media (prefers-reduced-motion: no-preference) {
+  [data-bot-working] .dbcl-c {
+    animation-name: bot-working-bounce;
+    animation-duration: 1.35s;
+  }
+}
+
+@keyframes bot-working-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg) scale(1.02, 0.98);
+  }
+  25% {
+    transform: translateY(-7px) rotate(3deg) scale(0.97, 1.04);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg) scale(1.08, 0.9);
+  }
+  75% {
+    transform: translateY(-5px) rotate(-3deg) scale(0.98, 1.03);
+  }
+}

@@ -1,18 +1,6 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { BotSettingsPage } from "../components/bots/BotSettingsPage";
+import { createFileRoute } from "@tanstack/react-router";
 
+// WorkspaceLayout renders this page from the URL.
 export const Route = createFileRoute("/bots/settings/$environmentId/$botId")({
-  beforeLoad: ({ context }) => {
-    if (
-      context.authGateState.status !== "authenticated" &&
-      context.authGateState.status !== "hosted-static"
-    ) {
-      throw redirect({ to: "/pair", replace: true });
-    }
-  },
-  component: BotSettingsRoute,
+  component: () => null,
 });
-
-function BotSettingsRoute() {
-  return <BotSettingsPage {...Route.useParams()} />;
-}

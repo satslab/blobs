@@ -115,6 +115,11 @@ export interface RightPanelTabsProps {
   defaultWidth?: number;
   inlineSize?: PreviewPanelInlineSize;
   layoutControls?: ReactNode;
+  /**
+   * "track" groups the tabs in a rounded track with a raised active pill. "folder" draws the panel
+   * as window chrome, with the active tab joined to a rounded sheet below.
+   */
+  tabLook?: "track" | "folder";
   surfaces: readonly RightPanelSurface[];
   environmentId: EnvironmentId | null;
   activeSurfaceId: string | null;
@@ -883,6 +888,7 @@ function RightPanelTab(
     renaming: boolean;
     canRename: boolean;
     ownsDesktopTitleBar: boolean;
+    look: "track" | "folder" | undefined;
   },
 ) {
   const {
@@ -1009,11 +1015,22 @@ function RightPanelTab(
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
-        "cursor-pointer group/tab flex h-6 max-w-36 shrink-0 items-center gap-0.5 rounded-md pr-2 pl-1.5 text-xs",
+        "cursor-pointer group/tab flex shrink-0 items-center text-xs",
+        props.look === "track"
+          ? "h-7 max-w-44 gap-1 rounded-full pr-3 pl-2"
+          : props.look === "folder"
+            ? "h-9 max-w-48 gap-1.5 rounded-t-lg pr-3.5 pl-2.5"
+            : "h-6 max-w-36 gap-0.5 rounded-md pr-2 pl-1.5",
         props.ownsDesktopTitleBar && "[-webkit-app-region:no-drag]",
-        props.active
-          ? "bg-accent text-foreground"
-          : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+        props.look === undefined
+          ? props.active
+            ? "bg-accent text-foreground"
+            : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+          : props.active
+            ? "bg-background text-foreground"
+            : "text-muted-foreground hover:text-foreground",
+        props.active && props.look === "track" && "shadow-xs ring-1 ring-foreground/5",
+        props.active && props.look === "folder" && "folder-tab-flares",
         isDragging && "relative z-10",
       )}
     >
@@ -1330,6 +1347,7 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
       {...(props.widthStorageKey !== undefined ? { widthStorageKey: props.widthStorageKey } : {})}
       {...(props.defaultWidth !== undefined ? { defaultWidth: props.defaultWidth } : {})}
       {...(props.inlineSize ? { inlineSize: props.inlineSize } : {})}
+      framed={props.tabLook === "folder"}
     >
       <div
         className={cn(
@@ -1338,6 +1356,7 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
           ownsDesktopTitleBar && "drag-region",
           ownsDesktopTitleBar && "wco:pr-(--workspace-native-controls-inset)",
           props.mode === "inline" && props.maximized && COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS,
+          props.tabLook === "folder" && "h-10 min-h-10",
         )}
         data-right-panel-tabbar
       >
@@ -1349,121 +1368,136 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
           className="min-w-0 flex-1"
           data-right-panel-tab-list
         >
-          <div className="flex h-full w-max min-w-full items-center gap-1">
-            <SortableTabList surfaces={props.surfaces} onMove={props.onMoveSurface}>
-              {props.surfaces.map((surface) => {
-                const previewTabId = previewTabIdOf(surface, props.previewSessions);
-                const favicon = previewFaviconOf(
-                  surface,
-                  props.previewSessions,
-                  props.desktopByTabId,
-                );
-                return (
-                  <RightPanelTab
-                    key={surface.id}
-                    surface={surface}
-                    dragDisabled={!props.onMoveSurface || renamingDevice === surface.id}
-                    active={surface.id === props.activeSurfaceId}
-                    pending={props.pendingSurfaceIds.has(surface.id)}
-                    title={surfaceTitle(surface, props.previewSessions, props.terminalLabelsById)}
-                    audio={tabAudioState(
-                      previewTabId ? (props.desktopByTabId[previewTabId] ?? null) : null,
-                    )}
-                    audioRuntimeTabId={
-                      previewTabId ? (props.previewRuntimeTabId?.(previewTabId) ?? null) : null
-                    }
-                    previewUrl={favicon.url}
-                    previewCapturedUrl={favicon.capturedUrl}
-                    theme={resolvedTheme}
-                    environmentId={props.environmentId}
-                    pullRequestStatusSeed={props.pullRequestStatusSeeds?.[surface.id]}
-                    renaming={renamingDevice === surface.id}
-                    canRename={props.onRenameDevice !== undefined}
-                    ownsDesktopTitleBar={ownsDesktopTitleBar}
-                    onActivate={onActivateTab}
-                    onClose={onCloseTab}
-                    onAuxClick={onTabAuxClick}
-                    onContextMenu={onTabContextMenu}
-                    onStartRename={onStartRenameTab}
-                    onFinishRename={onFinishRenameTab}
-                  />
-                );
-              })}
-            </SortableTabList>
-            {props.open !== false ? (
-              <Menu open={addSurfaceMenuOpen} onOpenChange={setAddSurfaceMenuOpen}>
-                <MenuTrigger
-                  ref={addSurfaceTriggerRef}
-                  render={
-                    <Button
-                      aria-label="Add panel surface"
-                      className="shrink-0"
-                      size="icon-xs"
-                      variant="ghost-muted"
+          <div
+            className={cn(
+              "flex h-full w-max min-w-full gap-1",
+              // Room for the first tab's left flare, which meets the sheet's rounded corner in an S-curve.
+              props.tabLook === "folder" ? "items-end pl-3" : "items-center",
+            )}
+          >
+            <div
+              className={
+                props.tabLook === "track"
+                  ? "flex items-center gap-0.5 rounded-full bg-accent p-0.75"
+                  : "contents"
+              }
+            >
+              <SortableTabList surfaces={props.surfaces} onMove={props.onMoveSurface}>
+                {props.surfaces.map((surface) => {
+                  const previewTabId = previewTabIdOf(surface, props.previewSessions);
+                  const favicon = previewFaviconOf(
+                    surface,
+                    props.previewSessions,
+                    props.desktopByTabId,
+                  );
+                  return (
+                    <RightPanelTab
+                      key={surface.id}
+                      surface={surface}
+                      dragDisabled={!props.onMoveSurface || renamingDevice === surface.id}
+                      active={surface.id === props.activeSurfaceId}
+                      pending={props.pendingSurfaceIds.has(surface.id)}
+                      title={surfaceTitle(surface, props.previewSessions, props.terminalLabelsById)}
+                      audio={tabAudioState(
+                        previewTabId ? (props.desktopByTabId[previewTabId] ?? null) : null,
+                      )}
+                      audioRuntimeTabId={
+                        previewTabId ? (props.previewRuntimeTabId?.(previewTabId) ?? null) : null
+                      }
+                      previewUrl={favicon.url}
+                      previewCapturedUrl={favicon.capturedUrl}
+                      theme={resolvedTheme}
+                      environmentId={props.environmentId}
+                      pullRequestStatusSeed={props.pullRequestStatusSeeds?.[surface.id]}
+                      renaming={renamingDevice === surface.id}
+                      canRename={props.onRenameDevice !== undefined}
+                      ownsDesktopTitleBar={ownsDesktopTitleBar}
+                      look={props.tabLook}
+                      onActivate={onActivateTab}
+                      onClose={onCloseTab}
+                      onAuxClick={onTabAuxClick}
+                      onContextMenu={onTabContextMenu}
+                      onStartRename={onStartRenameTab}
+                      onFinishRename={onFinishRenameTab}
                     />
-                  }
-                >
-                  <Plus className="size-3.5" />
-                </MenuTrigger>
-                <MenuPopup
-                  align="start"
-                  side="bottom"
-                  sideOffset={6}
-                  onKeyDownCapture={handleAddSurfaceMenuKeyDown}
-                >
-                  {addSurfaceActions.map((action) => {
-                    const Icon = action.icon;
-                    if (action.label === "Browser" && action.available) {
-                      return (
-                        <MenuSub key={action.label}>
-                          <MenuSubTrigger
-                            className="[&>svg:last-child]:ms-0"
-                            aria-keyshortcuts={action.shortcut}
-                            onClick={(event) => {
-                              const pointerType =
-                                "pointerType" in event.nativeEvent &&
-                                typeof event.nativeEvent.pointerType === "string"
-                                  ? event.nativeEvent.pointerType
-                                  : undefined;
-                              if (!shouldOpenDefaultBrowserProfileFromMenuClick(pointerType))
-                                return;
-                              setAddSurfaceMenuOpen(false);
-                              action.onClick();
-                            }}
-                          >
-                            <Icon />
-                            {action.label}
-                            <MenuShortcut>{action.shortcut}</MenuShortcut>
-                          </MenuSubTrigger>
-                          <MenuSubPopup className="max-w-56">
-                            {browserProfiles.map((profile) => (
-                              <MenuItem
-                                key={profile.id}
-                                onClick={() => props.onAddBrowserInProfile(profile.id)}
-                              >
-                                <span className="min-w-0 truncate">{profile.name}</span>
-                              </MenuItem>
-                            ))}
-                          </MenuSubPopup>
-                        </MenuSub>
-                      );
+                  );
+                })}
+              </SortableTabList>
+              {props.open !== false ? (
+                <Menu open={addSurfaceMenuOpen} onOpenChange={setAddSurfaceMenuOpen}>
+                  <MenuTrigger
+                    ref={addSurfaceTriggerRef}
+                    render={
+                      <Button
+                        aria-label="Add panel surface"
+                        className={cn("shrink-0", props.tabLook === "folder" && "mb-1.5 self-end")}
+                        size={props.tabLook === "track" ? "icon-sm-pill" : "icon-xs"}
+                        variant="ghost-muted"
+                      />
                     }
-                    return (
-                      <SurfaceMenuItem
-                        key={action.label}
-                        available={action.available}
-                        disabledReason={action.disabledReason}
-                        shortcut={action.shortcut}
-                        onClick={action.onClick}
-                      >
-                        <Icon />
-                        {action.label}
-                      </SurfaceMenuItem>
-                    );
-                  })}
-                </MenuPopup>
-              </Menu>
-            ) : null}
+                  >
+                    <Plus className="size-3.5" />
+                  </MenuTrigger>
+                  <MenuPopup
+                    align="start"
+                    side="bottom"
+                    sideOffset={6}
+                    onKeyDownCapture={handleAddSurfaceMenuKeyDown}
+                  >
+                    {addSurfaceActions.map((action) => {
+                      const Icon = action.icon;
+                      if (action.label === "Browser" && action.available) {
+                        return (
+                          <MenuSub key={action.label}>
+                            <MenuSubTrigger
+                              className="[&>svg:last-child]:ms-0"
+                              aria-keyshortcuts={action.shortcut}
+                              onClick={(event) => {
+                                const pointerType =
+                                  "pointerType" in event.nativeEvent &&
+                                  typeof event.nativeEvent.pointerType === "string"
+                                    ? event.nativeEvent.pointerType
+                                    : undefined;
+                                if (!shouldOpenDefaultBrowserProfileFromMenuClick(pointerType))
+                                  return;
+                                setAddSurfaceMenuOpen(false);
+                                action.onClick();
+                              }}
+                            >
+                              <Icon />
+                              {action.label}
+                              <MenuShortcut>{action.shortcut}</MenuShortcut>
+                            </MenuSubTrigger>
+                            <MenuSubPopup className="max-w-56">
+                              {browserProfiles.map((profile) => (
+                                <MenuItem
+                                  key={profile.id}
+                                  onClick={() => props.onAddBrowserInProfile(profile.id)}
+                                >
+                                  <span className="min-w-0 truncate">{profile.name}</span>
+                                </MenuItem>
+                              ))}
+                            </MenuSubPopup>
+                          </MenuSub>
+                        );
+                      }
+                      return (
+                        <SurfaceMenuItem
+                          key={action.label}
+                          available={action.available}
+                          disabledReason={action.disabledReason}
+                          shortcut={action.shortcut}
+                          onClick={action.onClick}
+                        >
+                          <Icon />
+                          {action.label}
+                        </SurfaceMenuItem>
+                      );
+                    })}
+                  </MenuPopup>
+                </Menu>
+              ) : null}
+            </div>
           </div>
         </ScrollArea>
         {tabScrollState.hasOverflow ? (
@@ -1521,7 +1555,14 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
           />
         ) : null}
       </div>
-      <div className="flex min-h-0 flex-1 flex-col" data-right-panel-surface-content>
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col",
+          props.tabLook === "folder" && "mr-1 mb-1 overflow-hidden rounded-xl bg-background pt-3",
+        )}
+        data-right-panel-surface-content
+        data-framed-sheet={props.tabLook === "folder" ? "" : undefined}
+      >
         {props.activeSurfaceId === null ? (
           <RightPanelEmptyState
             onAddBrowser={props.onAddBrowser}
