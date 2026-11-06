@@ -11,7 +11,7 @@ import { AsyncResult, Atom } from "effect/reactivity";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import { resolveBotThreadContext } from "../botThreadContext";
-import { useQuietThreadShell } from "./entities";
+import { useQuietThreadProjection, useQuietThreadShell } from "./entities";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { connectionAtomRuntime } from "../connection/runtime";
 import { useEnvironmentIdentities } from "./environments";
@@ -92,15 +92,6 @@ export function useLastBotId() {
   return useLocalStorage("last-bot-id", null, lastBotIdSchema);
 }
 
-export function useLastActiveBot() {
-  const bots = useBots();
-  const [lastBotId] = useLastBotId();
-  return (
-    bots.find((bot) => bot.status === "active" && (lastBotId === null || bot.id === lastBotId)) ??
-    null
-  );
-}
-
 export function useBotThreadContext(ref: ScopedThreadRef | null) {
   const thread = useQuietThreadShell(ref);
   const root = useQuietThreadShell(
@@ -109,6 +100,40 @@ export function useBotThreadContext(ref: ScopedThreadRef | null) {
       : null,
   );
   return resolveBotThreadContext(thread, root);
+}
+
+/**
+ * The bot of a server thread that is open, which the shell list may omit (idle subagents are
+ * left out); its loaded detail still carries the lineage, and the bot list names its root. Not
+ * for drafts, which have no detail.
+ */
+export function useOpenServerThreadBotContext(ref: ScopedThreadRef | null) {
+  const shell = useQuietThreadShell(ref);
+  const detail = useQuietThreadProjection(shell ? null : ref);
+  const thread = shell ?? detail?.projection.thread ?? null;
+  const root = useQuietThreadShell(
+    ref && thread && thread.lineage.rootThreadId !== thread.id
+      ? { environmentId: ref.environmentId, threadId: thread.lineage.rootThreadId }
+      : null,
+  );
+  // Outside the workspace the shell list keeps bot threads apart, so the root may be missing too.
+  const rootBot = useBots().find(
+    (bot) =>
+      thread !== null &&
+      bot.ownerEnvironmentId === ref?.environmentId &&
+      bot.threadId === thread.lineage.rootThreadId,
+  );
+  return (
+    resolveBotThreadContext(thread, root) ??
+    (thread && rootBot
+      ? {
+          botId: rootBot.id,
+          threadId: rootBot.threadId,
+          title: rootBot.name,
+          isSubagent: thread.id !== rootBot.threadId,
+        }
+      : null)
+  );
 }
 
 export function useBotAwareThreadRoute(ref: ScopedThreadRef | null) {

@@ -107,7 +107,6 @@ function BotRowMenu({ bot }: { bot: BotIdentity }) {
     void router.navigate({
       to: "/bots/settings/$environmentId/$botId",
       params: { environmentId: bot.ownerEnvironmentId, botId: bot.id },
-      state: { botSettingsReturnHref: router.state.location.href },
     });
   };
   return (

@@ -14,13 +14,11 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { PinIcon, PinOffIcon } from "lucide-react";
 import { resolveEnvironmentMachineKind, type BotIdentity } from "@satslab/contracts";
-import type { EnvironmentThreadShell } from "@satslab/client-runtime/state/shell";
-import { useBots, useBotThreadContext, useBotThreadShells } from "../../state/bots";
+import { useBotThreadContext } from "../../state/bots";
 import { useEnvironments } from "../../state/environments";
 import { useStableCallback } from "../../hooks/useStableCallback";
 import { useThreadRouteRef } from "../../hooks/useThreadRouteTarget";
-import { useOrchestrationCommand } from "../../state/use-orchestration-command";
-import { useEnvironmentThread, threadEnvironment } from "../../state/threads";
+import { useEnvironmentThread } from "../../state/threads";
 import { useThreadActionMenu } from "../../hooks/useThreadActionMenu";
 import { useProject } from "../../state/entities";
 import { cn } from "../../lib/utils";
@@ -48,7 +46,6 @@ import { SidebarChromeHeader, SidebarChromeFooter } from "../sidebar/SidebarChro
 import { isElectron } from "../../env";
 import { SidebarHeaderSearch } from "../sidebar/SidebarThreadHeader";
 import { createSidebarListMotion } from "../Sidebar.motion";
-import { toastManager } from "../ui/toast";
 import { BotAvatar } from "./BotAvatar";
 import { BotThreadStatus } from "./BotThreadStatus";
 import { NewBotButton } from "./NewBotButton";
@@ -59,19 +56,12 @@ import {
   useBotMenuDisabled,
 } from "./BotActions";
 import { buildBotMenuItems } from "./BotMenu.logic";
+import { useBotOrder, type BotRow } from "./useBotOrder";
 
-type BotRow = {
-  bot: BotIdentity;
-  thread: EnvironmentThreadShell | undefined;
-  pinned: boolean;
-  orderKey: string | null;
-};
-type BotPlacement = { id: string; pinned: boolean; orderKey: string | null };
 const SORTABLE_DRAG_DISABLED = { draggable: true } as const;
 const SORTABLE_DRAG_ENABLED = { draggable: false } as const;
 const DRAG_LABEL_HEIGHT = 24;
 const isPinned = (row: BotRow) => row.pinned;
-const orderKey = (row: BotRow) => row.orderKey;
 
 export function BotSidebar() {
   return (
@@ -82,16 +72,10 @@ export function BotSidebar() {
 }
 
 function BotSidebarContent() {
-  const bots = useBots();
+  const { rows, pinned, active, busy, applyOrder, togglePin } = useBotOrder();
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const query = searchQuery.trim().toLocaleLowerCase();
-  const threads = useBotThreadShells();
-  const pin = useOrchestrationCommand(threadEnvironment.pin);
-  const unpin = useOrchestrationCommand(threadEnvironment.unpin);
-  const reorderPin = useOrchestrationCommand(threadEnvironment.reorderPin);
-  const reorderActive = useOrchestrationCommand(threadEnvironment.reorderActive);
-  const [optimistic, setOptimistic] = useState<BotPlacement[] | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const dragging = draggedId !== null;
   const [activationY, setActivationY] = useState<number | null>(null);
@@ -131,38 +115,6 @@ function BotSidebarContent() {
       motion.current = null;
     };
   });
-  const canonicalRows = bots.map((bot) => {
-    const thread = threads.find(
-      (thread) => thread.id === bot.threadId && thread.environmentId === bot.ownerEnvironmentId,
-    );
-    const pinned = thread?.pinnedAt != null;
-    return {
-      bot,
-      thread,
-      pinned,
-      orderKey: (pinned ? thread?.pinOrderKey : thread?.activeOrderKey) ?? null,
-    };
-  });
-  const caughtUp = optimistic?.every((placement) => {
-    const row = canonicalRows.find((row) => row.bot.id === placement.id);
-    return !row || (row.pinned === placement.pinned && row.orderKey === placement.orderKey);
-  });
-  if (caughtUp) setOptimistic(null);
-  const placements = caughtUp ? null : optimistic;
-  const rows = canonicalRows.map((row) => {
-    const placement = placements?.find((placement) => placement.id === row.bot.id);
-    return placement ? { ...row, pinned: placement.pinned, orderKey: placement.orderKey } : row;
-  });
-  rows.sort((a, b) => {
-    const aKey = orderKey(a),
-      bKey = orderKey(b);
-    if (aKey !== null && bKey !== null && aKey !== bKey) return aKey < bKey ? -1 : 1;
-    if (aKey !== null) return -1;
-    if (bKey !== null) return 1;
-    return a.bot.name.localeCompare(b.bot.name) || a.bot.id.localeCompare(b.bot.id);
-  });
-  const pinned = rows.filter(isPinned);
-  const active = rows.filter((row) => !isPinned(row));
   const matchesSearch = (row: BotRow) => row.bot.name.toLocaleLowerCase().includes(query);
   const visiblePinned = pinned.filter(matchesSearch);
   const visibleActive = active.filter(matchesSearch);
@@ -209,7 +161,6 @@ function BotSidebarContent() {
     (args) => restrictBelowSidebarLabel(args, labelOffsetRef.current),
     restrictToFirstScrollableAncestor,
   ];
-  const busy = placements !== null;
   const motionPass = { layoutKey: itemsKey, animate: !dragging && query.length === 0 };
   // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- updates the imperative sidebar animation after layout changes
   useLayoutEffect(() => {
@@ -220,80 +171,6 @@ function BotSidebarContent() {
     if (query || (draggedId !== null && !rows.some((row) => row.bot.id === draggedId)))
       cancelDrag();
   }, [query, draggedId, rows, cancelDrag]);
-  const commit = async (placements: BotPlacement[], write: () => Promise<boolean>) => {
-    setOptimistic(placements);
-    try {
-      if (await write()) return;
-    } catch {
-      // Commands normally return a failure result; transport interruption can reject.
-    }
-    setOptimistic((current) => (current === placements ? null : current));
-    toastManager.add({ type: "error", title: "Could not update bot order" });
-  };
-  const applyOrder = async (source: BotRow, destinationPinned: boolean, next: BotRow[]) => {
-    const order = next.map((row) => String(row.bot.id));
-    const pinnedOrder = pinned.map((row) => String(row.bot.id));
-    const activeOrder = active.map((row) => String(row.bot.id));
-    const plan = planSidebarThreadDrop({
-      activeKey: source.bot.id,
-      activeSection: source.pinned ? "pinned" : "active",
-      supportsSettlement: false,
-      target: {
-        section: destinationPinned ? "pinned" : "active",
-        pinnedOrder: destinationPinned ? order : pinnedOrder,
-        activeOrder: destinationPinned ? activeOrder : order,
-      },
-      pinnedOrder,
-      activeOrder,
-      pinnedKeysById: new Map(pinned.map((row) => [String(row.bot.id), orderKey(row)])),
-      activeKeysById: new Map(active.map((row) => [String(row.bot.id), orderKey(row)])),
-    });
-    if (plan.kind === "none" || plan.kind === "settle") return;
-    const writes =
-      plan.kind === "pin"
-        ? [
-            ...(plan.orderKey === undefined
-              ? []
-              : [{ id: String(source.bot.id), orderKey: plan.orderKey }]),
-            ...plan.extraAssignments,
-          ]
-        : plan.assignments;
-    const placements = writes.map((write) => ({
-      id: write.id,
-      pinned: destinationPinned,
-      orderKey: write.orderKey,
-    }));
-    if (writes.length === 0) return;
-    await commit(placements, async () => {
-      for (const write of writes) {
-        const row = next.find((row) => row.bot.id === write.id);
-        if (!row) continue;
-        const environmentId = row.bot.ownerEnvironmentId;
-        const input = { threadId: row.bot.threadId, orderKey: write.orderKey };
-        if (destinationPinned && !isPinned(row)) {
-          const result = await pin({ environmentId, input });
-          if (result._tag !== "Success") return false;
-        } else {
-          if (!destinationPinned && isPinned(row)) {
-            const result = await unpin({ environmentId, input: { threadId: row.bot.threadId } });
-            if (result._tag !== "Success") return false;
-          }
-          const result = await (destinationPinned ? reorderPin : reorderActive)({
-            environmentId,
-            input,
-          });
-          if (result._tag !== "Success") return false;
-        }
-      }
-      return true;
-    });
-  };
-  const togglePin = (row: BotRow) => {
-    if (busy) return;
-    const destinationPinned = !isPinned(row);
-    const destination = destinationPinned ? pinned : active;
-    void applyOrder(row, destinationPinned, [row, ...destination]);
-  };
   const onDragStart = (event: DragStartEvent) => {
     motion.current?.suspend();
     const list = listRef.current;

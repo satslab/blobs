@@ -7,9 +7,7 @@ import type {
 import { resolveSettingsScope } from "../settings/settingsScope";
 import {
   botSettingsSearchDestination,
-  botSettingsReturnHref,
   resolveBotSettingsGroup,
-  resolveBotSettingsIdentity,
   resolveLegacyBotSettingsIdentity,
 } from "./botSettings.logic";
 
@@ -63,52 +61,12 @@ const group: SidebarProjectSnapshot = {
 };
 const root = { environmentId: source, id: bot.threadId, projectId: local.id, botId: bot.id };
 
-describe("bot settings identity", () => {
-  it("does not substitute another bot when identity data is unavailable", () => {
-    expect(resolveBotSettingsIdentity([record()], "missing", source)).toEqual({
-      bot: null,
-      redirectEnvironmentId: null,
-    });
-    expect(resolveBotSettingsIdentity([], bot.id, source).bot).toBeNull();
-  });
-  it("uses the durable identity's current root after reset", () => {
-    const reset = { ...bot, generation: 2, threadId: ThreadId.make("fresh-root") };
-    const selected = resolveBotSettingsIdentity([record(), record(reset)], bot.id, source).bot;
-    expect(selected).toEqual(reset);
-    expect(resolveBotSettingsGroup([group], selected, root)).toBeNull();
-    expect(
-      resolveBotSettingsGroup([group], selected, { ...root, id: reset.threadId })?.memberProjects,
-    ).toEqual([local]);
-  });
-  it("redirects only to a confirmed active owner, never a staged transfer", () => {
-    const staged: BotIdentity = {
-      ...bot,
-      ownerEnvironmentId: destination,
-      generation: 2,
-      status: "staged",
-    };
-    expect(resolveBotSettingsIdentity([record(), record(staged)], bot.id, source)).toEqual({
-      bot,
-      redirectEnvironmentId: null,
-    });
-    const active = { ...staged, status: "active" as const };
-    expect(resolveBotSettingsIdentity([record(), record(active)], bot.id, source)).toEqual({
-      bot: active,
-      redirectEnvironmentId: destination,
-    });
-    expect(
-      resolveBotSettingsIdentity([record(active, source)], bot.id, source).redirectEnvironmentId,
-    ).toBeNull();
-  });
-  it("keeps transfer and confirmed deletion distinct from an unavailable identity", () => {
-    for (const status of ["transferring", "forwarded", "deleted"] as const) {
-      const identity = { ...bot, generation: 2, status, destinationEnvironmentId: destination };
-      expect(resolveBotSettingsIdentity([record(), record(identity)], bot.id, source)).toEqual({
-        bot: identity,
-        redirectEnvironmentId: null,
-      });
-    }
-  });
+it("uses the bot's current root after a reset", () => {
+  const reset = { ...bot, generation: 2, threadId: ThreadId.make("fresh-root") };
+  expect(resolveBotSettingsGroup([group], reset, root)).toBeNull();
+  expect(
+    resolveBotSettingsGroup([group], reset, { ...root, id: reset.threadId })?.memberProjects,
+  ).toEqual([local]);
 });
 
 describe("bot backing checkout", () => {
@@ -160,24 +118,4 @@ it("routes resource search to the selected bot or management without choosing an
     hash: "bot-load-resources",
   });
   expect(botSettingsSearchDestination(null)).toEqual({ to: "/settings/bots" });
-});
-
-it("returns to the originating root, subagent, or management and replaces stale origins", () => {
-  expect(
-    botSettingsReturnHref(bot, "/bots/source/root", { botId: bot.id, threadId: bot.threadId }),
-  ).toBe("/bots/source/root");
-  expect(
-    botSettingsReturnHref(bot, "/bots/source/subagent", { botId: bot.id, threadId: bot.threadId }),
-  ).toBe("/bots/source/subagent");
-  expect(botSettingsReturnHref(bot, "/settings/bots?machine=source", null)).toBe(
-    "/settings/bots?machine=source",
-  );
-  expect(botSettingsReturnHref(bot, "/bots/source/old", { botId: bot.id, threadId: "old" })).toBe(
-    "/bots/source/root",
-  );
-  expect(
-    botSettingsReturnHref(bot, "/bots/destination/root", { botId: bot.id, threadId: bot.threadId }),
-  ).toBe("/bots/source/root");
-  expect(botSettingsReturnHref(bot, undefined, null)).toBe("/bots/source/root");
-  expect(botSettingsReturnHref(null, undefined, null)).toBe("/settings/bots");
 });

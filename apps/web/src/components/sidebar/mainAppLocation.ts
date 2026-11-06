@@ -14,11 +14,7 @@ function isBotPage(pathname: string) {
 }
 
 export function isSidebarUtilityPage(pathname: string) {
-  return (
-    pathname.startsWith("/projects/") ||
-    pathname.startsWith("/bots/settings/") ||
-    pathname === "/pull-requests"
-  );
+  return pathname.startsWith("/projects/") || pathname === "/pull-requests";
 }
 
 // Pages the root route always renders without the app shell, so they are never
@@ -29,12 +25,28 @@ const SHELL_LESS_PATHS = new Set(["/pair", "/connect", "/connect-agent", GUEST_P
 let mainAppHref: string | null = null;
 let threadsAppHref: string | null = null;
 let appModalReturnHref: string | null = null;
+let workspacePathname: string | null = null;
+let inWorkspace = false;
+
+/**
+ * The bots page to keep showing, or null outside the bots workspace. Settings, Usage, and Pull
+ * requests opened from it stay in its frame instead of the classic sidebar.
+ */
+export function workspaceFramePathname(pathname: string) {
+  if (isBotPage(pathname)) return pathname;
+  const keepsFrame = isAppModalPage(pathname) || pathname === "/pull-requests";
+  return keepsFrame && inWorkspace ? workspacePathname : null;
+}
 
 /** Remembers where Settings, Usage, and the utility pages lead back to. */
 export function startMainAppLocationTracking(router: AnyRouter): () => void {
   const record = () => {
     const { pathname } = router.state.location;
     if (isAppModalPage(pathname) || SHELL_LESS_PATHS.has(pathname)) return;
+    if (isBotPage(pathname)) {
+      workspacePathname = pathname;
+      inWorkspace = true;
+    } else if (pathname !== "/pull-requests") inWorkspace = false;
     const href = withoutAssistantCitationHash(router.state.location.href);
     appModalReturnHref = href;
     if (isSidebarUtilityPage(pathname)) return;

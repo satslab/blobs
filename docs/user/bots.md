@@ -4,11 +4,12 @@ Each bot keeps a continuing conversation while each reply starts a fresh provide
 Original messages remain available when older context becomes summarized. Messages sent during a reply steer that reply.
 Steering messages sent while a bot is preparing join the same reply after compaction finishes.
 
-1. Open **Bots** from the sidebar and choose **New bot**.
-2. Choose a provider and model in the composer, then send a message.
+1. Open **Bots** from the sidebar and choose **+** below the bot list.
+2. Keep the suggested name or type one, then send the bot's first message. Sending creates the bot.
 
 Open **Bots** to return to your last selected bot.
-Use the bot sidebar to switch bots, or open **Settings → Bots** to manage them.
+Switch bots from the list on the left, or with **Cmd+1** to **Cmd+9** (**Ctrl** elsewhere). Drag bots to reorder them, and drag one above the line to pin it.
+Right-click a bot, or click the selected one, for its menu. Open **Settings → Bots** to manage them all.
 You can also switch bots and open management through **Cmd+K** on macOS or **Ctrl+K** elsewhere.
 Manage bots in **Settings → Bots**. Filter by environment, or choose **All environments**.
 Choose **New bot**, then enter a name and select its environment.

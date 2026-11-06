@@ -1,5 +1,5 @@
 import { RegistryContext } from "@effect/atom-react";
-import { DEFAULT_SERVER_SETTINGS, type EnvironmentId } from "@satslab/contracts";
+import { DEFAULT_SERVER_SETTINGS, type BotId, type EnvironmentId } from "@satslab/contracts";
 import { DEFAULT_CLIENT_SETTINGS } from "@satslab/contracts/settings";
 import { botChatProviderDisabledReason } from "@satslab/shared/botChat";
 import { useContext } from "react";
@@ -16,7 +16,7 @@ export function useCreateBot() {
   const { environments } = useEnvironments();
   const providers = useEnvironmentProviders();
   const createBot = useAtomCommand(botCreate);
-  return async (environmentId: EnvironmentId, name?: string) => {
+  return async (environmentId: EnvironmentId, name?: string, botId?: BotId) => {
     const environment = environments.find((item) => item.environmentId === environmentId);
     const settings = environment?.serverConfig?.settings ?? DEFAULT_SERVER_SETTINGS;
     const modelSelection = resolveAppModelSelectionState(
@@ -29,6 +29,7 @@ export function useCreateBot() {
       environmentId,
       input: {
         threadId: newThreadId(),
+        ...(botId ? { botId } : {}),
         ...(name?.trim() ? { name: name.trim() } : {}),
         modelSelection,
         runtimeMode: settings.defaultRuntimeMode,

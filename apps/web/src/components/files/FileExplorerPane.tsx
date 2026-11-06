@@ -65,6 +65,10 @@ export function FileExplorerPane({
       className={cn(
         "relative flex min-h-0 min-w-0 shrink-0 bg-background",
         resizable ? "border-l border-border/60" : "flex-1",
+        // Inside the computer's padded sheet, the side pane needs its own top edge. Clipping keeps
+        // child backgrounds from painting over the rounded corner's border.
+        resizable &&
+          "in-data-[framed-sheet]:overflow-hidden in-data-[framed-sheet]:rounded-tl-xl in-data-[framed-sheet]:border-t in-data-[framed-sheet]:border-border",
       )}
       style={
         resizable

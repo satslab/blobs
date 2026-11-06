@@ -15,3 +15,12 @@ export function botTaskState(
     return "running" as const;
   return thread.status === "failed" ? ("failed" as const) : ("done" as const);
 }
+
+export function botDockState(
+  threads: ReadonlyArray<Parameters<typeof botTaskState>[0]>,
+  hasUnseenCompletion = false,
+) {
+  if (threads.some((thread) => botTaskState(thread) === "waiting")) return "waiting";
+  if (threads.some((thread) => botTaskState(thread) === "running")) return "running";
+  return hasUnseenCompletion ? "done" : "idle";
+}

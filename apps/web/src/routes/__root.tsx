@@ -34,6 +34,8 @@ import { ReopenClosedViewShortcut } from "../components/ReopenClosedViewShortcut
 import { ProjectCloneToastCoordinator } from "../components/ProjectCloneToastCoordinator";
 import { ChatGptWelcomeCoordinator } from "../components/settings/ChatGptWelcomeCoordinator";
 import { ThemeEditorHost } from "../components/settings/ThemeEditorHost";
+import { workspaceFramePathname } from "../components/sidebar/mainAppLocation";
+import { WorkspaceLayout } from "../components/workspace/WorkspacePage";
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 import { Button } from "../components/ui/button";
 import { MorphIcon } from "~/components/MorphIcon";
@@ -198,12 +200,19 @@ function RootRouteBranch() {
       {import.meta.env.DEV && primaryEnvironmentAuthenticated ? <DevReplayHost /> : null}
     </>
   );
+  // The workspace owns its whole frame, without the classic sidebar. It still needs the global
+  // hosts below, such as confirm dialogs.
   const appShell = (
     <CommandPalette>
-      {/* Setup starts with an empty workspace, so the Welcome page has no thread list. */}
-      <AppSidebarLayout showSidebar={!isWelcome}>
-        <Outlet />
-      </AppSidebarLayout>
+      {workspaceFramePathname(pathname) !== null ? (
+        <WorkspaceLayout>
+          <Outlet />
+        </WorkspaceLayout>
+      ) : (
+        <AppSidebarLayout showSidebar={!isWelcome}>
+          <Outlet />
+        </AppSidebarLayout>
+      )}
     </CommandPalette>
   );
 

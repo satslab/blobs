@@ -228,7 +228,6 @@ describe("bot settings entry point", () => {
       {
         to: "/bots/settings/$environmentId/$botId",
         params: { environmentId: "secondary", botId: "bot" },
-        state: { botSettingsReturnHref: "/bots/secondary/thread" },
       },
     ]);
   });

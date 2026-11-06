@@ -467,6 +467,49 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   }
 }
 
+/* A white tint for dropdown-glass, for light-mode surfaces that float over the page. */
+/* Concave corners where an active folder tab meets the sheet below it. */
+@utility folder-tab-flares {
+  position: relative;
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    pointer-events: none;
+  }
+  &::before {
+    left: -0.75rem;
+    background: radial-gradient(
+      circle at 0 0,
+      transparent 0.75rem,
+      var(--background) calc(0.75rem + 0.5px)
+    );
+  }
+  &::after {
+    right: -0.75rem;
+    background: radial-gradient(
+      circle at 100% 0,
+      transparent 0.75rem,
+      var(--background) calc(0.75rem + 0.5px)
+    );
+  }
+}
+
+@utility glass-white {
+  background: color-mix(
+    in srgb,
+    white 18%,
+    color-mix(in srgb, white var(--glass-opacity), transparent)
+  );
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: white !important;
+  }
+}
+
 @utility topbar-scroll-fade {
   -webkit-mask-image:
     linear-gradient(

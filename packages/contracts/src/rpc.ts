@@ -2051,6 +2051,8 @@ const WsBotsDiscordSetCredentialRpc = Rpc.make(WS_METHODS.botsDiscordSetCredenti
 const WsBotsCreateRpc = Rpc.make(WS_METHODS.botsCreate, {
   payload: Schema.Struct({
     threadId: ThreadId,
+    /** Lets a client show the bot's face before it exists; the face is seeded by this id. */
+    botId: Schema.optionalKey(BotId),
     name: Schema.optionalKey(Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(255))),
     modelSelection: ModelSelection,
     runtimeMode: RuntimeMode,

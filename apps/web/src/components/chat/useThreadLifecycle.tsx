@@ -495,7 +495,15 @@ export function useThreadLifecycle(input: ThreadLifecycleInput) {
     const root = shell
       ? readThreadShell(scopeThreadRef(environmentId, shell.lineage.rootThreadId))
       : null;
-    const bot = resolveBotThreadContext(shell, root);
+    // The shell omits idle subagents, which then share the open thread's bot.
+    const bot =
+      resolveBotThreadContext(shell, root) ??
+      (shell === null && activeThreadShell
+        ? resolveBotThreadContext(
+            activeThreadShell,
+            readThreadShell(scopeThreadRef(environmentId, activeThreadShell.lineage.rootThreadId)),
+          )
+        : null);
     void navigate({
       to: bot ? "/bots/$environmentId/$threadId" : "/$environmentId/$threadId",
       params: buildThreadRouteParams(threadRef),
