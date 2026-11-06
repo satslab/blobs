@@ -4110,7 +4110,7 @@ describe("AcpAdapterV2", () => {
     Effect.gen(function* () {
       const harness = yield* makePromptInactivityHarness({
         environment: (runtimeOrdinal) =>
-          runtimeOrdinal === 1 ? { T3_ACP_HANG_PROMPT_FOREVER: "1" } : {},
+          runtimeOrdinal === 1 ? { BLOBS_ACP_HANG_PROMPT_FOREVER: "1" } : {},
       });
       const thought = (sessionId: string) => ({
         sessionId,
@@ -4148,7 +4148,9 @@ describe("AcpAdapterV2", () => {
       Effect.gen(function* () {
         const harness = yield* makePromptInactivityHarness({
           environment: (runtimeOrdinal) =>
-            runtimeOrdinal === 1 ? { T3_ACP_EMIT_TRACKED_TOOL_CALL_KIND_THEN_HANG: "execute" } : {},
+            runtimeOrdinal === 1
+              ? { BLOBS_ACP_EMIT_TRACKED_TOOL_CALL_KIND_THEN_HANG: "execute" }
+              : {},
         });
         yield* harness.startTurn(1);
         yield* harness.runtime.events.pipe(
@@ -4183,7 +4185,7 @@ describe("AcpAdapterV2", () => {
   it.effect("holds the inactivity timeout while the agent waits on an approval", () =>
     Effect.gen(function* () {
       const harness = yield* makePromptInactivityHarness({
-        environment: () => ({ T3_ACP_EMIT_TOOL_CALLS: "1" }),
+        environment: () => ({ BLOBS_ACP_EMIT_TOOL_CALLS: "1" }),
         runtimeMode: "approval-required",
       });
       yield* harness.startTurn(1);
@@ -4226,9 +4228,9 @@ describe("AcpAdapterV2", () => {
       const harness = yield* makePromptInactivityHarness({
         environment: (runtimeOrdinal) =>
           runtimeOrdinal === 1
-            ? { T3_ACP_EMIT_TOOL_CALLS: "1" }
+            ? { BLOBS_ACP_EMIT_TOOL_CALLS: "1" }
             : runtimeOrdinal === 2
-              ? { T3_ACP_HANG_PROMPT_FOREVER: "1" }
+              ? { BLOBS_ACP_HANG_PROMPT_FOREVER: "1" }
               : {},
         runtimeMode: "approval-required",
       });
