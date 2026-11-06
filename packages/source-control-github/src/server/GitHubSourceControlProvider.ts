@@ -1,5 +1,4 @@
 import { requireSettingsSecretLiteral, SourceControlProviderKind } from "@satslab/contracts";
-import * as Data from "effect/Data";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";

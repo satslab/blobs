@@ -6,12 +6,6 @@ import {
 } from "./pullRequestMediaSource";
 import { useFilePreviewGallery } from "../../components/ui/FilePreviewGallery";
 import { videoMimeType } from "@satslab/shared/video";
-import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
-import {
-  SOURCE_CONTROL_MEDIA_ASSET,
-  type AssetResource,
-  type EnvironmentId,
-} from "@satslab/contracts";
 import { Pressable, View } from "react-native";
 import { Image } from "expo-image";
 import { AppText } from "../../components/ui/AppText";

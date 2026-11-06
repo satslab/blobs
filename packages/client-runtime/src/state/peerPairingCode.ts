@@ -11,7 +11,6 @@ import {
   mcpClientScopes,
 } from "@satslab/contracts";
 import * as Schema from "effect/Schema";
-import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import type * as HttpClient from "effect/http/HttpClient";
 import * as Option from "effect/Option";

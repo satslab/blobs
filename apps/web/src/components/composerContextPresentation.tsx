@@ -11,7 +11,6 @@ import { videoMimeType } from "@satslab/shared/video";
 import { MessageCircleIcon, MousePointerClickIcon } from "lucide-react";
 import { createContext, type ReactElement, type ReactNode, use } from "react";
 import { ComposerContextActionsContext } from "./composerContextActions";
-import type { EnvironmentId } from "@satslab/contracts";
 
 import type { ComposerFileAttachment, ComposerImageAttachment } from "~/composerDraftStore";
 import { composerFileNeedsReattach } from "~/composerDraftStore";
