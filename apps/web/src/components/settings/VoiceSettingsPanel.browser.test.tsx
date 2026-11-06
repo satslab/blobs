@@ -1,9 +1,9 @@
-import { PrimaryConnectionTarget } from "@t3tools/client-runtime/connection";
+import { PrimaryConnectionTarget } from "@satslab/client-runtime/connection";
 import {
   EnvironmentId,
   type EnvironmentSpeechModel,
   type EnvironmentSpeechStatus,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 import { render } from "../../../test/render";

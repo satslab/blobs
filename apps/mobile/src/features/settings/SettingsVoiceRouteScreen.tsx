@@ -30,7 +30,7 @@ import {
   hasEnvironmentVoiceCapture,
 } from "../voice-input/voiceDestination";
 import { VoiceModelSection } from "./VoiceModelSection";
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@satslab/contracts";
 import { ThreadSwipeable } from "../home/thread-swipe-actions";
 import { ListActionRow as SettingsActionRow } from "../../components/ui/ListActionRow";
 import { SettingsDragHandle } from "./components/SettingsDragHandle";

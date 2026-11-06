@@ -9,9 +9,9 @@ import {
   type VoiceDraftSnapshot,
   type VoiceInputControllerDependencies,
   type VoiceInputState,
-} from "@t3tools/client-runtime/voice-input";
-import type { PreparedConnection } from "@t3tools/client-runtime/connection";
-import { AuthOrchestrationOperateScope } from "@t3tools/contracts";
+} from "@satslab/client-runtime/voice-input";
+import type { PreparedConnection } from "@satslab/client-runtime/connection";
+import { AuthOrchestrationOperateScope } from "@satslab/contracts";
 import type {
   EnvironmentId,
   EnvironmentSpeechModel,
@@ -20,9 +20,9 @@ import type {
   SpeechPostProcessingOptions,
   SpeechStreamText,
   SpeechTranscriptionOptions,
-} from "@t3tools/contracts";
-import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
-import { resolveSpeechVocabulary } from "@t3tools/shared/speech";
+} from "@satslab/contracts";
+import { resolveProjectSettings } from "@satslab/shared/projectSettings";
+import { resolveSpeechVocabulary } from "@satslab/shared/speech";
 import * as Option from "effect/Option";
 import { useEffect, useRef, useState } from "react";
 
@@ -180,12 +180,12 @@ export function useEnvironmentSpeechInput(input: HookInput) {
     text?: string;
   } | null>(null);
   const latestRef = useRef({ input, clientSettings, cleanupPrepared, projectWords });
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- publishes committed props and settings to the asynchronous recording controller
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- publishes committed props and settings to the asynchronous recording controller
   useEffect(() => {
     latestRef.current = { input, clientSettings, cleanupPrepared, projectWords };
   });
   const draftRevisionRef = useRef({ ownerKey: input.ownerKey, text: input.draftText, revision: 0 });
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- tracks committed draft revisions so a late transcript cannot overwrite an edited draft
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- tracks committed draft revisions so a late transcript cannot overwrite an edited draft
   useEffect(() => {
     const revision = draftRevisionRef.current;
     if (revision.ownerKey !== input.ownerKey || revision.text !== input.draftText) {
@@ -197,7 +197,7 @@ export function useEnvironmentSpeechInput(input: HookInput) {
     }
   }, [input.ownerKey, input.draftText]);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- owns the recording controller bound to the consented destination; it is disposed with the consent
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- owns the recording controller bound to the consented destination; it is disposed with the consent
   useEffect(() => {
     if (!prepared || !grantId || typeof navigator === "undefined") return;
     const hasAudioConsent = bindAudioGrant(grantId);
@@ -348,7 +348,7 @@ export function useEnvironmentSpeechInput(input: HookInput) {
     };
   }, [prepared, grantId]);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- probes the chosen environment's speech status once its connection is available
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- probes the chosen environment's speech status once its connection is available
   useEffect(() => {
     if (!prepared) return;
     let disposed = false;
@@ -365,7 +365,7 @@ export function useEnvironmentSpeechInput(input: HookInput) {
   }, [prepared]);
   const currentStatus = status?.prepared === prepared ? status.value : null;
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- polls download progress while the setup dialog owns an active model download
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- polls download progress while the setup dialog owns an active model download
   useEffect(() => {
     if (!setup.open || !setup.downloading || !prepared || !currentStatus?.supported) return;
     const modelId = currentStatus.modelId;
@@ -393,7 +393,7 @@ export function useEnvironmentSpeechInput(input: HookInput) {
   }, [currentStatus, prepared, setup.downloading, setup.open]);
 
   const previousOwnerRef = useRef(input.ownerKey);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- abandons the recording and any queued submission when the draft's owner changes
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- abandons the recording and any queued submission when the draft's owner changes
   useEffect(() => {
     if (previousOwnerRef.current === input.ownerKey && !input.disabled) return;
     previousOwnerRef.current = input.ownerKey;
@@ -402,7 +402,7 @@ export function useEnvironmentSpeechInput(input: HookInput) {
     controllerRef.current?.ownerChanged();
   }, [input.ownerKey, input.disabled]);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- delivers a queued submission only after the transcript has committed to the draft
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- delivers a queued submission only after the transcript has committed to the draft
   useEffect(() => {
     const pending = pendingSubmissionRef.current;
     if (state.phase !== "idle" || !pending) return;

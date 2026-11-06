@@ -2,7 +2,7 @@ import { useLayoutEffect } from "react";
 import { expect, it, vi } from "vite-plus/test";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
-import type { PreparedConnection } from "@t3tools/client-runtime/connection";
+import type { PreparedConnection } from "@satslab/client-runtime/connection";
 import {
   DEFAULT_CLIENT_SETTINGS,
   DEFAULT_SERVER_SETTINGS,
@@ -11,7 +11,7 @@ import {
   type SpeechCustomWords,
   type SpeechPostProcessingOptions,
   type SpeechTranscriptionOptions,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import { act, render } from "../../test/render";
 import { useEnvironmentSpeechInput } from "./useEnvironmentSpeechInput";
@@ -90,8 +90,8 @@ vi.mock("../hooks/useSettings", () => ({
 }));
 vi.mock("../lib/runtime", () => ({ runtime: { runPromise: Effect.runPromise } }));
 vi.mock("../components/ui/toast", () => ({ toastManager: { add: vi.fn() } }));
-vi.mock("@t3tools/client-runtime/voice-input", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@t3tools/client-runtime/voice-input")>()),
+vi.mock("@satslab/client-runtime/voice-input", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@satslab/client-runtime/voice-input")>()),
   getEnvironmentSpeechStatus: (prepared: PreparedConnection) =>
     Effect.sync(() => {
       mocks.statusRequests.push(prepared.environmentId);

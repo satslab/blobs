@@ -1,4 +1,4 @@
-import { effectiveSpeechLanguage } from "@t3tools/shared/speech";
+import { effectiveSpeechLanguage } from "@satslab/shared/speech";
 import {
   getEnvironmentSpeechStatus,
   getEnvironmentSpeechStreamUrl,
@@ -7,9 +7,9 @@ import {
   transcribeEnvironmentPcm,
   VoiceTranscriptionError,
   type VoiceTranscriptionOptions,
-} from "@t3tools/client-runtime/voice-input";
-import type { PreparedConnection } from "@t3tools/client-runtime/connection";
-import type { SpeechTranscriptionOptions, SpeechStreamText } from "@t3tools/contracts";
+} from "@satslab/client-runtime/voice-input";
+import type { PreparedConnection } from "@satslab/client-runtime/connection";
+import type { SpeechTranscriptionOptions, SpeechStreamText } from "@satslab/contracts";
 
 import { runtime } from "../lib/runtime";
 import { createBrowserPcmCapture } from "./browserPcmCapture";

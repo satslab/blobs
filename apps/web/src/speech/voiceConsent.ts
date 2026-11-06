@@ -1,4 +1,4 @@
-import { VoiceTranscriptionDestination } from "@t3tools/contracts";
+import { VoiceTranscriptionDestination } from "@satslab/contracts";
 import * as Schema from "effect/Schema";
 import { randomUUID } from "../lib/utils";
 import {

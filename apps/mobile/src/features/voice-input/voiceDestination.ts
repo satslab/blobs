@@ -2,16 +2,16 @@ import {
   AuthOrchestrationOperateScope,
   type EnvironmentId,
   DEFAULT_SPEECH_TRANSCRIPTION_OPTIONS,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import {
   getEnvironmentSpeechModels,
   getEnvironmentSpeechStatus,
   transcribeEnvironmentPcm,
   VoiceTranscriptionError,
-} from "@t3tools/client-runtime/voice-input";
+} from "@satslab/client-runtime/voice-input";
 import { FetchHttpClient, type HttpClient } from "effect/http";
-import type { PreparedConnection } from "@t3tools/client-runtime/connection";
-import { effectiveSpeechLanguage } from "@t3tools/shared/speech";
+import type { PreparedConnection } from "@satslab/client-runtime/connection";
+import { effectiveSpeechLanguage } from "@satslab/shared/speech";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import { Atom, AsyncResult, AtomRegistry } from "effect/reactivity";

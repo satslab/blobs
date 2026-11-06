@@ -825,8 +825,8 @@ function makeLocalCommandHarness(input: {
     forkThread,
     startTurn,
   };
-  const delegatedContext = vi.fn<BotChat.BotChat["Service"]["delegatedContext"]>(() =>
-    Effect.sync(() => undefined),
+  const delegatedContext = vi.fn<BotChat.BotChat["Service"]["delegatedContext"]>(
+    () => Effect.undefined,
   );
   const prepareMemory = vi.fn<BotChat.BotChat["Service"]["prepare"]>((request) =>
     Effect.succeed({

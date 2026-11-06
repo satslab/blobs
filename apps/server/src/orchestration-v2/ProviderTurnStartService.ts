@@ -803,7 +803,7 @@ export const layer: Layer.Layer<
       }
       const workspaceResult = yield* Effect.result(
         projection.thread.botId === undefined
-          ? Effect.sync(() => undefined)
+          ? Effect.undefined
           : ensureWorkspace(projection.thread.botId),
       );
       if (workspaceResult._tag === "Failure") {
@@ -817,7 +817,7 @@ export const layer: Layer.Layer<
       const delegatedMemoryResult = yield* Effect.result(
         projection.thread.lineage.relationshipToParent === "subagent"
           ? botChat.delegatedContext(projection.thread)
-          : Effect.sync(() => undefined),
+          : Effect.undefined,
       );
       if (delegatedMemoryResult._tag === "Failure") {
         yield* settleStartFailure({
@@ -894,7 +894,7 @@ export const layer: Layer.Layer<
             };
       const memorySnapshotResult = yield* Effect.result(
         projection.thread.botId === undefined
-          ? Effect.sync(() => undefined)
+          ? Effect.undefined
           : botChat.prepare({
               botId: projection.thread.botId,
               runId: run.id,

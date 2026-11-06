@@ -3679,7 +3679,9 @@ function claudeToolResultBlocksFromUserMessage(
   if (message.type !== "user" || typeof message.message.content === "string") {
     return [];
   }
-  return message.message.content.filter(isClaudeUserToolResultContentBlock);
+  return message.message.content.flatMap((part) =>
+    isClaudeUserToolResultContentBlock(part) ? [part] : [],
+  );
 }
 
 function claudeToolResultEntriesFromMessage(message: SDKMessage): ReadonlyArray<{

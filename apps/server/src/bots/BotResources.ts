@@ -86,7 +86,7 @@ const make = Effect.gen(function* () {
   });
   const change = Effect.fn("BotResources.change")(function* (
     id: BotId,
-    action: typeof BotResourceAction.Type,
+    action: BotResourceAction,
     projectId: ProjectId,
   ) {
     yield* storage.withBot(
@@ -142,9 +142,11 @@ const make = Effect.gen(function* () {
             yield* removeSecret(id, action.key);
             break;
           case "check-in.configure":
-            yield* Effect.try(
-              () => new Intl.DateTimeFormat("en", { timeZone: action.settings.timezone }),
-            );
+            yield* Effect.try({
+              try: () => new Intl.DateTimeFormat("en", { timeZone: action.settings.timezone }),
+              catch: (cause) =>
+                new BotChatError({ operation: "resources", reason: "storage", cause }),
+            });
             yield* storage.saveResources(id, { ...state, checkIn: action.settings });
             break;
         }
@@ -193,16 +195,19 @@ const make = Effect.gen(function* () {
     proof: string,
   ) {
     const bytes = Buffer.from(input.encryptedSecrets, "base64");
-    const decoded = yield* Effect.try(() => {
-      const decipher = NodeCrypto.createDecipheriv(
-        "aes-256-gcm",
-        keyFor(proof),
-        bytes.subarray(0, 12),
-      );
-      decipher.setAuthTag(bytes.subarray(12, 28));
-      return Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString(
-        "utf8",
-      );
+    const decoded = yield* Effect.try({
+      try: () => {
+        const decipher = NodeCrypto.createDecipheriv(
+          "aes-256-gcm",
+          keyFor(proof),
+          bytes.subarray(0, 12),
+        );
+        decipher.setAuthTag(bytes.subarray(12, 28));
+        return Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString(
+          "utf8",
+        );
+      },
+      catch: (cause) => new BotChatError({ operation: "resources", reason: "storage", cause }),
     });
     const secrets = yield* decodeSecretValues(decoded);
     const previous = yield* storage.resources(id);

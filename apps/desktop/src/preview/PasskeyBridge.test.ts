@@ -79,55 +79,60 @@ describe("installPasskeyBridge", () => {
     vi.unstubAllGlobals();
   });
 
-  it("serves passkey sign-in through the main process with a credential pages can verify", async () => {
-    const { invoke, credentials, FakePublicKeyCredential, FakeAssertionResponse } = install(() => ({
-      success: true,
-      data: assertionData,
-    }));
-    const challenge = new Uint8Array([0, 1, 2, 3]).subarray(1);
+  it.each([assertionData.userHandle, "", null])(
+    "serves passkey sign-in with user handle %s",
+    async (userHandle) => {
+      const { invoke, credentials, FakePublicKeyCredential, FakeAssertionResponse } = install(
+        () => ({
+          success: true,
+          data: { ...assertionData, userHandle },
+        }),
+      );
+      const challenge = new Uint8Array([0, 1, 2, 3]).subarray(1);
 
-    const credential = (await credentials.get({
-      publicKey: {
-        challenge,
-        rpId: "example.com",
-        allowCredentials: [{ type: "public-key", id: new Uint8Array([1, 2, 3]) }],
-        extensions: { onHint: () => {} } as AuthenticationExtensionsClientInputs,
-      },
-    })) as PublicKeyCredential;
+      const credential = (await credentials.get({
+        publicKey: {
+          challenge,
+          rpId: "example.com",
+          allowCredentials: [{ type: "public-key", id: new Uint8Array([1, 2, 3]) }],
+          extensions: { onHint: () => {} } as AuthenticationExtensionsClientInputs,
+        },
+      })) as PublicKeyCredential;
 
-    assert.deepStrictEqual(invoke.mock.calls[0], [
-      PASSKEY_GET_CHANNEL,
-      {
-        challenge: new Uint8Array([1, 2, 3]),
-        rpId: "example.com",
-        allowCredentials: [{ type: "public-key", id: new Uint8Array([1, 2, 3]) }],
-        extensions: {},
-      },
-    ]);
-    const response = credential.response as AuthenticatorAssertionResponse;
-    assert.instanceOf(credential, FakePublicKeyCredential);
-    assert.instanceOf(response, FakeAssertionResponse);
-    assert.strictEqual(credential.id, assertionData.credentialId);
-    assert.deepStrictEqual(bytesOf(credential.rawId), [1, 2, 3]);
-    assert.deepStrictEqual(bytesOf(response.signature), [6, 7]);
-    assert.deepStrictEqual(bytesOf(response.userHandle), [8]);
-    assert.deepStrictEqual(
-      bytesOf(credential.getClientExtensionResults().prf?.results?.first as ArrayBuffer),
-      [9],
-    );
-    assert.deepStrictEqual(credential.toJSON(), {
-      id: assertionData.credentialId,
-      rawId: assertionData.credentialId,
-      type: "public-key",
-      response: {
-        clientDataJSON: assertionData.clientDataJSON,
-        authenticatorData: assertionData.authenticatorData,
-        signature: assertionData.signature,
-        userHandle: assertionData.userHandle,
-      },
-      clientExtensionResults: { prf: { results: { first: base64Url([9]) } } },
-    });
-  });
+      assert.deepStrictEqual(invoke.mock.calls[0], [
+        PASSKEY_GET_CHANNEL,
+        {
+          challenge: new Uint8Array([1, 2, 3]),
+          rpId: "example.com",
+          allowCredentials: [{ type: "public-key", id: new Uint8Array([1, 2, 3]) }],
+          extensions: {},
+        },
+      ]);
+      const response = credential.response as AuthenticatorAssertionResponse;
+      assert.instanceOf(credential, FakePublicKeyCredential);
+      assert.instanceOf(response, FakeAssertionResponse);
+      assert.strictEqual(credential.id, assertionData.credentialId);
+      assert.deepStrictEqual(bytesOf(credential.rawId), [1, 2, 3]);
+      assert.deepStrictEqual(bytesOf(response.signature), [6, 7]);
+      assert.deepStrictEqual(bytesOf(response.userHandle), userHandle ? [8] : null);
+      assert.deepStrictEqual(
+        bytesOf(credential.getClientExtensionResults().prf?.results?.first as ArrayBuffer),
+        [9],
+      );
+      assert.deepStrictEqual(credential.toJSON(), {
+        id: assertionData.credentialId,
+        rawId: assertionData.credentialId,
+        type: "public-key",
+        response: {
+          clientDataJSON: assertionData.clientDataJSON,
+          authenticatorData: assertionData.authenticatorData,
+          signature: assertionData.signature,
+          ...(userHandle ? { userHandle } : {}),
+        },
+        clientExtensionResults: { prf: { results: { first: base64Url([9]) } } },
+      });
+    },
+  );
 
   it("rejects with the WebAuthn error the ceremony ended with", async () => {
     const { credentials } = install((channel) => ({

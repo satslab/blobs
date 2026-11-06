@@ -1,13 +1,13 @@
-import { encodeSpeechPcmRequest } from "@t3tools/shared/speech";
+import { encodeSpeechPcmRequest } from "@satslab/shared/speech";
 import * as Effect from "effect/Effect";
 import * as Redacted from "effect/Redacted";
-import { SPEECH_STREAM_PATH } from "@t3tools/contracts";
+import { SPEECH_STREAM_PATH } from "@satslab/contracts";
 import type {
   SpeechAcceleration,
   SpeechModelUnloadTimeout,
   SpeechTranscriptionOptions,
   SpeechPostProcessingOptions,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import * as RemoteEnvironmentAuthorization from "../authorization/service.ts";
 import type { PreparedConnection } from "../connection/model.ts";
