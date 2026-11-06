@@ -8,9 +8,9 @@ import {
   SimlockDeviceHostConfig,
   TextGeneratorConfig,
   UsageLimitSourceConfig,
-} from "@t3tools/contracts";
-import { getProviderClient } from "@t3tools/client-runtime/provider-clients";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+} from "@satslab/contracts";
+import { getProviderClient } from "@satslab/client-runtime/provider-clients";
+import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 
 import { deriveProviderSettingsFields, type SettingsFormDefinition } from "./ProviderSettingsForm";
 

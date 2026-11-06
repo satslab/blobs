@@ -27,7 +27,7 @@ import type {
 } from "@anthropic-ai/claude-agent-sdk/sdk-tools";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { toolOutputImages } from "@t3tools/shared/toolOutput";
+import { toolOutputImages } from "@satslab/shared/toolOutput";
 import {
   ChatAttachmentId,
   type ChatAttachment,

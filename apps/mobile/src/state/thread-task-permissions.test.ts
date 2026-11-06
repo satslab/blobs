@@ -77,8 +77,8 @@ vi.mock("react", () => ({
   ],
 }));
 vi.mock("expo-crypto", () => ({ randomUUID: () => "uuid" }));
-vi.mock("@t3tools/client-runtime/state/context-window", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@t3tools/client-runtime/state/context-window")>()),
+vi.mock("@satslab/client-runtime/state/context-window", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@satslab/client-runtime/state/context-window")>()),
   shouldCompactBeforeSend: () => state.compactDue,
 }));
 vi.mock("../lib/attachmentUpload", () => ({ prepareTurnAttachments: vi.fn() }));

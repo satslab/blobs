@@ -1,7 +1,7 @@
 import { ProviderDriverKind, ProviderInstanceId, type ServerProvider } from "@satslab/contracts";
 import { describe, expect, it } from "vite-plus/test";
 import { deriveProviderInstanceEntries } from "../../providerInstances";
-import { hasDismissedResumeCompaction } from "@t3tools/client-runtime/state/context-window";
+import { hasDismissedResumeCompaction } from "@satslab/client-runtime/state/context-window";
 import { hasAvailableCompactionProvider } from "./compaction.logic";
 
 function claudeProvider(input: {

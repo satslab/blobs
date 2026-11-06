@@ -1,17 +1,17 @@
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { deriveThreadTitleSeed } from "@t3tools/client-runtime/operations";
+import { scopeThreadRef } from "@satslab/client-runtime/environment";
+import { deriveThreadTitleSeed } from "@satslab/client-runtime/operations";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
   type AtomCommandResult,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@satslab/client-runtime/state/runtime";
 import {
   MessageId,
   ThreadId,
   type ModelSelection,
   type RuntimeMode,
   type ScopedThreadRef,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 
 import * as Dialog from "../../components/ui/Dialog";
 import { uuidv4 } from "../../lib/uuid";

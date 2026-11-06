@@ -29,7 +29,7 @@ import { HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } fr
 import * as HostProcess from "@satslab/shared/HostProcess";
 import type { NodeRuntimeUnavailableError } from "@satslab/shared/nodeRuntime";
 
-import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretResolver";
+import * as SecretResolver from "@satslab/secret-provider-core/server/SecretResolver";
 import * as ServerConfig from "../config.ts";
 import * as ProcessRunner from "../processRunner.ts";
 import { requireSettingsSecret } from "../secrets/settingsSecretValue.ts";

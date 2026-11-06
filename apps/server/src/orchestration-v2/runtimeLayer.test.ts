@@ -62,6 +62,8 @@ import * as OrchestrationEventStore from "../persistence/OrchestrationEventStore
 import * as ProjectEnrichmentService from "../project/ProjectEnrichmentService.ts";
 import * as ProjectService from "../project/ProjectService.ts";
 import * as ServerSettings from "../serverSettings.ts";
+import * as SecretResolver from "@satslab/secret-provider-core/server/SecretResolver";
+import * as VcsStatusBroadcaster from "../vcs/VcsStatusBroadcaster.ts";
 import * as McpSessionRegistry from "../mcp/McpSessionRegistry.ts";
 import type * as McpInvocationContext from "../mcp/McpInvocationContext.ts";
 import * as McpSessionRegistryTestkit from "../mcp/McpSessionRegistry.testkit.ts";
@@ -409,6 +411,8 @@ it.effect("production bot and normal sessions retain project agent capabilities"
           Layer.provide(
             Layer.mergeAll(
               Layer.mock(CloudManagedEndpointRuntime)({}),
+              Layer.mock(SecretResolver.SecretResolver)({}),
+              Layer.mock(VcsStatusBroadcaster.VcsStatusBroadcaster)({}),
               Layer.mock(AnalyticsService)({
                 record: () => Effect.void,
                 flush: Effect.void,

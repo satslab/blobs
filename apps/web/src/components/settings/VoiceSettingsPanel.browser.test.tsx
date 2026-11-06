@@ -3,13 +3,13 @@ import {
   PrimaryConnectionTarget,
   RelayConnectionTarget,
   type PreparedConnection,
-} from "@t3tools/client-runtime/connection";
+} from "@satslab/client-runtime/connection";
 import type * as Effect from "effect/Effect";
 import {
   EnvironmentId,
   type EnvironmentSpeechModel,
   type EnvironmentSpeechStatus,
-} from "@t3tools/contracts";
+} from "@satslab/contracts";
 import { expect, it, vi } from "vite-plus/test";
 import { userEvent } from "vite-plus/test/browser";
 import { render } from "../../../test/render";

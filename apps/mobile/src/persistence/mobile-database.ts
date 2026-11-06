@@ -116,7 +116,7 @@ export class MobileDatabase extends Context.Service<
       updatedAt: number,
     ) => Effect.Effect<void, MobileDatabaseError>;
   }
->()("@satslab/mobile/persistence/MobileDatabase") {}
+>()("@satslab/mobile/persistence/mobile-database/MobileDatabase") {}
 
 const makeAvailable = Effect.gen(function* () {
   const database = yield* Effect.acquireRelease(
