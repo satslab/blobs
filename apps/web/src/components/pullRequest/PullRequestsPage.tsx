@@ -64,6 +64,7 @@ import {
 import { PullRequestCompactFilterMenu } from "./PullRequestCompactFilterMenu";
 import { INVOLVEMENT_TABS, SORT_OPTIONS, STATE_TABS } from "./pullRequestListOptions";
 import { PullRequestsColumn } from "./PullRequestsColumn";
+import { usePullRequestsPanelRef } from "./usePullRequestsPanelRef";
 import { PullRequestListGroups } from "./PullRequestListGroups";
 import { pullRequestPanelReference } from "./usePullRequestDetail";
 import { usePullRequestIntentPrefetch } from "./usePullRequestIntentPrefetch";
@@ -94,7 +95,6 @@ import { writeTextToClipboard } from "~/hooks/useCopyToClipboard";
 import { toastManager } from "../ui/toast";
 import { usePanelAnimationSettings, usePanelPresence } from "~/panelAnimations";
 import {
-  PULL_REQUESTS_PANEL_REF,
   selectActiveRightPanelSurface,
   selectSelectedRightPanelSurface,
   selectThreadRightPanelState,
@@ -168,7 +168,8 @@ export function PullRequestsPage() {
     expectedHosts,
     projectsKnown,
   } = usePullRequestScope(search);
-  const rightPanelRef = capableEnvironments.length === 0 ? null : PULL_REQUESTS_PANEL_REF;
+  const panelRef = usePullRequestsPanelRef();
+  const rightPanelRef = capableEnvironments.length === 0 ? null : panelRef;
   const openPanelPullRequestUrl = useOpenPanelPullRequestUrl(rightPanelRef);
   const rightPanelState = useRightPanelStore((state) =>
     selectThreadRightPanelState(state.byThreadKey, rightPanelRef),
@@ -1346,18 +1347,12 @@ export function PullRequestsPage() {
       />
     ),
     titlebarControls:
-      // While the panel is closed the strip lives inside the header: a no-drag
-      // descendant beats the header's desktop drag-region, where a floating
-      // sibling loses (app-region hit-testing ignores z-index).
-      pullRequestsSupported ? (
-        rightPanelPresent ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-full w-7 [-webkit-app-region:no-drag]"
-          />
-        ) : (
-          openPanelControls
-        )
+      // The panel controls show only while a pull request is open; the shortcut still reopens it.
+      pullRequestsSupported && rightPanelPresent ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-full w-7 [-webkit-app-region:no-drag]"
+        />
       ) : null,
     rightPanelOpen: rightPanelState.isOpen,
     maximizedAway: rightPanelMaximized,
