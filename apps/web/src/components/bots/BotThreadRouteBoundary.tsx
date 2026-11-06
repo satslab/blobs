@@ -1,7 +1,7 @@
 import type { ScopedThreadRef } from "@satslab/contracts";
 import { Navigate, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useBotThreadContext } from "../../state/bots";
+import { useOpenServerThreadBotContext } from "../../state/bots";
 import { isThreadRoutePathname } from "../../threadRoutes";
 
 export function BotThreadRouteBoundary({
@@ -11,9 +11,15 @@ export function BotThreadRouteBoundary({
   threadRef: ScopedThreadRef | null;
   children: ReactNode;
 }) {
-  const bot = useBotThreadContext(threadRef);
+  const bot = useOpenServerThreadBotContext(threadRef);
   const pathname = useLocation({
-    select: (location) => location.pathname.replace(/^\/layout(?=\/|$)/, "") || "/",
+    // Thread ids may hold reserved characters, so compare decoded segments.
+    select: (location) =>
+      location.pathname
+        .replace(/^\/layout(?=\/|$)/, "")
+        .split("/")
+        .map(decodeURIComponent)
+        .join("/") || "/",
   });
   // Old bookmarks and app-owned thread links still use ordinary thread URLs.
   if (

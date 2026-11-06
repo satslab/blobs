@@ -41,6 +41,44 @@ export function BotMemoryPanel({ threadRef }: { threadRef: ScopedThreadRef }) {
   ) : null;
 }
 
+/** Entries, size against the reply budget, and compaction state, for the bot overview. */
+export function BotMemorySummary({
+  environmentId,
+  botId,
+}: {
+  environmentId: EnvironmentId;
+  botId: BotId;
+}) {
+  const summary = useEnvironmentQuery(
+    botMemory({ environmentId, input: { botId, section: "summary" } }),
+  );
+  const stats = summary.data?.stats;
+  const turn = summary.data?.views.find((view) => view.name === "turn");
+  if (!stats)
+    return <p className="text-xs text-muted-foreground">{summary.error ?? "Loading memory…"}</p>;
+  return (
+    <div>
+      <p className="text-sm">
+        <span className="text-base font-semibold tabular-nums">
+          {stats.entries.toLocaleString()}
+        </span>{" "}
+        {stats.entries === 1 ? "entry" : "entries"}
+        {turn && turn.bytes !== null ? (
+          <span className="text-muted-foreground tabular-nums">
+            {" "}
+            · {formatMemoryBytes(turn.bytes)} of {formatMemoryBytes(turn.highBytes)}
+          </span>
+        ) : null}
+      </p>
+      {turn && turn.bytes !== null ? (
+        <div className="mt-2">
+          <ViewMeter view={turn} bytes={turn.bytes} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function BotMemoryContent({
   environmentId,
   botId,

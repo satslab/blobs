@@ -1083,10 +1083,21 @@ it.effect("keeps each bot project named with its bot and deletes only that proje
     const projections = yield* ProjectionStore.ProjectionStoreV2;
     const first = yield* chat.create({
       threadId: ThreadId.make("project-first"),
+      botId: BotId.make("atlas"),
       name: "Atlas",
       modelSelection: thread.modelSelection,
       runtimeMode: thread.runtimeMode,
     });
+    assert.equal(first.id, "atlas");
+    const taken = yield* chat
+      .create({
+        threadId: ThreadId.make("project-taken"),
+        botId: first.id,
+        modelSelection: thread.modelSelection,
+        runtimeMode: thread.runtimeMode,
+      })
+      .pipe(Effect.flip);
+    assert.equal(taken.reason, "id-taken");
     const second = yield* chat.create({
       threadId: ThreadId.make("project-second"),
       name: "Nova",

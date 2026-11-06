@@ -1,13 +1,16 @@
 import type { BotIdentity, ScopedThreadRef } from "@satslab/contracts";
 import { Link, useLocation } from "@tanstack/react-router";
 import { ArrowUpRightIcon, CircleAlertIcon } from "lucide-react";
+import { useState } from "react";
 import { useBotThreadContext, useBots } from "../../state/bots";
 import { botDiscordStatus } from "../../state/botDiscord";
 import { useEnvironmentQuery } from "../../state/query";
 import { cn } from "../../lib/utils";
 import { ThreadDetailsSection } from "../chat/ThreadDetailsSection";
 import { Button } from "../ui/button";
+import { Dialog } from "../ui/dialog";
 import { RefreshIcon } from "../ui/refresh-icon";
+import { BotDiscordDialog } from "./BotDiscordSettings";
 import { discordPanelStatus, discordUserPolicyLabel } from "./BotIntegrationPanel.logic";
 
 export function BotIntegrationPanel({ threadRef }: { threadRef: ScopedThreadRef }) {
@@ -19,7 +22,6 @@ export function BotIntegrationPanel({ threadRef }: { threadRef: ScopedThreadRef 
 }
 
 function DiscordIntegrationCard({ bot }: { bot: BotIdentity }) {
-  const location = useLocation();
   const query = useEnvironmentQuery(
     botDiscordStatus({ environmentId: bot.ownerEnvironmentId, input: { botId: bot.id } }),
   );
@@ -33,7 +35,6 @@ function DiscordIntegrationCard({ bot }: { bot: BotIdentity }) {
       to="/bots/settings/$environmentId/$botId"
       params={{ environmentId: bot.ownerEnvironmentId, botId: bot.id }}
       hash="bot-discord"
-      state={{ botSettingsReturnHref: location.href }}
     />
   );
   const error = query.error ?? (enabled ? status?.error : null);
@@ -153,6 +154,54 @@ function DiscordIntegrationCard({ bot }: { bot: BotIdentity }) {
         ) : null}
       </div>
     </ThreadDetailsSection>
+  );
+}
+
+/**
+ * Discord on the bot page: its status, with the setup in a dialog so the page layout stays put.
+ * Opens on its own when a link targets `#bot-discord`.
+ */
+export function BotDiscordSection({ bot, disabled }: { bot: BotIdentity; disabled: boolean }) {
+  const targeted = useLocation({ select: (location) => location.hash === "bot-discord" });
+  const [open, setOpen] = useState(targeted);
+  const query = useEnvironmentQuery(
+    botDiscordStatus({ environmentId: bot.ownerEnvironmentId, input: { botId: bot.id } }),
+  );
+  const status = query.data;
+  const enabled = status?.settings.enabled === true;
+  return (
+    <div className="flex items-center gap-2.5 text-sm">
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-lg [&_svg]:size-4",
+          enabled ? "bg-discord text-white" : "bg-muted text-muted-foreground",
+        )}
+      >
+        <DiscordGlyph />
+      </span>
+      <span className="min-w-0 flex-1">
+        Discord
+        <span className="block text-xs text-muted-foreground">
+          {status ? discordPanelStatus(status) : (query.error ?? "Loading…")}
+        </span>
+      </span>
+      <Button size="sm" variant="outline" disabled={!status} onClick={() => setOpen(true)}>
+        {enabled ? "Edit" : "Set up"}
+      </Button>
+      <Dialog open={open && status !== undefined} onOpenChange={setOpen}>
+        {status ? (
+          <BotDiscordDialog
+            // A fresh draft each time the dialog opens.
+            key={String(open)}
+            bot={bot}
+            saved={status}
+            disabled={disabled}
+            refresh={query.refresh}
+            onDone={() => setOpen(false)}
+          />
+        ) : null}
+      </Dialog>
+    </div>
   );
 }
 

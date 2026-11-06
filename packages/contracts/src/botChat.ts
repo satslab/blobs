@@ -130,6 +130,7 @@ export class BotChatError extends Schema.TaggedError<BotChatError>()("BotChatErr
     "inference",
     "invalid-transfer",
     "browser-secret",
+    "id-taken",
   ]),
   cause: Schema.optional(Schema.Defect()),
 }) {
@@ -151,6 +152,8 @@ export class BotChatError extends Schema.TaggedError<BotChatError>()("BotChatErr
         return "Bot transfer state or ownership proof is invalid.";
       case "browser-secret":
         return "Could not fill that secret. Check the page origin and field before retrying.";
+      case "id-taken":
+        return "Another bot already uses this id.";
       case "storage":
         return "Bot storage operation failed.";
     }
@@ -266,4 +269,43 @@ export function selectBotIdentities(identities: readonly BotIdentity[]) {
       selected.set(bot.id, bot);
   }
   return [...selected.values()];
+}
+
+const BOT_STAR_NAMES = [
+  "Vega",
+  "Sirius",
+  "Altair",
+  "Rigel",
+  "Deneb",
+  "Capella",
+  "Polaris",
+  "Arcturus",
+  "Spica",
+  "Antares",
+  "Procyon",
+  "Castor",
+  "Pollux",
+  "Regulus",
+  "Bellatrix",
+  "Mira",
+  "Alhena",
+  "Alnilam",
+  "Alnitak",
+  "Saiph",
+  "Fomalhaut",
+  "Aldebaran",
+  "Achernar",
+  "Alcor",
+];
+
+/** Star names no bot uses yet, numbered once every plain name is taken. Never empty. */
+export function availableBotStarNames(usedNames: ReadonlyArray<string>) {
+  const used = new Set(usedNames.map((name) => name.trim().toLocaleLowerCase()));
+  let candidates = BOT_STAR_NAMES.filter((star) => !used.has(star.toLocaleLowerCase()));
+  for (let suffix = 2; candidates.length === 0; suffix++) {
+    candidates = BOT_STAR_NAMES.map((star) => `${star} ${suffix}`).filter(
+      (star) => !used.has(star.toLocaleLowerCase()),
+    );
+  }
+  return candidates;
 }

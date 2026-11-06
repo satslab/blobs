@@ -1,5 +1,6 @@
 import { botTaskState } from "./BotWorkTab.logic";
-import { useState } from "react";
+import { formatSubagentDisplayTitle } from "@satslab/client-runtime/state/subagent-display";
+import { use, useState } from "react";
 import { DateTime } from "effect";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -38,7 +39,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import { Switch } from "../ui/switch";
-import { PanelCard, PanelGroup, PanelList } from "./BotPanelParts";
+import { PanelLookContext, PanelCard, PanelGroup, PanelList } from "./BotPanelParts";
 import { BotFollowUps, BotSavedResources, useBotResources } from "./BotResourcesPanel";
 
 // Finished work folds into a fixed-height list so history never pushes the routines off screen.
@@ -55,8 +56,11 @@ const STATE_DOT_CLASS = {
 } as const;
 
 /** Threads and subagents the bot started, newest first. */
-function useBotTasks(bot: BotIdentity) {
-  const shells = useThreadRelationshipShells(scopeThreadRef(bot.ownerEnvironmentId, bot.threadId));
+export function useBotTasks(bot: BotIdentity | null) {
+  const shells = useThreadRelationshipShells(
+    bot ? scopeThreadRef(bot.ownerEnvironmentId, bot.threadId) : null,
+  );
+  if (!bot) return { root: null, tasks: [] };
   const root = shells.find((thread) => thread.id === bot.threadId) ?? null;
   const tasks = shells
     .flatMap((thread) => {
@@ -90,6 +94,7 @@ function TaskRows({
   root: TaskThread | null;
   tasks: readonly Task[];
 }) {
+  const flat = use(PanelLookContext) === "flat";
   const navigate = useNavigate();
   const projects = useProjects();
   const providers = useEnvironmentProviders().get(bot.ownerEnvironmentId);
@@ -116,7 +121,10 @@ function TaskRows({
           <li key={thread.id}>
             <button
               type="button"
-              className="flex h-10 w-full items-center gap-2.5 px-3 text-left text-sm outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              className={cn(
+                "flex h-10 w-full items-center gap-2.5 px-3 text-left text-sm outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                flat && "rounded-lg hover:bg-foreground/4",
+              )}
               onClick={() => {
                 const memory = resolveBotThreadContext(thread, root);
                 void navigate({
@@ -153,10 +161,10 @@ function TaskRows({
                   state === "done" && "text-muted-foreground",
                 )}
               >
-                {thread.title}
+                {formatSubagentDisplayTitle(thread.title)}
               </span>
               {projectName ? (
-                <span className="flex max-w-28 min-w-0 shrink overflow-hidden">
+                <span className="flex max-w-28 min-w-0 shrink overflow-hidden p-px">
                   <Badge variant="outline" size="sm">
                     {projectName}
                   </Badge>
@@ -189,14 +197,18 @@ function EarlierTasks({
   tasks: readonly Task[];
 }) {
   const [open, setOpen] = useState(true);
+  const flat = use(PanelLookContext) === "flat";
   const failedCount = tasks.filter((task) => task.state === "failed").length;
   return (
-    <section className="space-y-1.5 px-4 pt-3">
+    <section className={cn("space-y-1.5", flat ? "pt-5" : "px-4 pt-3")}>
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="flex h-7 items-center gap-1.5 rounded-md px-3 text-xs text-muted-foreground outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        className={cn(
+          "flex h-7 items-center gap-1.5 rounded-md text-xs text-muted-foreground outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+          flat ? "-mx-1 px-1 font-semibold tracking-wide uppercase" : "px-3",
+        )}
       >
         <ChevronDownIcon aria-hidden className={cn("size-3.5", !open && "-rotate-90")} />
         <span>Earlier · {tasks.length}</span>
@@ -253,8 +265,14 @@ function RoutineDetails({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const flat = use(PanelLookContext) === "flat";
   return (
-    <div className="mx-3 mb-2.5 ml-5 space-y-3 border-l border-border/60 pl-4 text-sm">
+    <div
+      className={cn(
+        "mx-3 mb-2.5 space-y-3 text-sm",
+        flat ? "ml-9" : "ml-5 border-l border-border/60 pl-4",
+      )}
+    >
       <p className="line-clamp-6 whitespace-pre-wrap text-muted-foreground">{task.prompt}</p>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
         <dt className="text-muted-foreground">Next run</dt>
@@ -435,14 +453,70 @@ function Routines({
   );
 }
 
+/**
+ * The bot's subagents and threads on their own: what needs you, what's running, and what finished.
+ * `onOpen` runs when one is picked, so a popover can close.
+ */
+export function BotTaskList({ bot, onOpen }: { bot: BotIdentity; onOpen?: () => void }) {
+  const { root, tasks } = useBotTasks(bot);
+  const waiting = tasks.filter((task) => task.state === "waiting");
+  const running = tasks.filter((task) => task.state === "running");
+  const earlier = tasks
+    .filter((task) => task.state === "done" || task.state === "failed")
+    .slice(0, EARLIER_LIMIT);
+  if (tasks.length === 0)
+    return (
+      <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+        No subagents or threads yet
+      </p>
+    );
+  return (
+    <PanelLookContext value="flat">
+      <div
+        className="px-4 pb-4 [&>*:first-child]:pt-3"
+        onClick={(event) => {
+          if (event.target instanceof Element && event.target.closest("li button")) onOpen?.();
+        }}
+      >
+        {waiting.length > 0 ? (
+          <PanelGroup title="Needs input" aside={String(waiting.length)}>
+            <PanelCard>
+              <TaskRows bot={bot} root={root} tasks={waiting} />
+            </PanelCard>
+          </PanelGroup>
+        ) : null}
+        {running.length > 0 ? (
+          <PanelGroup title="Running" aside={String(running.length)}>
+            <PanelCard>
+              <TaskRows bot={bot} root={root} tasks={running} />
+            </PanelCard>
+          </PanelGroup>
+        ) : null}
+        {earlier.length > 0 ? (
+          <PanelGroup title="Earlier" aside={earlier.length}>
+            <PanelCard>
+              <ScrollArea scrollFade className="max-h-44">
+                <TaskRows bot={bot} root={root} tasks={earlier} />
+              </ScrollArea>
+            </PanelCard>
+          </PanelGroup>
+        ) : null}
+      </div>
+    </PanelLookContext>
+  );
+}
+
 export function BotWorkTab({
   bot,
   scoped,
   connected,
+  routinesOnly = false,
 }: {
   bot: BotIdentity;
   scoped: boolean;
   connected: boolean;
+  /** The bot page shows only routines and follow-ups; it keeps skills and secrets elsewhere. */
+  routinesOnly?: boolean;
 }) {
   const { root, tasks } = useBotTasks(bot);
   const routinesQuery = useEnvironmentQuery(
@@ -472,11 +546,10 @@ export function BotWorkTab({
     tasks.length === 0 &&
     routines.length === 0 &&
     followUps.length === 0 &&
-    (saved?.skills.length ?? 0) === 0 &&
-    (saved?.secrets.length ?? 0) === 0;
+    (routinesOnly || ((saved?.skills.length ?? 0) === 0 && (saved?.secrets.length ?? 0) === 0));
   return (
     <>
-      {empty && errors.length === 0 ? (
+      {routinesOnly ? null : empty && errors.length === 0 ? (
         <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-8 py-12 text-center">
           <div className="flex size-10 items-center justify-center rounded-xl border border-border/60 bg-card text-muted-foreground">
             <SparklesIcon aria-hidden className="size-5" />
@@ -491,14 +564,14 @@ export function BotWorkTab({
           {error}
         </p>
       ))}
-      {waiting.length > 0 ? (
+      {!routinesOnly && waiting.length > 0 ? (
         <PanelGroup title="Needs you" aside={waiting.length}>
           <PanelCard>
             <TaskRows bot={bot} root={root} tasks={waiting} />
           </PanelCard>
         </PanelGroup>
       ) : null}
-      {running.length > 0 ? (
+      {!routinesOnly && running.length > 0 ? (
         <PanelGroup title="In progress" aside={`${running.length} running`}>
           <PanelCard>
             <TaskRows bot={bot} root={root} tasks={running} />
@@ -509,8 +582,12 @@ export function BotWorkTab({
         <Routines bot={bot} scoped={scoped} tasks={routines} refresh={routinesQuery.refresh} />
       ) : null}
       {followUps.length > 0 ? <BotFollowUps items={followUps} resources={resources} /> : null}
-      <BotSavedResources state={saved ?? { skills: [], secrets: [] }} resources={resources} />
-      {earlier.length > 0 ? <EarlierTasks bot={bot} root={root} tasks={earlier} /> : null}
+      {!routinesOnly ? (
+        <BotSavedResources state={saved ?? { skills: [], secrets: [] }} resources={resources} />
+      ) : null}
+      {!routinesOnly && earlier.length > 0 ? (
+        <EarlierTasks bot={bot} root={root} tasks={earlier} />
+      ) : null}
     </>
   );
 }

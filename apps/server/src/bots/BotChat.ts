@@ -24,6 +24,7 @@ import {
   type ModelSelection,
   type RuntimeMode,
   type BotTransfer,
+  availableBotStarNames,
   BotChatError,
   BotId,
   type BotIdentity,
@@ -61,33 +62,6 @@ import * as BotIntegrationLifecycle from "./BotIntegrationLifecycle.ts";
 import * as MemoryCompaction from "./MemoryCompaction.ts";
 import { makeMemory } from "./MemoryWorker.ts";
 import { memoryTurnItem } from "./MemoryTurnItem.ts";
-
-const BOT_STAR_NAMES = [
-  "Vega",
-  "Sirius",
-  "Altair",
-  "Rigel",
-  "Deneb",
-  "Capella",
-  "Polaris",
-  "Arcturus",
-  "Spica",
-  "Antares",
-  "Procyon",
-  "Castor",
-  "Pollux",
-  "Regulus",
-  "Bellatrix",
-  "Mira",
-  "Alhena",
-  "Alnilam",
-  "Alnitak",
-  "Saiph",
-  "Fomalhaut",
-  "Aldebaran",
-  "Achernar",
-  "Alcor",
-];
 
 const isBotChatError = Schema.is(BotChatError);
 const decodeDomainEvent = Schema.decodeUnknownEffect(OrchestrationV2DomainEvent);
@@ -325,6 +299,7 @@ const make = Effect.gen(function* () {
   const create = Effect.fn("BotChat.create")(
     function* (input: {
       threadId: ThreadId;
+      botId?: BotId;
       name?: string;
       modelSelection: ModelSelection;
       runtimeMode: RuntimeMode;
@@ -341,17 +316,13 @@ const make = Effect.gen(function* () {
       const existingThread = yield* projections.getThreadShell(input.threadId);
       let name = existingThread?.title ?? input.name?.trim();
       if (!name) {
-        const usedNames = new Set(bots.map((bot) => bot.name.trim().toLocaleLowerCase()));
-        let candidates = BOT_STAR_NAMES.filter((star) => !usedNames.has(star.toLocaleLowerCase()));
-        for (let suffix = 2; candidates.length === 0; suffix++) {
-          candidates = BOT_STAR_NAMES.map((star) => `${star} ${suffix}`).filter(
-            (star) => !usedNames.has(star.toLocaleLowerCase()),
-          );
-        }
-        name = yield* Random.choice(candidates);
+        name = yield* Random.choice(availableBotStarNames(bots.map((bot) => bot.name)));
       }
-      const id =
-        (yield* storage.forThread(input.threadId))?.id ?? BotId.make(yield* crypto.uuidV4());
+      const bound = yield* storage.forThread(input.threadId);
+      if (!bound && input.botId && bots.some((bot) => bot.id === input.botId)) {
+        return yield* new BotChatError({ operation: "create", reason: "id-taken" });
+      }
+      const id = bound?.id ?? input.botId ?? BotId.make(yield* crypto.uuidV4());
       if (!existingThread) {
         const projectId = yield* ensureProject(id, name);
         const now = yield* DateTime.now;

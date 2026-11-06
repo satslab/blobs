@@ -241,7 +241,6 @@ export function useThreadActionMenu(input: {
             void router.navigate({
               to: "/bots/settings/$environmentId/$botId",
               params: { environmentId: thread.environmentId, botId: botContext.botId },
-              state: { botSettingsReturnHref: router.state.location.href },
             });
             return;
           }

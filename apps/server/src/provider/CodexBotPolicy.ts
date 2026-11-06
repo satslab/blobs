@@ -119,6 +119,8 @@ export const botThreadConfig = {
 export const botRootThreadConfig = (
   loadResources: boolean,
 ): Readonly<Record<string, Schema.Json>> => ({
+  "tools.experimental_request_user_input.enabled": true,
+  "features.default_mode_request_user_input": true,
   include_environment_context: false,
   developer_instructions: "",
   user_instructions: "",

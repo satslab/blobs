@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { use, useEffect, useId, useRef, useState } from "react";
 import { useAtomValue } from "@effect/atom-react";
 import type { BotCheckInSettings, BotIdentity, BotResourceAction } from "@satslab/contracts";
 import { botResources, botResourcesChange, botCheckIn } from "../../state/botResources";
@@ -10,7 +10,14 @@ import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../ui/select";
 import { Switch } from "../ui/switch";
-import { PanelCard, PanelEmpty, PanelField, PanelGroup, PanelList } from "./BotPanelParts";
+import {
+  PanelCard,
+  PanelEmpty,
+  PanelField,
+  PanelGroup,
+  PanelList,
+  PanelLookContext,
+} from "./BotPanelParts";
 import { ActiveHoursField } from "./ActiveHoursField";
 
 type CheckInSettings = typeof BotCheckInSettings.Type;
@@ -235,6 +242,7 @@ function CheckInSection({
   lastCheckIn: number | null;
   refresh: () => void;
 }) {
+  const flat = use(PanelLookContext) === "flat";
   const environmentId = bot.ownerEnvironmentId;
   // Failures show inline with a retry instead of a toast.
   const change = useAtomCommand(botResourcesChange, {
@@ -334,7 +342,9 @@ function CheckInSection({
       }
     >
       <PanelCard>
-        <div className="divide-y divide-border/60 [&>*]:px-3 [&>*]:py-3">
+        <div
+          className={cn("[&>*]:px-3 [&>*]:py-3", flat ? "[&>*]:py-2" : "divide-y divide-border/60")}
+        >
           <PanelField label="Automatic check-ins" htmlFor={`${id}-enabled`}>
             <Switch
               id={`${id}-enabled`}

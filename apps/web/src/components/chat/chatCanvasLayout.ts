@@ -16,6 +16,8 @@ export interface ChatCanvasPreview {
   readonly position: PreviewMiniPlayerPosition | null;
   readonly source: PreviewMiniPlayerSize;
   readonly lastInteraction?: PreviewMiniPlayerState["lastInteraction"];
+  /** Floats over the chat instead of moving it aside, keeping clear of `insetEnd` on the right. */
+  readonly overlay?: { readonly insetEnd: number };
 }
 
 const GAP = 12;
@@ -57,6 +59,13 @@ export function resolveChatCanvasLayout({
   let overlapsChat = false;
   if (preview && container.width > 0 && container.height > 0) {
     frame = resolvePreviewMiniPlayerFrame({ ...preview, container });
+  }
+  if (preview?.overlay && frame) {
+    const area = { ...container, width: container.width - preview.overlay.insetEnd };
+    frame = resolvePreviewMiniPlayerFrame({ ...preview, container: area });
+    if (preview.position === null) frame = { ...frame, y: area.height - frame.height - GAP };
+    frame = { ...frame, ...clampPreviewMiniPlayerPosition(frame, area, frame, undefined, GAP) };
+  } else if (preview && frame) {
     // Reserve a chat lane only if the preview still has room to drag.
     const minimumPreviewX =
       preview.lastInteraction === "resize" ||
