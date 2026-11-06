@@ -4,7 +4,6 @@ import * as Dialog from "../../components/ui/Dialog";
 import { useIsFocused, useNavigation, type StaticScreenProps } from "@react-navigation/native";
 import { EnvironmentId, ThreadId, type PreviewSessionSnapshot } from "@satslab/contracts";
 import { normalizePreviewUrl, previewPdfAssetUrl } from "@satslab/shared/preview";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as Option from "effect/Option";
 import { useEffect, useRef, useState } from "react";
 import { Platform, TextInput, View } from "react-native";

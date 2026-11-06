@@ -545,7 +545,9 @@ export function ThreadRelationshipsPanel(props: {
     related = [],
     active = [],
     previous = [],
-    sideChats = [], activeThreads = [], previousThreads = [],
+    sideChats = [],
+    activeThreads = [],
+    previousThreads = [],
   } = groupBy(visibleRelationships, ({ threadId, edge }) => {
     const isParent = isParentThreadRelationship(edge, props.threadId);
     if (!isParent && graph.nodes.get(threadId)?.thread?.lineage.sideChat === true)
