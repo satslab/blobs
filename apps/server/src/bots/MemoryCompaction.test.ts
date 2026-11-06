@@ -52,6 +52,7 @@ const makeInstance = (
         generateBranchName: () => Effect.die("Unused"),
         generateThreadTitle: () => Effect.die("Unused"),
         generateReviewGuide: () => Effect.die("Unused"),
+        generateTranscriptionPostProcessing: () => Effect.die("Unused"),
         generateMemorySummary: generate,
       },
     } satisfies ProviderInstance;

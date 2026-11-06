@@ -24,7 +24,6 @@ import * as HttpApi from "effect/http-api/HttpApi";
 import * as HttpApiBuilder from "effect/http-api/HttpApiBuilder";
 import * as NetAddress from "effect/net/NetAddress";
 import { decodeRelayJwt, RELAY_LINK_PROOF_TYP, verifyRelayJwt } from "@satslab/shared/relayJwt";
-import { decodeJwt, importSPKI, jwtVerify } from "jose";
 
 import * as EnvironmentKeys from "./environmentKeys.ts";
 import * as EnvironmentAuth from "../auth/EnvironmentAuth.ts";

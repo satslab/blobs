@@ -144,7 +144,7 @@ const dependencies = (
     EventStore.layer,
     transfers
       ? BotOwnership.layer.pipe(Layer.provide(BotStorage.layer))
-      : Layer.mock(BotOwnership.BotOwnership)({ packageFor: () => Effect.sync(() => undefined) }),
+      : Layer.mock(BotOwnership.BotOwnership)({ packageFor: () => Effect.undefined }),
     transfers ? BotTransferFiles.layer : Layer.mock(BotTransferFiles.BotTransferFiles)({}),
     ProjectStore.layer,
     Layer.succeed(ServerEnvironment.ServerEnvironmentIdentity, {

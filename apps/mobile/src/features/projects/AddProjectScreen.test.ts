@@ -5,7 +5,6 @@ import * as NodePath from "node:path";
 import * as NodeModule from "node:module";
 import type { EnvironmentConnectionPhase } from "@satslab/client-runtime/connection";
 import { workspaceDetailRouter } from "../layout/workspace/workspace-detail-selection";
-import { workspaceDetailRouter } from "../workspace/workspace-detail-selection";
 import type { NavigationState } from "@react-navigation/native";
 import { AuthOrchestrationOperateScope, AuthSourceControlWriteScope } from "@satslab/contracts";
 import * as Cause from "effect/Cause";

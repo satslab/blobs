@@ -292,7 +292,7 @@ export function HostedBrowserWebview(props: {
     viewportWidth,
   ]);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Report the mounted webview's visibility to the desktop host.
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- Report the mounted webview's visibility to the desktop host.
   useEffect(() => {
     const bridge = window.desktopBridge?.preview;
     if (!clientSettingsHydrated || !bridge || !serverDriven) return;

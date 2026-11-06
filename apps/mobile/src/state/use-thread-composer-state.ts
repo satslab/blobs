@@ -85,7 +85,7 @@ import {
   useComposerDraft,
   useComposerDraftSettings,
 } from "./use-composer-drafts";
-import { isClearComposerCommand, parseSideChatCommand } from "@t3tools/shared/composerTrigger";
+import { isClearComposerCommand, parseSideChatCommand } from "@satslab/shared/composerTrigger";
 import {
   resolveComposerDispatchMode,
   type ActiveTurnComposerAction,
@@ -250,7 +250,7 @@ export function useThreadComposerState(input: {
       ? EMPTY_THREAD_SEQUENCE_ATOM
       : environmentThreadDetails.sequenceAtom(selectedThreadDetailRef),
   );
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- prunes the app-wide acknowledged atom when the mounted thread catches up
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- prunes the app-wide acknowledged atom when the mounted thread catches up
   useEffect(() => {
     if (selectedThreadKey === null || acknowledgedMessages.length === 0) return;
     pruneCaughtUpAcknowledgedThreadMessages(selectedThreadKey, {

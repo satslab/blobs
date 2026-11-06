@@ -5,7 +5,7 @@ import {
   MAX_TOOL_OUTPUT_IMAGES,
   MAX_TOOL_OUTPUT_IMAGE_BASE64_LENGTH,
   toolOutputImages,
-} from "@t3tools/shared/toolOutput";
+} from "@satslab/shared/toolOutput";
 
 import { openCodeToolOutput, openCodeToolTurnItem } from "./toolItems.ts";
 
