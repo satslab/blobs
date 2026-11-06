@@ -1878,16 +1878,19 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
       const followsLatestContext =
         !freshContext &&
         (followsCurrent || providerThreadPredatesBoundary(storedProviderThread, contextBoundary));
-      const targetProviderThread = projection.thread.botId !== undefined ? undefined : followsLatestContext
-        ? activeProviderThread?.providerInstanceId === queuedRun.providerInstanceId &&
-          !providerThreadPredatesBoundary(activeProviderThread, contextBoundary)
-          ? activeProviderThread
-          : rootProviderThreadsForProvider(projection, queuedRun.providerInstanceId)[0]
-        : freshContext &&
-            (storedProviderThread.firstRunOrdinal !== null ||
-              storedProviderThread.nativeThreadRef !== null)
+      const targetProviderThread =
+        projection.thread.botId !== undefined
           ? undefined
-          : storedProviderThread;
+          : followsLatestContext
+            ? activeProviderThread?.providerInstanceId === queuedRun.providerInstanceId &&
+              !providerThreadPredatesBoundary(activeProviderThread, contextBoundary)
+              ? activeProviderThread
+              : rootProviderThreadsForProvider(projection, queuedRun.providerInstanceId)[0]
+            : freshContext &&
+                (storedProviderThread.firstRunOrdinal !== null ||
+                  storedProviderThread.nativeThreadRef !== null)
+              ? undefined
+              : storedProviderThread;
       const queuedProviderThread: OrchestrationV2ProviderThread = targetProviderThread ?? {
         id: idAllocator.derive.providerThread({
           driver: targetAdapter.driver,
@@ -6218,11 +6221,12 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
       const now = yield* DateTime.now;
       const ordinal = nextRunOrdinal(projection);
       const runId = idAllocator.derive.run({ threadId: command.threadId, ordinal });
-      const targetProviderThread = freshContext || projection.thread.botId !== undefined
-        ? undefined
-        : modelSelection.instanceId === queueProviderThread.providerInstanceId
-          ? queueProviderThread
-          : rootProviderThreadsForProvider(projection, modelSelection.instanceId)[0];
+      const targetProviderThread =
+        freshContext || projection.thread.botId !== undefined
+          ? undefined
+          : modelSelection.instanceId === queueProviderThread.providerInstanceId
+            ? queueProviderThread
+            : rootProviderThreadsForProvider(projection, modelSelection.instanceId)[0];
       const queuedAdapter = yield* providerAdapters
         .get(modelSelection.instanceId)
         .pipe(mapDispatchError(command));

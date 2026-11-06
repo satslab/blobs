@@ -1,8 +1,4 @@
 import { useSelectedThreadWorktreePath } from "./use-thread-detail";
-import type { ScopedThreadRef } from "@satslab/contracts";
-import * as Option from "effect/Option";
-import { useProject, useQuietThreadShell } from "./entities";
-import { useEnvironmentThread } from "./threads";
 import { useThreadSelection } from "./use-thread-selection";
 import { resolvePreferredThreadWorktreePath } from "../features/terminal/terminalLaunchContext";
 

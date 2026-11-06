@@ -10,8 +10,6 @@ import {
   CHATGPT_WORKSPACE_USAGE_LIMIT_CODE,
 } from "@satslab/shared/usageLimits";
 import * as Clipboard from "expo-clipboard";
-import { Button } from "../../components/ui/Button";
-import * as DateTime from "effect/DateTime";
 import { useState } from "react";
 import { Linking, Pressable, View } from "react-native";
 import { ProviderIcon } from "../../components/ProviderIcon";
