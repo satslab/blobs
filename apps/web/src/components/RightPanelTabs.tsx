@@ -1054,10 +1054,19 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
     canScrollRight: false,
   });
 
+  // Pages like Pull requests offer nothing to add, so the menu and its shortcut stay hidden.
+  const canAddSurface =
+    props.browserAvailable ||
+    props.terminalAvailable ||
+    props.diffAvailable ||
+    props.filesAvailable ||
+    props.pullRequestAvailable ||
+    props.pullRequestsAvailable ||
+    props.deviceAvailable;
   if (props.open === false && addSurfaceMenuOpen) setAddSurfaceMenuOpen(false);
 
   const onNewSurfaceKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (event.defaultPrevented || event.isComposing) return;
+    if (!canAddSurface || event.defaultPrevented || event.isComposing) return;
     if (
       resolveShortcutCommand(event, props.keybindings, {
         context: { ...props.getShortcutContext(), rightPanelOpen: true },
@@ -1423,7 +1432,7 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
                   );
                 })}
               </SortableTabList>
-              {props.open !== false ? (
+              {props.open !== false && canAddSurface ? (
                 <Menu open={addSurfaceMenuOpen} onOpenChange={setAddSurfaceMenuOpen}>
                   <MenuTrigger
                     ref={addSurfaceTriggerRef}

@@ -12,7 +12,7 @@ import type { PluggableList } from "unified";
 
 import { useAssetUrlRefresh, useAssetUrlState } from "~/assets/assetUrls";
 import { cn } from "~/lib/utils";
-import { PULL_REQUESTS_PANEL_REF } from "~/rightPanelStore";
+import { usePullRequestsPanelRef } from "./usePullRequestsPanelRef";
 
 import ChatMarkdown from "../ChatMarkdown";
 import { MediaVideoPlayer } from "../media/MediaVideoPlayer";
@@ -79,6 +79,7 @@ function PullRequestBodySegmentView({
 }) {
   const context = useContext(PullRequestMarkdownContext);
   const repository = context?.repository ?? undefined;
+  const pullRequestsPanelRef = usePullRequestsPanelRef();
   if (segment.kind === "table") {
     return (
       <div className="space-y-3">
@@ -119,7 +120,7 @@ function PullRequestBodySegmentView({
         text={segment.kind === "markdown" ? segment.text : `![](<${segment.url}>)`}
         cwd={cwd}
         threadRef={threadRef}
-        pullRequestPanelRef={threadRef ?? PULL_REQUESTS_PANEL_REF}
+        pullRequestPanelRef={threadRef ?? pullRequestsPanelRef}
         environmentId={environmentId}
         {...(context ? { extraRemarkPlugins: context.remarkPlugins } : {})}
         lineBreaks={lineBreaks}
