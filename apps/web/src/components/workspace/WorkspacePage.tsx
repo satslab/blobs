@@ -78,6 +78,7 @@ import { Kbd } from "../ui/kbd";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { BotOverview } from "../bots/BotRightPanel";
 import { WorkspacePageContainer } from "../WorkspacePageContainer";
+import { useMacosWindowControlsInset } from "../../hooks/useMacosWindowControlsInset";
 import { NewBotDraft } from "./NewBotDraft";
 
 const WORKSPACE_CONTENT_VARS = {
@@ -87,10 +88,14 @@ const WORKSPACE_CONTENT_VARS = {
   "--workspace-titlebar-content-left": "max(1.5rem, calc((100% - 56rem) / 2 + 1.5rem))",
 } as CSSProperties;
 
-// The computer's first tab starts just past its sheet's rounded top-left corner.
-const COMPUTER_CONTENT_VARS = {
-  "--workspace-titlebar-content-left": "0.75rem",
-} as CSSProperties;
+// The computer's first tab starts just past its sheet's rounded top-left corner, and on macOS
+// past the traffic lights. The computer itself starts after the bot dock and its gap (3.75rem).
+const computerContentVars = (windowControlsInset: string | null) =>
+  ({
+    "--workspace-titlebar-content-left": windowControlsInset
+      ? `max(0.75rem, calc(${windowControlsInset} - 3.75rem))`
+      : "0.75rem",
+  }) as CSSProperties;
 
 // The Pull requests header lines up with its wider list column (max-w-6xl, px-6).
 const PULL_REQUESTS_CONTENT_VARS = {
@@ -189,6 +194,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
     target.kind === "settings" || target.kind === "overview" ? target.botId : chatBot?.botId;
   const selectedBot = bots.find((bot) => bot.id === selectedId && bot.status === "active");
   const [workOpen, setWorkOpen] = useState(false);
+  const windowControlsInset = useMacosWindowControlsInset();
   const currentView: BotPageView | null = routedPage
     ? null
     : target.kind === "computer"
@@ -337,7 +343,7 @@ export function WorkspaceLayout({ children }: { children: ReactNode }) {
               routedPage
                 ? PULL_REQUESTS_CONTENT_VARS
                 : target.kind === "computer"
-                  ? COMPUTER_CONTENT_VARS
+                  ? computerContentVars(windowControlsInset)
                   : WORKSPACE_CONTENT_VARS
             }
           >
