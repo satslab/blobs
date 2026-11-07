@@ -402,7 +402,21 @@ const routed = Effect.fn("McpToolAccess.routed")(function* <Tools extends Record
         if (scope.linkedEnvironments === false) return yield* PeerForwarding.linkedEnvironmentsOff;
         yield* (remote as RemoteCheck<typeof params>)(params);
         if (Option.isNone(forwarding)) return yield* linksUnavailable;
-        return yield* forwarding.value.call(scope, tool, target, { ...params, environmentId });
+        // A thread launched there records which thread here launched it, so this side can list it.
+        const launchedFrom =
+          tool.name === "t3_thread_launch" && scope.thread !== undefined
+            ? {
+                launchedFrom: {
+                  environmentId: scope.environmentId,
+                  threadId: scope.thread.threadId,
+                },
+              }
+            : {};
+        return yield* forwarding.value.call(scope, tool, target, {
+          ...params,
+          ...launchedFrom,
+          environmentId,
+        });
       });
   }
   return handlers as Toolkit.HandlersFrom<Tools>;

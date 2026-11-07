@@ -10,6 +10,8 @@ import { useAtomValue } from "@effect/atom-react";
 import { projectFaviconUrlAtom } from "../state/assets";
 import { deriveProjectIdentity } from "../projectIdentity";
 import { projectIconColorClassName } from "../projectIconColors";
+import { useBotThreadShells } from "../state/bots";
+import { BotAvatar } from "./bots/BotAvatar";
 import { ProjectMonogram } from "./ProjectMonogram";
 import { cn } from "~/lib/utils";
 
@@ -31,12 +33,32 @@ function DynamicProjectIconFallback() {
 export type ProjectFaviconProject = Pick<
   EnvironmentProject,
   "environmentId" | "workspaceRoot" | "title" | "faviconPath" | "projectIcon"
->;
+> &
+  Partial<Pick<EnvironmentProject, "id" | "isBot">>;
 export function ProjectFavicon(input: {
   project: ProjectFaviconProject;
   className?: string | undefined;
   fallbackIcon?: ComponentType<{ className?: string }>;
 }) {
+  const { project } = input;
+  if (project.isBot && project.id !== undefined) return <BotProjectFavicon {...input} />;
+  return <ProjectFaviconIcon {...input} />;
+}
+
+/** A bot's hidden project stands for the bot, so it shows the bot's face. */
+function BotProjectFavicon(input: Parameters<typeof ProjectFavicon>[0]) {
+  const { project } = input;
+  const bot = useBotThreadShells().find(
+    (shell) =>
+      shell.botId !== undefined &&
+      shell.environmentId === project.environmentId &&
+      shell.projectId === project.id,
+  );
+  if (bot?.botId === undefined) return <ProjectFaviconIcon {...input} />;
+  return <BotAvatar botId={bot.botId} className={cn("size-3.5 rounded-full", input.className)} />;
+}
+
+function ProjectFaviconIcon(input: Parameters<typeof ProjectFavicon>[0]) {
   const { project } = input;
   if (project.projectIcon?.kind === "monogram") {
     return (

@@ -97,6 +97,7 @@ const layerLaunches = Layer.effect(
             worktreePath: null,
             ...(input.linkOrigin === undefined ? {} : { linkOrigin: input.linkOrigin }),
             ...(input.delegatedFrom === undefined ? {} : { delegatedFrom: input.delegatedFrom }),
+            ...(input.launchedFrom === undefined ? {} : { launchedFrom: input.launchedFrom }),
             createdBy: input.createdBy,
             creationSource: input.creationSource,
           })
@@ -334,6 +335,16 @@ it.layer(Layer.provideMerge(layerTools, layerOrchestration))("work a link starts
       assert.deepEqual((yield* projections.getThreadShell(task))?.delegatedFrom, delegatedFrom);
       const claimed = yield* launch(claudeCode, "Claims a parent", { delegatedFrom });
       assert.equal((yield* projections.getThreadShell(claimed))?.delegatedFrom, undefined);
+
+      // So does the thread there that launched an ordinary thread here.
+      const launchedFrom = { environmentId: "environment-laptop", threadId: "thread:laptop-bot" };
+      const launchedThread = yield* launch(laptop, "Launched from the laptop", { launchedFrom });
+      assert.deepEqual(
+        (yield* projections.getThreadShell(launchedThread))?.launchedFrom,
+        launchedFrom,
+      );
+      const claimedLaunch = yield* launch(claudeCode, "Claims a launcher", { launchedFrom });
+      assert.equal((yield* projections.getThreadShell(claimedLaunch))?.launchedFrom, undefined);
     }),
   );
 
