@@ -21,7 +21,11 @@ import {
 import { resolveBotThreadContext } from "../../botThreadContext";
 import { cn } from "../../lib/utils";
 import { useAtomValue } from "@effect/atom-react";
-import { useProjects, useThreadRelationshipShells } from "../../state/entities";
+import {
+  useProjects,
+  useQuietThreadShells,
+  useThreadRelationshipShells,
+} from "../../state/entities";
 import { useEnvironmentProviders } from "../../state/environments";
 import { useEnvironmentQuery } from "../../state/query";
 import { readEnvironmentScope } from "../../state/session";
@@ -60,57 +64,64 @@ export function useBotTasks(bot: BotIdentity | null) {
   const shells = useThreadRelationshipShells(
     bot ? scopeThreadRef(bot.ownerEnvironmentId, bot.threadId) : null,
   );
+  // Work the bot started in a linked environment lives in that environment's thread list.
+  const allShells = useQuietThreadShells();
   if (!bot) return { root: null, tasks: [] };
   const root = shells.find((thread) => thread.id === bot.threadId) ?? null;
-  const tasks = shells
-    .flatMap((thread) => {
-      const kind: TaskKind | null =
-        thread.id === bot.threadId
-          ? null
-          : thread.lineage.relationshipToParent === "subagent" &&
-              thread.lineage.parentThreadId === bot.threadId
-            ? "agent"
-            : thread.launchedByThreadId === bot.threadId
-              ? "thread"
-              : null;
-      return kind === null ? [] : [{ thread, kind, state: botTaskState(thread) }];
-    })
-    .toSorted(
-      (left, right) =>
-        DateTime.toEpochMillis(right.thread.updatedAt) -
-        DateTime.toEpochMillis(left.thread.updatedAt),
-    );
+  const pointsAtBot = (from: { environmentId: string; threadId: string } | undefined) =>
+    from?.environmentId === bot.ownerEnvironmentId && from.threadId === bot.threadId;
+  const local = shells.flatMap((thread) => {
+    const kind: TaskKind | null =
+      thread.id === bot.threadId
+        ? null
+        : thread.lineage.relationshipToParent === "subagent" &&
+            thread.lineage.parentThreadId === bot.threadId
+          ? "agent"
+          : thread.launchedByThreadId === bot.threadId
+            ? "thread"
+            : null;
+    return kind === null
+      ? []
+      : [{ thread, kind, state: botTaskState(thread), environmentId: bot.ownerEnvironmentId }];
+  });
+  const remote = allShells.flatMap(({ environmentId, source: thread }) => {
+    if (environmentId === bot.ownerEnvironmentId) return [];
+    const kind: TaskKind | null = pointsAtBot(thread.delegatedFrom)
+      ? "agent"
+      : pointsAtBot(thread.launchedFrom)
+        ? "thread"
+        : null;
+    return kind === null ? [] : [{ thread, kind, state: botTaskState(thread), environmentId }];
+  });
+  const tasks = [...local, ...remote].toSorted(
+    (left, right) =>
+      DateTime.toEpochMillis(right.thread.updatedAt) -
+      DateTime.toEpochMillis(left.thread.updatedAt),
+  );
   return { root, tasks };
 }
 
 type Task = ReturnType<typeof useBotTasks>["tasks"][number];
 
-function TaskRows({
-  bot,
-  root,
-  tasks,
-}: {
-  bot: BotIdentity;
-  root: TaskThread | null;
-  tasks: readonly Task[];
-}) {
+function TaskRows({ root, tasks }: { root: TaskThread | null; tasks: readonly Task[] }) {
   const flat = use(PanelLookContext) === "flat";
   const navigate = useNavigate();
   const projects = useProjects();
-  const providers = useEnvironmentProviders().get(bot.ownerEnvironmentId);
+  const providersByEnvironment = useEnvironmentProviders();
   return (
     <PanelList>
       {tasks.map((task) => {
-        const { thread, kind, state } = task;
+        const { thread, kind, state, environmentId } = task;
         const FallbackIcon = kind === "agent" ? SparklesIcon : MessageSquareIcon;
-        const provider = providers?.find((entry) => entry.instanceId === thread.providerInstanceId);
+        const provider = providersByEnvironment
+          .get(environmentId)
+          ?.find((entry) => entry.instanceId === thread.providerInstanceId);
         const dotClass = STATE_DOT_CLASS[state];
         const projectName =
           kind === "thread"
             ? projects.find(
                 (project) =>
-                  project.environmentId === bot.ownerEnvironmentId &&
-                  project.id === thread.projectId,
+                  project.environmentId === environmentId && project.id === thread.projectId,
               )?.title
             : undefined;
         const time =
@@ -118,7 +129,7 @@ function TaskRows({
             ? formatElapsedDurationLabel(DateTime.formatIso(thread.activityRunStartedAt))
             : formatRelativeTimeLabel(DateTime.formatIso(thread.updatedAt));
         return (
-          <li key={thread.id}>
+          <li key={`${environmentId}:${thread.id}`}>
             <button
               type="button"
               className={cn(
@@ -129,7 +140,7 @@ function TaskRows({
                 const memory = resolveBotThreadContext(thread, root);
                 void navigate({
                   to: memory ? "/bots/$environmentId/$threadId" : "/$environmentId/$threadId",
-                  params: buildThreadRouteParams(scopeThreadRef(bot.ownerEnvironmentId, thread.id)),
+                  params: buildThreadRouteParams(scopeThreadRef(environmentId, thread.id)),
                 });
               }}
             >
@@ -187,15 +198,7 @@ function TaskRows({
 }
 
 /** Finished tasks in a collapsible fixed-height list. */
-function EarlierTasks({
-  bot,
-  root,
-  tasks,
-}: {
-  bot: BotIdentity;
-  root: TaskThread | null;
-  tasks: readonly Task[];
-}) {
+function EarlierTasks({ root, tasks }: { root: TaskThread | null; tasks: readonly Task[] }) {
   const [open, setOpen] = useState(true);
   const flat = use(PanelLookContext) === "flat";
   const failedCount = tasks.filter((task) => task.state === "failed").length;
@@ -221,7 +224,7 @@ function EarlierTasks({
       {open ? (
         <PanelCard>
           <ScrollArea scrollFade className="max-h-44">
-            <TaskRows bot={bot} root={root} tasks={tasks} />
+            <TaskRows root={root} tasks={tasks} />
           </ScrollArea>
         </PanelCard>
       ) : null}
@@ -481,14 +484,14 @@ export function BotTaskList({ bot, onOpen }: { bot: BotIdentity; onOpen?: () => 
         {waiting.length > 0 ? (
           <PanelGroup title="Needs input" aside={String(waiting.length)}>
             <PanelCard>
-              <TaskRows bot={bot} root={root} tasks={waiting} />
+              <TaskRows root={root} tasks={waiting} />
             </PanelCard>
           </PanelGroup>
         ) : null}
         {running.length > 0 ? (
           <PanelGroup title="Running" aside={String(running.length)}>
             <PanelCard>
-              <TaskRows bot={bot} root={root} tasks={running} />
+              <TaskRows root={root} tasks={running} />
             </PanelCard>
           </PanelGroup>
         ) : null}
@@ -496,7 +499,7 @@ export function BotTaskList({ bot, onOpen }: { bot: BotIdentity; onOpen?: () => 
           <PanelGroup title="Earlier" aside={earlier.length}>
             <PanelCard>
               <ScrollArea scrollFade className="max-h-44">
-                <TaskRows bot={bot} root={root} tasks={earlier} />
+                <TaskRows root={root} tasks={earlier} />
               </ScrollArea>
             </PanelCard>
           </PanelGroup>
@@ -567,14 +570,14 @@ export function BotWorkTab({
       {!routinesOnly && waiting.length > 0 ? (
         <PanelGroup title="Needs you" aside={waiting.length}>
           <PanelCard>
-            <TaskRows bot={bot} root={root} tasks={waiting} />
+            <TaskRows root={root} tasks={waiting} />
           </PanelCard>
         </PanelGroup>
       ) : null}
       {!routinesOnly && running.length > 0 ? (
         <PanelGroup title="In progress" aside={`${running.length} running`}>
           <PanelCard>
-            <TaskRows bot={bot} root={root} tasks={running} />
+            <TaskRows root={root} tasks={running} />
           </PanelCard>
         </PanelGroup>
       ) : null}
@@ -585,9 +588,7 @@ export function BotWorkTab({
       {!routinesOnly ? (
         <BotSavedResources state={saved ?? { skills: [], secrets: [] }} resources={resources} />
       ) : null}
-      {!routinesOnly && earlier.length > 0 ? (
-        <EarlierTasks bot={bot} root={root} tasks={earlier} />
-      ) : null}
+      {!routinesOnly && earlier.length > 0 ? <EarlierTasks root={root} tasks={earlier} /> : null}
     </>
   );
 }

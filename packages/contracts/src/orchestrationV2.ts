@@ -140,6 +140,16 @@ export const OrchestrationV2DelegatedFrom = Schema.Struct({
 });
 export type OrchestrationV2DelegatedFrom = typeof OrchestrationV2DelegatedFrom.Type;
 
+/**
+ * The thread in a linked environment whose agent launched this one here as an ordinary thread
+ * (not a delegated task), so the launching side can find the threads it started.
+ */
+export const OrchestrationV2LaunchedFrom = Schema.Struct({
+  environmentId: EnvironmentId,
+  threadId: ThreadId,
+});
+export type OrchestrationV2LaunchedFrom = typeof OrchestrationV2LaunchedFrom.Type;
+
 export const OrchestrationV2NativeRefStrength = Schema.Literals(["strong", "weak", "none"]);
 export type OrchestrationV2NativeRefStrength = typeof OrchestrationV2NativeRefStrength.Type;
 
@@ -461,6 +471,7 @@ export const OrchestrationV2AppThread = Schema.Struct({
   historyOrigin: Schema.optional(OrchestrationV2ThreadHistoryOrigin),
   linkOrigin: Schema.optional(OrchestrationV2LinkOrigin),
   delegatedFrom: Schema.optional(OrchestrationV2DelegatedFrom),
+  launchedFrom: Schema.optional(OrchestrationV2LaunchedFrom),
   lineage: OrchestrationV2AppThreadLineage,
   /**
    * The thread whose agent launched this one as an ordinary top-level thread.
@@ -2125,6 +2136,7 @@ export const OrchestrationV2ThreadShell = Schema.Struct({
   historyOrigin: Schema.optional(OrchestrationV2ThreadHistoryOrigin),
   linkOrigin: Schema.optional(OrchestrationV2LinkOrigin),
   delegatedFrom: Schema.optional(OrchestrationV2DelegatedFrom),
+  launchedFrom: Schema.optional(OrchestrationV2LaunchedFrom),
   latestRunId: Schema.NullOr(RunId),
   latestRunRequestedAt: Schema.optional(Schema.NullOr(Schema.DateTimeUtc)),
   latestRunStartedAt: Schema.optional(Schema.NullOr(Schema.DateTimeUtc)),
@@ -2967,6 +2979,8 @@ export const OrchestrationV2Command = Schema.Union([
     linkOrigin: Schema.optional(OrchestrationV2LinkOrigin),
     /** Only the server sets this, with `linkOrigin`, for a linked environment's delegated task. */
     delegatedFrom: Schema.optional(OrchestrationV2DelegatedFrom),
+    /** Only the server sets this, with `linkOrigin`, for a thread a linked environment launched. */
+    launchedFrom: Schema.optional(OrchestrationV2LaunchedFrom),
     launchedByThreadId: Schema.optional(ThreadId),
     importedNativeThread: Schema.optional(
       Schema.Struct({
