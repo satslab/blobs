@@ -874,7 +874,7 @@ function acpMcpContext(
       // from its shell can find its T3 thread. Claude and Codex sessions set
       // the same variable (PortScanner.AGENT_THREAD_ENV; a string literal here
       // because this package cannot reach apps/server).
-      BLOBS_THREAD_ID: session.threadId,
+      T3CODE_THREAD_ID: session.threadId,
       BLOBS_ACP_MCP_ENDPOINT: session.endpoint,
       BLOBS_ACP_MCP_AUTHORIZATION: session.authorizationHeader,
       BLOBS_ACP_MCP_NODE: self.command,

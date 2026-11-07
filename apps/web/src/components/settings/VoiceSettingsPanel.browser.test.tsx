@@ -26,15 +26,15 @@ vi.mock(import("../../state/session"), { spy: true });
 // The real connection runtime authorizes relay requests with a signed-in cloud session.
 vi.mock("../../connection/runtime", async () => {
   const [{ ManagedRelay }, rpc, { Atom }, Context, Effect, Layer] = await Promise.all([
-    import("@t3tools/client-runtime/relay"),
-    import("@t3tools/client-runtime/rpc"),
+    import("@satslab/client-runtime/relay"),
+    import("@satslab/client-runtime/rpc"),
     import("effect/reactivity"),
     import("effect/Context"),
     import("effect/Effect"),
     import("effect/Layer"),
   ]);
   type AuthorizedHttp =
-    import("@t3tools/client-runtime/authorization").AuthorizedRemoteHttpEnvironment;
+    import("@satslab/client-runtime/authorization").AuthorizedRemoteHttpEnvironment;
   // Services resolve by key, and client-runtime does not export this one.
   class RemoteEnvironmentAuthorization extends Context.Service<
     RemoteEnvironmentAuthorization,
@@ -44,7 +44,7 @@ vi.mock("../../connection/runtime", async () => {
       }) => Effect.Effect<AuthorizedHttp>;
     }
     // @effect-diagnostics-next-line deterministicKeys:off
-  >()("@t3tools/client-runtime/authorization/service/RemoteEnvironmentAuthorization") {}
+  >()("@satslab/client-runtime/authorization/service/RemoteEnvironmentAuthorization") {}
   return {
     connectionAtomRuntime: Atom.runtime(
       Layer.mergeAll(

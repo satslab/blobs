@@ -1,4 +1,4 @@
-import type { EnvironmentSpeechModel } from "@t3tools/contracts";
+import type { EnvironmentSpeechModel } from "@satslab/contracts";
 
 export type SpeechModelSort = "recommended" | "size" | "accuracy" | "speed";
 
