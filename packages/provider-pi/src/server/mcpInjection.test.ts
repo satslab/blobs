@@ -21,7 +21,7 @@ import {
   resolvePiLaunchArgs,
   withoutPiPromptResources,
 } from "./mcpInjection.ts";
-import { PI_T3_MCP_EXTENSION_SOURCE } from "./mcpExtensionSource.ts";
+import { PI_BLOBS_MCP_EXTENSION_SOURCE } from "./mcpExtensionSource.ts";
 
 const threadId = ThreadId.make("thread-pi-t3-mcp");
 
@@ -216,9 +216,9 @@ describe("materializePiT3McpExtension", () => {
             // partial read means the writer truncated the file mid-write.
             if (text.value.length === 0) {
               anomalies.push("empty: truncated mid-write");
-            } else if (text.value.length !== PI_T3_MCP_EXTENSION_SOURCE.length) {
+            } else if (text.value.length !== PI_BLOBS_MCP_EXTENSION_SOURCE.length) {
               anomalies.push(
-                `partial: ${text.value.length} of ${PI_T3_MCP_EXTENSION_SOURCE.length} chars`,
+                `partial: ${text.value.length} of ${PI_BLOBS_MCP_EXTENSION_SOURCE.length} chars`,
               );
             }
           }),

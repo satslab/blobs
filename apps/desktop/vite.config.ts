@@ -28,7 +28,7 @@ export default defineConfig({
       // CI bundle jobs skip the Linux browser secret helper; packaging stages one per arch.
       "build:bundle": {
         command: "node scripts/build-preview-annotation-css.mjs && vp pack",
-        dependsOn: ["t3#build"],
+        dependsOn: ["@satslab/blobs#build"],
         cache: false,
       },
       dev: {

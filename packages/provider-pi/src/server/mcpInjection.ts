@@ -277,7 +277,7 @@ export const materializePiT3McpExtension = Effect.fn("materializePiT3McpExtensio
     yield* Effect.scoped(
       Effect.gen(function* () {
         const stagingDir = yield* fs.makeTempDirectoryScoped({ directory: cacheDir });
-        const staging = `${stagingDir.replace(/\\/g, "/")}/${PI_T3_MCP_EXTENSION_FILENAME}`;
+        const staging = `${stagingDir.replace(/\\/g, "/")}/${PI_BLOBS_MCP_EXTENSION_FILENAME}`;
         yield* fs.writeFileString(staging, PI_BLOBS_MCP_EXTENSION_SOURCE);
         yield* fs.rename(staging, dest).pipe(Effect.retry({ times: 3 }));
       }),
