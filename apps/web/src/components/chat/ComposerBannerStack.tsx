@@ -208,9 +208,11 @@ const CAPSULE_ICON_TONE = {
 function NoticeSegment({ item }: { readonly item: ComposerBannerStackItem }) {
   const title = (
     <span className="flex min-w-0 items-center gap-2">
-      <span className={cn("flex shrink-0 [&_svg]:size-4", CAPSULE_ICON_TONE[item.variant])}>
-        {item.icon}
-      </span>
+      {item.icon ? (
+        <span className={cn("flex shrink-0 [&_svg]:size-4", CAPSULE_ICON_TONE[item.variant])}>
+          {item.icon}
+        </span>
+      ) : null}
       <span className="truncate text-sm font-medium text-foreground **:text-sm">{item.title}</span>
     </span>
   );

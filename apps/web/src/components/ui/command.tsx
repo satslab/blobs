@@ -17,6 +17,7 @@ import {
 } from "~/components/ui/autocomplete";
 import { DIALOG_BACKDROP_CLASS, DIALOG_POPUP_CLASS } from "~/components/ui/dialog-styles";
 import { Button } from "~/components/ui/button";
+import { SheetDragHandle } from "~/components/mobile/SheetDragHandle";
 
 const CommandDialog = CommandDialogPrimitive.Root;
 
@@ -78,8 +79,10 @@ function CommandDialogPopup({
             className,
           )}
           data-slot="command-dialog-popup"
+          data-sheet-drag=""
           {...props}
         >
+          <SheetDragHandle />
           {children}
         </CommandDialogPrimitive.Popup>
       </CommandDialogViewport>

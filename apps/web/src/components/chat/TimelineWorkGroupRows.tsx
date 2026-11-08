@@ -111,7 +111,7 @@ export const WorkGroupSection = memo(function WorkGroupSection({
   );
 });
 
-function WorkingTimer({ createdAt }: { createdAt: string }) {
+export function WorkingTimer({ createdAt }: { createdAt: string }) {
   return (
     <span
       ref={tickTextContent(() => formatWorkingTimerNow(createdAt), true)}
@@ -292,7 +292,8 @@ export function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: 
     "Working..."
   );
   return (
-    <div className="border-b border-border/60 pb-2 pt-1">
+    // The phone layout shows this in its notice capsule instead.
+    <div className="border-b border-border/60 pb-2 pt-1 in-data-[mobile-shell]:hidden">
       <div className="flex h-6 min-w-0 items-baseline gap-2 px-1 text-sm leading-relaxed text-muted-foreground tabular-nums">
         <span
           ref={shimmer ? observeVisibleAnimation : undefined}

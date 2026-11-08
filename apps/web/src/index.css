@@ -2720,6 +2720,216 @@ code {
   --mobile-timeline-fade-bottom: 4rem;
 }
 
+/* On phones, comboboxes and the command palette open as bottom sheets docked to the visible
+   screen's bottom edge, which rises with the keyboard. The shell publishes that edge. The
+   positioner's inline placement comes from the anchor, so its overrides are important. */
+@media (width < 40rem) {
+  :root {
+    --sheet-control: white;
+    /* Lucide's search icon, in the muted icon grey. */
+    /* Lucide's check icon, white for a primary fill. */
+    --check-icon: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M20 6 9 17l-5-5%27/%3E%3C/svg%3E");
+    --search-icon: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%238b8794%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27m21 21-4.34-4.34%27/%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%278%27/%3E%3C/svg%3E");
+  }
+  :root.dark {
+    --sheet-control: var(--card);
+  }
+  [data-slot="combobox-positioner"] {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
+    height: var(--vv-bottom, 100dvh) !important;
+    transform: none !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    pointer-events: none;
+  }
+  [data-slot="combobox-positioner"] > span {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: 1.25rem 0.5rem env(safe-area-inset-bottom);
+    transform-origin: bottom;
+    pointer-events: auto;
+  }
+  /* Sheets are solid, like the app's other sheets; their controls float on them. */
+  [data-slot="combobox-positioner"] > span,
+  [data-slot="command-dialog-popup"] {
+    @apply sheet-lift;
+    background: white;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 0;
+    border-radius: 2rem 2rem 0 0;
+    &::before {
+      display: none;
+    }
+    &:is(.dark *) {
+      background: var(--card);
+    }
+  }
+  /* A combobox's search field becomes a floating pill. */
+  [data-slot="combobox-popup"] div:has(> div > [data-slot="input-control"]) {
+    @apply glass-float;
+    background: var(--sheet-control);
+    display: flex;
+    align-items: center;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 9999px;
+    translate: none;
+    & > svg {
+      position: static;
+      flex: none;
+      margin-inline-end: 0.5rem;
+    }
+    & [data-slot="input-control"] input {
+      padding-inline-start: 0;
+    }
+  }
+  /* The palette's search is a floating pill, and its Back button a floating circle beside it. */
+  /* On a solid sheet the floating controls are solid too, so they match whatever is behind. */
+  [data-slot="command-dialog-popup"] [data-slot="input-control"] {
+    @apply glass-float;
+    height: 3rem;
+    align-items: center;
+    border-radius: 9999px !important;
+    background: var(--sheet-control) !important;
+    & [data-slot="autocomplete-input"] {
+      font-weight: 500;
+    }
+  }
+  /* Beside Back, a search field draws the search icon the Back button replaced; a name field
+     gets none. Without Back, the field's own icon sits where the drawer search has it. */
+  [data-slot="command-dialog-popup"]
+    [data-slot="autocomplete-start-addon"]:has(button)
+    + [data-slot="input-control"]:has([placeholder^="Search"]) {
+    background: var(--sheet-control) var(--search-icon) no-repeat 1rem center / 1rem !important;
+  }
+  [data-slot="command-dialog-popup"] [data-slot="autocomplete-start-addon"]:not(:has(button)) {
+    /* The addon itself sits 1px in, at the control's border. */
+    padding-inline-start: calc(1rem - 1px);
+    opacity: 1;
+    color: var(--sidebar-icon-color);
+    & svg {
+      width: 1rem;
+      height: 1rem;
+      margin: 0;
+      translate: none;
+    }
+  }
+  /* A page's action (New project's Create) leaves the field for its own floating button. */
+  [data-slot="command-dialog-popup"]
+    div:has(> div > div > [data-slot="input-control"]):has(> button) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline-end: var(--command-shell-inset);
+    & > div {
+      flex: 1;
+      min-width: 0;
+      padding-inline-end: 0;
+    }
+    /* The action shows only once it can run, as a round check like the sheets' Done. */
+    & > button {
+      position: static;
+      translate: none;
+      flex: none;
+      width: 3rem;
+      height: 3rem;
+      padding: 0;
+      border: 0;
+      border-radius: 9999px;
+      font-size: 0;
+      color: transparent;
+      background: var(--primary) var(--check-icon) no-repeat center / 1.25rem;
+      box-shadow:
+        inset 0 1px rgb(255 255 255 / 25%),
+        0 1px 2px rgb(0 0 0 / 10%),
+        0 10px 24px -8px color-mix(in srgb, var(--primary) 65%, transparent);
+      &::before,
+      &::after,
+      & > * {
+        display: none;
+      }
+      &:disabled {
+        display: none;
+      }
+    }
+  }
+  [data-slot="command-dialog-popup"] div:has(> [data-slot="autocomplete-start-addon"] button) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  [data-slot="command-dialog-popup"] [data-slot="autocomplete-start-addon"]:has(button) {
+    @apply glass-float;
+    background: var(--sheet-control);
+    position: static;
+    flex: none;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border-radius: 9999px;
+    opacity: 1;
+  }
+  /* The palette pads its input with important utilities, which outrank unlayered rules. */
+  @layer utilities {
+    [data-slot="command-dialog-popup"] [data-slot="autocomplete-input"] {
+      padding-inline-end: 1rem !important;
+    }
+    /* The drawer's search has only the glass edge, not an input border inside it. */
+    [data-slot="command-dialog-popup"] [data-slot="input-control"] {
+      border-width: 0 !important;
+      &::before {
+        display: none !important;
+      }
+    }
+    [data-slot="command-dialog-popup"]
+      [data-slot="autocomplete-start-addon"]:has(button)
+      + [data-slot="input-control"]
+      [data-slot="autocomplete-input"] {
+      padding-inline-start: 1.25rem !important;
+    }
+    [data-slot="command-dialog-popup"]
+      [data-slot="autocomplete-start-addon"]:has(button)
+      + [data-slot="input-control"]
+      [data-slot="autocomplete-input"][placeholder^="Search"],
+    [data-slot="command-dialog-popup"]
+      [data-slot="autocomplete-start-addon"]:not(:has(button))
+      + [data-slot="input-control"]
+      [data-slot="autocomplete-input"] {
+      padding-inline-start: 2.5rem !important;
+    }
+  }
+  [data-slot="combobox-popup"] {
+    max-height: min(32rem, calc(var(--vv-height, 100dvh) - 6rem));
+  }
+  [data-slot="combobox-item"],
+  [data-slot="command-item"] {
+    min-height: 2.75rem;
+  }
+  [data-slot="command-dialog-viewport"] {
+    bottom: auto;
+    height: var(--vv-bottom, 100dvh);
+    justify-content: flex-end;
+    padding: 0;
+  }
+  [data-slot="command-dialog-popup"] {
+    max-width: none;
+    max-height: min(36rem, calc(var(--vv-height, 100dvh) - 4rem));
+    padding: 1.25rem 0.25rem env(safe-area-inset-bottom);
+  }
+  /* Keyboard hints mean nothing on a touch screen. */
+  [data-slot="command-footer"],
+  [data-slot="command-shortcut"] {
+    display: none;
+  }
+}
+
 /* The phone layout fills exactly the screen. A taller document would let iOS scroll it when a
    keyboard opens, sliding everything up before the frame can follow the visual viewport. */
 html:has([data-mobile-frame]),

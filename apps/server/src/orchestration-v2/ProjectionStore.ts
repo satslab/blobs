@@ -1078,6 +1078,24 @@ type ShellRunItemCountRow = {
   readonly item_count: number;
 };
 
+type ShellLatestMessageRow = {
+  readonly thread_id: string;
+  readonly message_id: string;
+  readonly updated_at: string;
+  readonly text: string;
+};
+
+// A bot row shows one line of its latest reply; anything past this would never be seen.
+const LATEST_MESSAGE_PREVIEW_LENGTH = 160;
+
+/** One line of a message: whitespace folded so markdown reads as prose, then capped. */
+function latestMessagePreview(text: string): string {
+  const folded = text.replace(/\s+/g, " ").trim();
+  return folded.length > LATEST_MESSAGE_PREVIEW_LENGTH
+    ? `${folded.slice(0, LATEST_MESSAGE_PREVIEW_LENGTH - 1).trimEnd()}…`
+    : folded;
+}
+
 type ShellItemCountRow = {
   readonly thread_id: string;
   readonly item_count: number;
@@ -6480,6 +6498,54 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
         GROUP BY counts.thread_id
       `;
 
+    // The latest finished assistant message of each thread, skipping silent bot heartbeats and
+    // rolled-back runs. Read only for bot threads; other shells keep message bodies out.
+    const selectShellLatestMessages = (threadIds: ReadonlyArray<ThreadId>) =>
+      sql<ShellLatestMessageRow>`
+        SELECT ids.value AS thread_id, m.message_id, m.updated_at,
+          substr(json_extract(m.payload_json, '$.text'), 1, ${LATEST_MESSAGE_PREVIEW_LENGTH * 4}) AS text
+        FROM json_each(${encodeIdList(threadIds)}) ids
+        JOIN orchestration_v2_projection_messages m ON m.message_id = (
+          SELECT latest.message_id
+          FROM orchestration_v2_projection_messages latest
+          LEFT JOIN orchestration_v2_projection_runs r ON r.run_id = latest.run_id
+          WHERE latest.thread_id = ids.value
+            AND latest.role = 'assistant'
+            AND latest.streaming = 0
+            AND (r.status IS NULL OR r.status <> 'rolled_back')
+            AND trim(json_extract(latest.payload_json, '$.text'), char(9, 10, 13, 32))
+              NOT IN ('', 'NO_UPDATES')
+          ORDER BY latest.created_at DESC, latest.message_id DESC
+          LIMIT 1
+        )
+      `;
+
+    /** Fills bot shells' latest message, which bot lists show in place of a subtitle. */
+    const withLatestMessagePreviews = Effect.fn("ProjectionStore.withLatestMessagePreviews")(
+      function* (shells: ReadonlyArray<OrchestrationV2ThreadShell>) {
+        const botThreadIds = shells.flatMap((shell) =>
+          shell.botId === undefined ? [] : [shell.id],
+        );
+        if (botThreadIds.length === 0) return shells;
+        const rows = yield* selectShellLatestMessages(botThreadIds);
+        const rowsByThreadId = new Map(rows.map((row) => [row.thread_id, row] as const));
+        return shells.map((shell) => {
+          const row = rowsByThreadId.get(shell.id);
+          return row === undefined
+            ? shell
+            : {
+                ...shell,
+                latestVisibleMessage: {
+                  id: MessageId.make(row.message_id),
+                  role: "assistant" as const,
+                  text: latestMessagePreview(row.text),
+                  updatedAt: DateTime.makeUnsafe(row.updated_at),
+                },
+              };
+        });
+      },
+    );
+
     const selectShellProviderThreadRows = (threadIds?: ReadonlyArray<ThreadId>) =>
       threadIds === undefined
         ? sql<PayloadRow & { readonly thread_id: string }>`
@@ -7091,17 +7157,19 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
       );
       const statesByThreadId = new Map(states.map((state) => [state.thread.id, state]));
 
-      const shells = states
-        .filter((state) => targetThreadIds.has(state.thread.id))
-        .map((state) =>
-          shellFromState({
-            state,
-            visibleItemCount: visibleItemCountForShell({
-              threadId: state.thread.id,
-              statesByThreadId,
+      const shells = yield* withLatestMessagePreviews(
+        states
+          .filter((state) => targetThreadIds.has(state.thread.id))
+          .map((state) =>
+            shellFromState({
+              state,
+              visibleItemCount: visibleItemCountForShell({
+                threadId: state.thread.id,
+                statesByThreadId,
+              }),
             }),
-          }),
-        );
+          ),
+      );
 
       return {
         schemaVersion: ORCHESTRATION_V2_PROJECTION_SCHEMA_VERSION,
@@ -7486,10 +7554,13 @@ export const layer: Layer.Layer<ProjectionStoreV2, never, SqlClient.SqlClient> =
             if (state === undefined) {
               return null;
             }
-            return shellFromState({
-              state,
-              visibleItemCount: visibleItemCountForShell({ threadId, statesByThreadId }),
-            });
+            const [shell] = yield* withLatestMessagePreviews([
+              shellFromState({
+                state,
+                visibleItemCount: visibleItemCountForShell({ threadId, statesByThreadId }),
+              }),
+            ]);
+            return shell ?? null;
           }),
         )
         .pipe(Effect.mapError((cause) => new ProjectionStoreReadError({ threadId, cause })));

@@ -118,7 +118,15 @@ import { resolveProjectSettings } from "@satslab/shared/projectSettings";
 import { resolveThreadReferenceCopyTarget } from "@satslab/client-runtime/thread-reference";
 import { resolveTerminalSessionLabel } from "@satslab/shared/terminalLabels";
 import { useAtomValue } from "@effect/atom-react";
-import { type SetStateAction, use, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  type SetStateAction,
+  use,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { BackgroundThreadContext } from "./chat/backgroundThread";
 import { WorkspaceMutationIdContext } from "./chat/ChatMarkdownMedia";
 import { useLocation, useNavigate } from "@tanstack/react-router";
@@ -320,7 +328,7 @@ import { useRightPanelSurfaceClose } from "../hooks/useRightPanelSurfaceClose";
 import { ComposerBannerStack, type ComposerBannerStackItem } from "./chat/ComposerBannerStack";
 import { modelFallbackBannerItem } from "./chat/ComposerUsageLimits";
 import { ComposerSurface } from "./chat/ComposerSurface";
-import { resolveThreadSyncPhase } from "../threadSync";
+import { resolveThreadSyncPhase, threadSyncLabel } from "../threadSync";
 import { hasAvailableCompactionProvider } from "./chat/ContextWindowMeter.logic";
 import {
   deriveLatestContextWindowSnapshot,
@@ -362,7 +370,8 @@ import { ThreadVisitWatermark } from "./chat/ThreadVisitWatermark";
 import { ChatTerminalDrawers } from "./chat/ChatTerminalDrawers";
 import { useDraftEnvironmentRouting } from "./chat/useDraftEnvironmentRouting";
 import { branchMismatchBannerItem, extensionStatusBannerItem } from "./chat/ThreadActivityBanners";
-import { ThreadNow } from "./chat/ThreadNow";
+import { ThreadNow, type ThreadNowItem } from "./chat/ThreadNow";
+import { WorkingTimer } from "./chat/TimelineWorkGroupRows";
 import type { ThreadStructure } from "@satslab/client-runtime/state/shell";
 import { useDelayedStatus } from "../hooks/useDelayedStatus";
 import { useTimelineFollow } from "./chat/useTimelineFollow";
@@ -3137,11 +3146,51 @@ export default function ChatView(props: ChatViewProps) {
             icon: <span aria-hidden className="size-1.5 rounded-full bg-success" />,
             title: runningWorkAction,
           };
+  // The phone layout shows what the thread is doing as one pill in its notice capsule, picked in
+  // the mobile app's order: a connection notice outranks all of it, and an approval or question
+  // waiting on you hides it.
+  const mobileStatusItem = ((): ComposerBannerStackItem | null => {
+    if (!inMobileShell || isDraftHeroState) return null;
+    if (composerBannerItems.some((item) => item.id.startsWith("environment-unavailable:"))) {
+      return null;
+    }
+    const pill = (item: ThreadNowItem): ComposerBannerStackItem => ({
+      ...item,
+      variant: "default",
+    });
+    const label = (id: string, title: ReactNode): ComposerBannerStackItem => ({
+      id: `status:${id}`,
+      variant: "default",
+      icon: null,
+      title,
+    });
+    const runStop = [attentionNow, workNow].find((item) => item?.id.startsWith("run-stop:"));
+    if (runStop) return pill(runStop);
+    if (activePendingApproval !== null || activePendingUserInput !== null) return null;
+    if (isPreparingWorktree) return label("preparing", "Setting up worktree…");
+    if (activeRunPreparing) return label("preparing", "Starting…");
+    if (shownThreadSyncPhase !== null) return label("sync", threadSyncLabel(shownThreadSyncPhase));
+    if (childInputNow) return pill(childInputNow);
+    if (isCompacting) return label("compacting", "Compacting…");
+    if (activeWorkStartedAt !== null) {
+      return label(
+        "working",
+        <>
+          Working <WorkingTimer createdAt={activeWorkStartedAt} />
+        </>,
+      );
+    }
+    if (isWorking) return label("working", "Working…");
+    if (workNow?.id.startsWith("background-work:")) return pill(workNow);
+    if (goalNow) return pill(goalNow);
+    return null;
+  })();
   const hasThreadNow =
-    shownAttentionNow !== null ||
-    workNow !== null ||
-    goalNow !== null ||
-    shownThreadSyncPhase !== null;
+    !inMobileShell &&
+    (shownAttentionNow !== null ||
+      workNow !== null ||
+      goalNow !== null ||
+      shownThreadSyncPhase !== null);
   const queuedRunCount = serverProjection ? getUserQueuedThreadRuns(serverProjection).length : 0;
   // The queue control is mounted for every server thread but joins the footer only while it shows
   // something, by its own rule: an optimistic message stops counting once the server has it.
@@ -3175,13 +3224,15 @@ export default function ChatView(props: ChatViewProps) {
             />
           </div>
         )}
-        <ThreadNow
-          key={routeThreadKey}
-          attention={shownAttentionNow}
-          work={workNow}
-          syncPhase={shownThreadSyncPhase}
-          goal={goalNow}
-        />
+        {hasThreadNow ? (
+          <ThreadNow
+            key={routeThreadKey}
+            attention={shownAttentionNow}
+            work={workNow}
+            syncPhase={shownThreadSyncPhase}
+            goal={goalNow}
+          />
+        ) : null}
         {threadStatusLine}
         {pendingGuestMessageCount > 0 && isServerThread && activeThread ? (
           <GuestPendingMessages
@@ -3648,9 +3699,11 @@ export default function ChatView(props: ChatViewProps) {
                                 }
                                 isPreparingWorktree={isPreparingWorktree && !sendQueuesBehindSetup}
                                 bannerItems={
-                                  isDraftHeroState || composerBannerItems.length === 0
-                                    ? EMPTY_COMPOSER_BANNER_ITEMS
-                                    : composerBannerItems
+                                  mobileStatusItem !== null
+                                    ? [mobileStatusItem, ...composerBannerItems]
+                                    : isDraftHeroState || composerBannerItems.length === 0
+                                      ? EMPTY_COMPOSER_BANNER_ITEMS
+                                      : composerBannerItems
                                 }
                                 resumeCompactionTokens={resumeCompactionTokens}
                                 keepFullHistory={keepFullHistory}

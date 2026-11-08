@@ -58,6 +58,30 @@ export function followVisualViewport(element: HTMLElement, top = 0, layoutTop = 
   };
 }
 
+/**
+ * Publishes the visible screen's height and bottom edge, in layout pixels, as `--vv-height` and
+ * `--vv-bottom` on the root, so popups portaled outside the frame can sit above a keyboard.
+ * Returns the cleanup.
+ */
+export function publishVisualViewport() {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+  const root = document.documentElement.style;
+  const update = () => {
+    root.setProperty("--vv-height", `${viewport.height}px`);
+    root.setProperty("--vv-bottom", `${viewport.offsetTop + viewport.height}px`);
+  };
+  update();
+  viewport.addEventListener("resize", update);
+  viewport.addEventListener("scroll", update);
+  return () => {
+    viewport.removeEventListener("resize", update);
+    viewport.removeEventListener("scroll", update);
+    root.removeProperty("--vv-height");
+    root.removeProperty("--vv-bottom");
+  };
+}
+
 // The phone notice row's slot for the scroll-to-end button, which the chat view renders apart from
 // the composer that owns the row.
 let scrollToEndSlot: HTMLElement | null = null;
