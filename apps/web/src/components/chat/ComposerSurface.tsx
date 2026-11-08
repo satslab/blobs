@@ -23,6 +23,8 @@ function Shell({
         "has-data-[composer-banner-surface=attached]:before:hidden",
         // With a context row below, the card paints its own glass (see Host) so the row stays bare.
         "data-context-row:before:hidden",
+        // The phone layout's card paints its own glass (see Host), shaped to the pill.
+        "in-data-[mobile-shell]:before:hidden",
         className,
       )}
       {...props}
@@ -39,6 +41,9 @@ function Host({ className, ...props }: ComponentProps<"div">) {
       data-slot="composer-host"
       className={cn(
         "relative z-10 w-full rounded-2xl shadow-composer after:z-1 dark:shadow-none",
+        // The phone layout's glass is on the card itself (see Main); this host also wraps any
+        // banners above it.
+        "in-data-[mobile-shell]:shadow-none in-data-[mobile-shell]:before:hidden in-data-[mobile-shell]:after:hidden",
         "group-data-context-row/composer-surface:before:pointer-events-none group-data-context-row/composer-surface:before:absolute group-data-context-row/composer-surface:before:inset-0 group-data-context-row/composer-surface:before:-z-1 group-data-context-row/composer-surface:before:rounded-2xl group-data-context-row/composer-surface:before:bg-(--chat-composer-glass-surface)/(--glass-opacity) group-data-context-row/composer-surface:before:backdrop-blur-(--glass-blur) group-data-context-row/composer-surface:before:backdrop-saturate-(--glass-saturation)",
         outlineClasses,
         "group-has-data-[composer-banner-surface=attached]/composer-surface:shadow-none group-has-data-[composer-banner-surface=attached]/composer-surface:before:hidden group-has-data-[composer-banner-surface=attached]/composer-surface:after:hidden",
@@ -55,6 +60,8 @@ function Main({ className, ...props }: ComponentProps<"div">) {
       data-chat-composer-main-surface="true"
       className={cn(
         "group relative z-10 rounded-2xl p-px",
+        // The phone layout's composer is a floating glass pill, as on the mobile app.
+        "in-data-[mobile-shell]:glass-float in-data-[mobile-shell]:rounded-3xl has-data-[composer-single-line]:rounded-full",
         outlineClasses,
         "after:z-20 after:hidden group-has-data-[composer-banner-surface=attached]/composer-surface:after:block",
         "group-has-data-[composer-banner-surface=attached]/composer-surface:bg-(--chat-composer-glass-surface)/(--glass-opacity) group-has-data-[composer-banner-surface=attached]/composer-surface:backdrop-blur-(--glass-blur) group-has-data-[composer-banner-surface=attached]/composer-surface:backdrop-saturate-(--glass-saturation)",

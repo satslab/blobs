@@ -13,6 +13,13 @@ import {
 } from "./orchestrationV2.ts";
 import { OrchestrationDispatchCommandError } from "./orchestrationDispatch.ts";
 import {
+  WebPushDeviceInput,
+  WebPushError,
+  WebPushDevices,
+  WebPushRegisterInput,
+  WebPushSetEnabledInput,
+} from "./webPush.ts";
+import {
   McpAppCallToolInput,
   McpAppCallToolResult,
   McpAppReadResourceInput,
@@ -535,6 +542,11 @@ export const WS_METHODS = {
   serverGetConfig: "server.getConfig",
   serverGetNpmRelease: "server.getNpmRelease",
   serverRefreshProviders: "server.refreshProviders",
+  serverWebPushDevices: "server.webPushDevices",
+  serverWebPushSetEnabled: "server.webPushSetEnabled",
+  serverWebPushRegister: "server.webPushRegister",
+  serverWebPushUnregister: "server.webPushUnregister",
+  serverWebPushTest: "server.webPushTest",
   serverUpdateProvider: "server.updateProvider",
   serverUpdateServer: "server.updateServer",
   serverUpdateServerWithProgress: "server.updateServerWithProgress",
@@ -677,6 +689,32 @@ const WsServerGetConfigRpc = Rpc.make(WS_METHODS.serverGetConfig, {
   payload: Schema.Struct({}),
   success: ServerConfig,
   error: Schema.Union([KeybindingsConfigError, ServerSettingsError, EnvironmentAuthorizationError]),
+});
+
+const WsServerWebPushDevicesRpc = Rpc.make(WS_METHODS.serverWebPushDevices, {
+  payload: Schema.Struct({}),
+  success: WebPushDevices,
+  error: Schema.Union([WebPushError, EnvironmentAuthorizationError]),
+});
+const WsServerWebPushRegisterRpc = Rpc.make(WS_METHODS.serverWebPushRegister, {
+  payload: WebPushRegisterInput,
+  success: Schema.Void,
+  error: Schema.Union([WebPushError, EnvironmentAuthorizationError]),
+});
+const WsServerWebPushSetEnabledRpc = Rpc.make(WS_METHODS.serverWebPushSetEnabled, {
+  payload: WebPushSetEnabledInput,
+  success: Schema.Void,
+  error: Schema.Union([WebPushError, EnvironmentAuthorizationError]),
+});
+const WsServerWebPushUnregisterRpc = Rpc.make(WS_METHODS.serverWebPushUnregister, {
+  payload: WebPushDeviceInput,
+  success: Schema.Void,
+  error: Schema.Union([WebPushError, EnvironmentAuthorizationError]),
+});
+const WsServerWebPushTestRpc = Rpc.make(WS_METHODS.serverWebPushTest, {
+  payload: WebPushDeviceInput,
+  success: Schema.Void,
+  error: Schema.Union([WebPushError, EnvironmentAuthorizationError]),
 });
 
 export const WsServerRefreshProvidersRpc = Rpc.make(WS_METHODS.serverRefreshProviders, {
@@ -2250,6 +2288,11 @@ export const WsRpcGroup = RpcGroup.make(
   WsGuestShareCreateRpc,
   WsServerProbeRpc,
   WsServerGetConfigRpc,
+  WsServerWebPushDevicesRpc,
+  WsServerWebPushSetEnabledRpc,
+  WsServerWebPushRegisterRpc,
+  WsServerWebPushUnregisterRpc,
+  WsServerWebPushTestRpc,
   WsServerRefreshProvidersRpc,
   WsServerUpdateProviderRpc,
   WsProviderConsumeResetCreditRpc,

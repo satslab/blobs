@@ -36,6 +36,9 @@ import { ChatGptWelcomeCoordinator } from "../components/settings/ChatGptWelcome
 import { ThemeEditorHost } from "../components/settings/ThemeEditorHost";
 import { workspaceFramePathname } from "../components/sidebar/mainAppLocation";
 import { WorkspaceLayout } from "../components/workspace/WorkspacePage";
+import { MobileShell } from "../components/mobile/MobileShell";
+import { WebPushHost } from "../components/notifications/WebPush";
+import { useMobileLayout } from "../components/mobile/mobileLayout";
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 import { Button } from "../components/ui/button";
 import { MorphIcon } from "~/components/MorphIcon";
@@ -145,6 +148,7 @@ function RootRouteView() {
 
 function RootRouteBranch() {
   const pathname = useLocation({ select: (location) => location.pathname });
+  const mobileLayout = useMobileLayout();
   const { authGateState } = Route.useRouteContext();
   const primaryEnvironmentAuthenticated = authGateState.status === "authenticated";
   // A sync IPC read; the setting only changes across a relaunch.
@@ -192,6 +196,7 @@ function RootRouteBranch() {
       <SnapShotCoordinator />
       <ReopenClosedViewShortcut />
       <ConfirmDialogHost />
+      {primaryEnvironmentAuthenticated ? <WebPushHost /> : null}
       <CustomSnoozeDialogHost />
       <GuestShareDialogHost />
       <ProjectCloneToastCoordinator />
@@ -204,7 +209,11 @@ function RootRouteBranch() {
   // hosts below, such as confirm dialogs.
   const appShell = (
     <CommandPalette>
-      {workspaceFramePathname(pathname) !== null ? (
+      {mobileLayout ? (
+        <MobileShell>
+          <Outlet />
+        </MobileShell>
+      ) : workspaceFramePathname(pathname) !== null ? (
         <WorkspaceLayout>
           <Outlet />
         </WorkspaceLayout>

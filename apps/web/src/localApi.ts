@@ -2,6 +2,11 @@ import type { ConfirmDialogOptions, ContextMenuItem, LocalApi } from "@satslab/c
 
 import { requestConfirmDialog } from "./confirmDialog";
 import { dismissContextMenu, showContextMenuFallback } from "./contextMenuFallback";
+import {
+  mobileContextMenuAvailable,
+  settleMobileContextMenu,
+  showMobileContextMenu,
+} from "./components/mobile/mobileContextMenu";
 import { readBrowserClientSettings, writeBrowserClientSettings } from "./clientPersistenceStorage";
 
 let cachedApi: LocalApi | undefined;
@@ -47,12 +52,15 @@ export function createLocalApi(): LocalApi {
         if (window.desktopBridge) {
           return window.desktopBridge.showContextMenu(items, position) as Promise<T | null>;
         }
+        // A phone gets a bottom sheet; a popup menu runs off its narrow screen.
+        if (mobileContextMenuAvailable()) return showMobileContextMenu(items);
         return showContextMenuFallback(items, position);
       },
       // Unlike native menus, the DOM fallback needs dismissal when underlying state disappears.
       close: async () => {
         if (!window.desktopBridge) {
           dismissContextMenu();
+          settleMobileContextMenu(null);
         }
       },
     },

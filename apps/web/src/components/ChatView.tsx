@@ -1,4 +1,5 @@
 import { ChildThreadApprovals } from "./chat/ChildThreadApprovals";
+import { MobileShellContext } from "./mobile/mobileLayout";
 import { workspaceAreaProps } from "../lib/workspaceFocus";
 import { sourceControlClients } from "@satslab/client-runtime/source-control-clients";
 import { resolveNewThreadModelSelection } from "@satslab/shared/usageLimits";
@@ -433,6 +434,8 @@ export default function ChatView(props: ChatViewProps) {
     runningWork,
   } = props;
   const embedded = parentPanel !== undefined;
+  // The mobile shell draws its own header above the chat.
+  const inMobileShell = use(MobileShellContext);
   const showsFloatingPreview = !embedded || floatingPreview !== undefined;
   const canOperateThread = useEnvironmentScope(environmentId, AuthOrchestrationOperateScope);
   const canOperateTerminal = useEnvironmentScope(environmentId, AuthTerminalOperateScope);
@@ -3254,7 +3257,7 @@ export default function ChatView(props: ChatViewProps) {
         data-chat-column
         inert={rightPanelMaximized}
       >
-        {embedded ? null : (
+        {embedded || inMobileShell ? null : (
           <header
             ref={threadPanelPopoverAnchorRef}
             data-chat-header
@@ -3770,7 +3773,8 @@ export default function ChatView(props: ChatViewProps) {
                     </div>
                     <div
                       aria-hidden
-                      className="h-[calc(env(safe-area-inset-bottom)+1rem)] sm:h-[calc(env(safe-area-inset-bottom)+1.25rem)]"
+                      // An open keyboard covers the home indicator, so its inset would only add a gap.
+                      className="h-[calc(env(safe-area-inset-bottom)+1rem)] in-data-[keyboard-open]:h-2 sm:h-[calc(env(safe-area-inset-bottom)+1.25rem)]"
                     />
                   </div>
                 </div>

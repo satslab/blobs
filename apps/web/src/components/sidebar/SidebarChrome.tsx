@@ -50,6 +50,7 @@ import { SidebarProviderUpdatePill } from "./SidebarProviderUpdatePill";
 import { SidebarUpdateArchitectureWarning, SidebarUpdatePill } from "./SidebarUpdatePill";
 import { PullRequestGlyph } from "~/components/pullRequest/pullRequestIcons";
 import { observeResize } from "~/lib/observeResize";
+import { useMobileSidebarPresentation } from "~/components/mobile/mobileLayout";
 
 /** Which workspace the sidebar lists. Settings, Usage, and Pull requests keep the mode they were opened from. */
 export type SidebarMode = "threads" | "bots";
@@ -60,6 +61,7 @@ export const SidebarChromeHeader = memo(function SidebarChromeHeader({
 }: {
   isElectron: boolean;
 }) {
+  const inDrawer = useMobileSidebarPresentation() === "drawer";
   const stageLabel = useEnvironmentStageLabel();
   const environmentIdentificationMode = useEnvironmentIdentificationMode();
   const backdropVariant = resolveSidebarStageBackdropVariant(
@@ -71,6 +73,7 @@ export const SidebarChromeHeader = memo(function SidebarChromeHeader({
       ? resolveEnvironmentIdentificationPillLabel(stageLabel)
       : null;
 
+  if (inDrawer) return null;
   return (
     <div
       className={cn(
@@ -320,6 +323,7 @@ const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
 });
 
 export const SidebarChromeFooter = memo(function SidebarChromeFooter() {
+  if (useMobileSidebarPresentation() === "drawer") return null;
   return (
     <SidebarFooter>
       <SidebarProviderUpdatePill />

@@ -675,6 +675,12 @@ export const SETTINGS_SEARCH_ITEMS = [
     searchTerms: ["notification sound alert completion input approval desktop"],
   },
   {
+    id: "push-notifications",
+    title: "Push notifications",
+    to: "/settings/general",
+    searchTerms: ["notification push web pwa phone background closed environment"],
+  },
+  {
     id: "in-app-notifications",
     title: "In-app notifications",
     to: "/settings/general",

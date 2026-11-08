@@ -49,6 +49,7 @@ import { createSidebarListMotion } from "../Sidebar.motion";
 import { BotAvatar } from "./BotAvatar";
 import { BotThreadStatus } from "./BotThreadStatus";
 import { NewBotButton } from "./NewBotButton";
+import { useMobileSidebarPresentation } from "../mobile/mobileLayout";
 import {
   BotActionsProvider,
   runBotMenuAction,
@@ -72,6 +73,7 @@ export function BotSidebar() {
 }
 
 function BotSidebarContent() {
+  const inDrawer = useMobileSidebarPresentation() === "drawer";
   const { rows, pinned, active, busy, applyOrder, togglePin } = useBotOrder();
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -228,7 +230,8 @@ function BotSidebarContent() {
             isSearching={query.length > 0}
             onClearSearch={() => setSearchQuery("")}
           />
-          <NewBotButton sidebar />
+          {/* The phone drawer starts bots from its bottom bar. */}
+          {inDrawer ? null : <NewBotButton sidebar />}
         </div>
       </div>
       <DndContext

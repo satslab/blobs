@@ -35,7 +35,7 @@ function SheetViewport({
   ...props
 }: SheetPrimitive.Viewport.Props & {
   side?: "right" | "left" | "top" | "bottom";
-  variant?: "default" | "inset";
+  variant?: "default" | "inset" | "rounded";
 }) {
   return (
     <SheetPrimitive.Viewport
@@ -69,7 +69,7 @@ function SheetPopup({
   keepMounted?: boolean;
   transitionDurationMs?: number;
   side?: "right" | "left" | "top" | "bottom";
-  variant?: "default" | "inset";
+  variant?: "default" | "inset" | "rounded";
 }) {
   const transitionStyle =
     transitionDurationMs === undefined
@@ -99,6 +99,13 @@ function SheetPopup({
               "data-ending-style:-translate-x-8 data-starting-style:-translate-x-8 w-[calc(100%-(--spacing(12)))] max-w-md border-e",
             side === "right" &&
               "col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md border-s data-ending-style:translate-x-8 data-starting-style:translate-x-8",
+            // A phone sheet: its edge facing the page is rounded.
+            variant === "rounded" &&
+              cn(
+                "overflow-hidden before:hidden",
+                side === "bottom" && "sheet-lift! rounded-t-4xl border-t-0",
+                side === "top" && "rounded-b-4xl",
+              ),
             variant === "inset" &&
               "before:hidden sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=sheet-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]",
             instant &&

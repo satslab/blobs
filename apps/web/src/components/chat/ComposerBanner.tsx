@@ -91,6 +91,8 @@ function Dock({ className, ...props }: ComponentProps<"div">) {
     <Attachment
       className={cn(
         "flex items-end gap-1 not-has-data-[composer-banner-surface=attached]:hidden",
+        // The phone layout's floating notices stand apart from the composer, full width.
+        "in-data-[mobile-shell]:w-full in-data-[mobile-shell]:has-data-[mobile-notice]:flex! in-data-[mobile-shell]:not-has-data-[composer-banner-surface=attached]:mb-0!",
         className,
       )}
       {...props}

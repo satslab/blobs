@@ -372,6 +372,66 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   }
 }
 
+/* The phone layout's floating controls: frosted and lifted off the page, like iOS chrome. */
+@utility glass-float {
+  background: color-mix(in srgb, var(--card) 72%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.8);
+  backdrop-filter: blur(18px) saturate(1.8);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 70%),
+    inset 0 0 0 0.5px rgb(0 0 0 / 8%),
+    0 1px 2px rgb(0 0 0 / 6%),
+    0 8px 24px -10px rgb(0 0 0 / 22%);
+
+  @variant dark {
+    background: color-mix(in srgb, var(--surface-raised, var(--card)) 70%, transparent);
+    box-shadow:
+      inset 0 1px rgb(255 255 255 / 8%),
+      inset 0 0 0 0.5px rgb(255 255 255 / 10%),
+      0 8px 24px -10px rgb(0 0 0 / 70%);
+  }
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: var(--card);
+  }
+}
+
+/* Rounds a full-screen card's bottom leading corner like the iPhone display as it slides aside.
+   The top stays square: an installed iPhone app starts below the status bar iOS draws itself, so
+   the card's top edge meets that bar and a rounded corner there would look cut off. */
+@utility rounded-l-display {
+  border-bottom-left-radius: 3.25rem;
+}
+
+/* A scroller under floating bottom controls fades out beneath them. */
+/* A card slid right over the drawer casts its shadow from its leading edge. */
+@utility slide-lift {
+  /* Tight and soft, so it never pools into a band where the status bar cuts it off. */
+  box-shadow: -2px 0 18px -4px rgb(0 0 0 / 12%);
+
+  @variant dark {
+    box-shadow: -2px 0 18px -4px rgb(0 0 0 / 55%);
+  }
+}
+
+@utility bottom-chrome-fade {
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 5.5rem), transparent);
+  mask-image: linear-gradient(to bottom, black calc(100% - 5.5rem), transparent);
+}
+
+/* A bottom sheet with no top border casts its shadow upward onto the page. */
+@utility sheet-lift {
+  box-shadow:
+    0 -1px 0 rgb(0 0 0 / 4%),
+    0 -12px 40px -12px rgb(0 0 0 / 22%);
+
+  @variant dark {
+    box-shadow:
+      0 -1px 0 rgb(255 255 255 / 6%),
+      0 -12px 40px -12px rgb(0 0 0 / 80%);
+  }
+}
+
 @utility alert-glass {
   --alert-glass-tint: transparent;
   background:
@@ -2631,4 +2691,49 @@ code {
 [data-workspace-keyboard-focus]:focus {
   outline: 2px solid var(--ring);
   outline-offset: -2px;
+}
+
+/* iOS zooms the page into any focused field under 16px. */
+@media (max-width: 639px) and (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: max(1rem, 1em) !important;
+  }
+}
+
+/* The phone layout's header and composer float over the timeline, which fades out under both. */
+[data-mobile-shell] .messages-timeline-scroll {
+  --mobile-timeline-fade-bottom: calc(env(safe-area-inset-bottom) + 5rem);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--mobile-header-height),
+    black calc(100% - var(--mobile-timeline-fade-bottom)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--mobile-header-height),
+    black calc(100% - var(--mobile-timeline-fade-bottom)),
+    transparent
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+}
+
+[data-keyboard-open] [data-mobile-shell] .messages-timeline-scroll {
+  --mobile-timeline-fade-bottom: 4rem;
+}
+
+/* The phone layout fills exactly the screen. A taller document would let iOS scroll it when a
+   keyboard opens, sliding everything up before the frame can follow the visual viewport. */
+html:has([data-mobile-frame]),
+html:has([data-mobile-frame]) body {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
