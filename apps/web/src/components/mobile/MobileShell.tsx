@@ -271,7 +271,9 @@ function pinToVisualViewport(frame: HTMLDivElement | null) {
   syncBrowserChromeTheme();
   const stopFollowing = frame ? followVisualViewport(frame) : undefined;
   const stopPublishing = frame ? publishVisualViewport() : undefined;
+  document.documentElement.toggleAttribute("data-phone-layout", frame !== null);
   return () => {
+    document.documentElement.removeAttribute("data-phone-layout");
     stopFollowing?.();
     stopPublishing?.();
     // The next frame is the classic shell, whose surfaces set the colour again.
