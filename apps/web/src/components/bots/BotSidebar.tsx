@@ -13,9 +13,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { PinIcon, PinOffIcon } from "lucide-react";
-import { resolveEnvironmentMachineKind, type BotIdentity } from "@satslab/contracts";
+import type { BotIdentity } from "@satslab/contracts";
 import { useBotThreadContext } from "../../state/bots";
-import { useEnvironments } from "../../state/environments";
 import { useStableCallback } from "../../hooks/useStableCallback";
 import { useThreadRouteRef } from "../../hooks/useThreadRouteTarget";
 import { useEnvironmentThread } from "../../state/threads";
@@ -41,7 +40,6 @@ import {
 } from "../Sidebar.drag";
 import { SidebarPointerSensor } from "../Sidebar.pointer";
 import { botSidebarItems } from "./BotSidebar.logic";
-import { EnvironmentMachineIcon } from "../EnvironmentMachineIcon";
 import { SidebarChromeHeader, SidebarChromeFooter } from "../sidebar/SidebarChrome";
 import { isElectron } from "../../env";
 import { SidebarHeaderSearch } from "../sidebar/SidebarThreadHeader";
@@ -370,10 +368,10 @@ function BotSidebarItem({
 }) {
   const { bot, thread } = row;
   const [prewarm, setPrewarm] = useState(false);
-  const { environments } = useEnvironments();
   const actions = useBotActions();
   const current = useBotThreadContext(useThreadRouteRef());
-  const environment = environments.find((env) => env.environmentId === bot.ownerEnvironmentId);
+  // The server sends bot threads a one-line preview of their latest reply.
+  const latestReply = thread?.source.latestVisibleMessage?.text ?? null;
   const disabled = useBotMenuDisabled(bot);
   const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: bot.id,
@@ -481,15 +479,9 @@ function BotSidebarItem({
               </span>
             ) : null}
           </span>
-          <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-            <EnvironmentMachineIcon
-              kind={resolveEnvironmentMachineKind(environment?.serverConfig ?? null)}
-              className="size-3 shrink-0"
-            />
-            <span className="min-w-0 flex-1 truncate">
-              {environment?.label ?? bot.ownerEnvironmentId}
-            </span>
-          </span>
+          {latestReply ? (
+            <span className="min-w-0 truncate text-xs text-muted-foreground">{latestReply}</span>
+          ) : null}
         </span>
       </Link>
     </li>

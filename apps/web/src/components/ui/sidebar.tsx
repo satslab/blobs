@@ -731,6 +731,9 @@ const sidebarMenuButtonVariants = cva(
         default:
           "h-8 rounded-[var(--control-radius)] px-[var(--sidebar-row-content-inset)] py-1.5 text-sm",
         icon: "size-8 justify-center rounded-[var(--control-radius)] p-0",
+        // A floating glass circle, for the phone drawer's controls.
+        glass:
+          "glass-float size-12 justify-center rounded-full p-0 text-sidebar-foreground hover:bg-transparent active:bg-transparent [&>svg]:text-sidebar-foreground",
         lg: "h-12 rounded-[var(--control-radius)] px-[var(--sidebar-row-content-inset)] py-2 text-sm group-data-[collapsible=icon]:p-0!",
         sm: "h-7 rounded-[var(--control-radius)] px-[var(--sidebar-row-content-inset)] py-2 text-xs",
       },

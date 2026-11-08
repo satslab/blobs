@@ -38,6 +38,7 @@ import { MobileThreadPill } from "./MobileThreadPill";
 import { MobileUsageGauge } from "./MobileUsageGauge";
 import {
   followVisualViewport,
+  publishVisualViewport,
   MobileShellContext,
   MobileSidebarPresentationContext,
 } from "./mobileLayout";
@@ -180,12 +181,15 @@ function MobileFrame({ children }: { children: ReactNode }) {
       >
         <SidebarModeContext value={listMode}>
           <MobileSidebarPresentationContext value="drawer">
-            <div className="flex min-h-0 flex-1 flex-col pt-2">
+            {/* With the lists' own header padding, this centers the search row on the chat's
+                floating menu button. */}
+            <div className="-mt-0.5 flex min-h-0 flex-1 flex-col">
               {listMode === "bots" ? <BotSidebar /> : <ThreadSidebar routeReveal={routeReveal} />}
             </div>
           </MobileSidebarPresentationContext>
         </SidebarModeContext>
-        <div className="flex shrink-0 items-center gap-2 p-3">
+        {/* Its bottom inset centers the bar on the chat's composer pill beside it. */}
+        <div className="flex shrink-0 items-center gap-2 px-3 pt-3 pb-4.25 in-data-[keyboard-open]:pb-2.25">
           <MobileSegmented
             label="List"
             size="lg"
@@ -266,8 +270,10 @@ function MobileFrame({ children }: { children: ReactNode }) {
 function pinToVisualViewport(frame: HTMLDivElement | null) {
   syncBrowserChromeTheme();
   const stopFollowing = frame ? followVisualViewport(frame) : undefined;
+  const stopPublishing = frame ? publishVisualViewport() : undefined;
   return () => {
     stopFollowing?.();
+    stopPublishing?.();
     // The next frame is the classic shell, whose surfaces set the colour again.
     requestAnimationFrame(syncBrowserChromeTheme);
   };
@@ -371,7 +377,8 @@ function MobileHeader({
             <MenuIcon className="size-5" />
           )}
         </button>
-        {thread && !bot ? (
+        {/* A page over the chat brings its own controls, so the chat's pill leaves room for them. */}
+        {appModalPage ? null : thread && !bot ? (
           <MobileThreadPill thread={thread} />
         ) : title ? (
           <div className="glass-float flex h-12 min-w-0 items-center gap-2 rounded-full px-4 text-base font-medium">

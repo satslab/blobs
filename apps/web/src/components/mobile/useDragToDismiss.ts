@@ -4,8 +4,11 @@ import { useRef, type TouchEvent } from "react";
 const DISMISS_DISTANCE = 120;
 const DISMISS_VELOCITY = 0.5;
 
-/** Lets a sheet's title area drag the sheet down, following the finger, to dismiss it. */
-export function useDragToDismiss(onDismiss: () => void) {
+/**
+ * Lets a sheet's title area drag the sheet down, following the finger, to dismiss it. The sheet is
+ * the closest sheet popup, or an element marked `data-sheet-drag` (phone popovers shown as sheets).
+ */
+export function useDragToDismiss(onDismiss: (sheet: HTMLElement) => void) {
   const drag = useRef<{
     popup: HTMLElement;
     startY: number;
@@ -16,7 +19,9 @@ export function useDragToDismiss(onDismiss: () => void) {
   } | null>(null);
   const onTouchStart = (event: TouchEvent) => {
     const touch = event.touches[0];
-    const popup = event.currentTarget.closest<HTMLElement>("[data-slot=sheet-popup]");
+    const popup = event.currentTarget.closest<HTMLElement>(
+      "[data-slot=sheet-popup],[data-sheet-drag]",
+    );
     if (!touch || !popup) return;
     drag.current = {
       popup,
@@ -51,7 +56,7 @@ export function useDragToDismiss(onDismiss: () => void) {
       "transitionend",
       () => {
         popup.style.transition = "";
-        if (dismiss) onDismiss();
+        if (dismiss) onDismiss(popup);
         else popup.style.translate = "";
       },
       { once: true },

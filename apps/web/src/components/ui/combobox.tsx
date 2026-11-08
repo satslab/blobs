@@ -3,6 +3,7 @@ import { ChevronsUpDownIcon, SearchIcon, XIcon } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "~/lib/utils";
+import { SheetDragHandle } from "../mobile/SheetDragHandle";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
@@ -155,6 +156,11 @@ function ComboboxPopup({
 
   return (
     <ComboboxPrimitive.Portal>
+      {/* Phones show the popup as a bottom sheet over this; see index.css. */}
+      <ComboboxPrimitive.Backdrop
+        data-slot="combobox-backdrop"
+        className="hidden max-sm:fixed max-sm:inset-0 max-sm:z-129 max-sm:block max-sm:bg-black/25"
+      />
       <ComboboxPrimitive.Positioner
         align={align}
         alignOffset={alignOffset}
@@ -166,11 +172,13 @@ function ComboboxPopup({
         sideOffset={sideOffset}
       >
         <span
+          data-sheet-drag=""
           className={cn(
             "dropdown-glass relative flex max-h-full min-w-(--anchor-width) max-w-(--available-width) origin-(--transform-origin) rounded-lg shadow-[0_16px_40px_-18px_rgb(0_0_0/55%)] transition-[scale,opacity] dark:shadow-[0_18px_44px_-18px_rgb(0_0_0/80%)]",
             className,
           )}
         >
+          <SheetDragHandle />
           <ComboboxPrimitive.Popup
             // Electron drag hit-testing ignores z-index; items over a drag region would swallow clicks.
             className="flex min-w-0 max-h-[min(var(--available-height),23rem)] flex-1 flex-col overflow-hidden text-foreground [-webkit-app-region:no-drag]"

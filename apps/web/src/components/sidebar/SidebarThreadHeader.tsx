@@ -71,7 +71,7 @@ export function SidebarThreadHeader({
         activeSearchResultIndex={activeSearchResultIndex}
         onClearSearch={onClearSearch}
       />
-      <div className="flex shrink-0 items-center">
+      <div className={cn("flex shrink-0 items-center", inDrawer && "gap-2 ps-1")}>
         {hasProjects ? (
           <>
             {projectScope}
@@ -151,7 +151,7 @@ export function SidebarHeaderSearch({
       className={cn(
         "flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-sidebar-muted-foreground hover:bg-sidebar-row-hover hover:text-sidebar-foreground",
         // The phone drawer's search is a pill, sized like its other controls.
-        inDrawer && "glass-float h-11 rounded-full px-4 text-base hover:bg-transparent",
+        inDrawer && "glass-float h-12 rounded-full px-4 text-base hover:bg-transparent",
       )}
     >
       <SearchIcon className="size-4 shrink-0 text-(--sidebar-icon-color)" />
@@ -207,16 +207,18 @@ export function SidebarHeaderIconButton({
   ComponentProps<typeof SidebarMenuButton>,
   "children" | "className" | "tooltip" | "isActive" | "aria-label"
 >) {
+  // The phone drawer's controls are glass circles, like its search pill.
+  const inDrawer = useMobileSidebarPresentation() === "drawer";
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <SidebarMenuButton
-            size="icon"
+            size={inDrawer ? "glass" : "icon"}
             type="button"
             aria-label={label}
             {...rest}
-            className={cn("relative size-7 shrink-0", className)}
+            className={cn("relative shrink-0", !inDrawer && "size-7", className)}
           />
         }
       >

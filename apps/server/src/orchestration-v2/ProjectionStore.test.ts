@@ -14,6 +14,7 @@ import {
   type OrchestrationV2ProviderThread,
   type OrchestrationV2TurnItem,
   type OrchestrationV2ThreadHistoryPage,
+  type OrchestrationV2ThreadShell,
   type OrchestrationV2ThreadShellSnapshot,
   NodeId,
   PlanId,
@@ -780,6 +781,79 @@ it.effect("record reads filter notification sources without dropping matching me
       })).messages,
       4,
     );
+  }).pipe(Effect.provide(layerTest)),
+);
+
+it.effect("SQL shells preview a bot's latest finished reply and leave other threads bodiless", () =>
+  Effect.gen(function* () {
+    const store = yield* ProjectionStore.ProjectionStoreV2;
+    const botThreadId = yield* addRolledBackRecoveryCandidate(
+      "latest-message",
+      BotId.make("bot:latest-message"),
+    );
+    const plainThreadId = yield* addRolledBackRecoveryCandidate("latest-message-plain");
+    const now = yield* DateTime.now;
+    const addMessage = (
+      threadId: ThreadId,
+      id: string,
+      seconds: number,
+      message: { role: "user" | "assistant"; text: string; streaming?: boolean },
+    ) =>
+      store.apply({
+        id: EventId.make(`latest-message:${id}`),
+        type: "message.updated",
+        threadId,
+        occurredAt: DateTime.add(now, { seconds }),
+        payload: {
+          id: MessageId.make(id),
+          threadId,
+          runId: null,
+          nodeId: null,
+          createdBy: "agent",
+          creationSource: "server",
+          role: message.role,
+          text: message.text,
+          attachments: [],
+          streaming: message.streaming ?? false,
+          createdAt: DateTime.add(now, { seconds }),
+          updatedAt: DateTime.add(now, { seconds }),
+        },
+      });
+    yield* addMessage(botThreadId, "bot-older", 1, { role: "assistant", text: "Older reply" });
+    yield* addMessage(botThreadId, "bot-latest", 2, {
+      role: "assistant",
+      text: "Deployed the fix.\n\n**Next:**  watch the logs",
+    });
+    // Newer, but not a finished reply worth showing.
+    yield* addMessage(botThreadId, "bot-streaming", 3, {
+      role: "assistant",
+      text: "Still typ",
+      streaming: true,
+    });
+    yield* addMessage(botThreadId, "bot-silent", 4, { role: "assistant", text: " NO_UPDATES\n" });
+    yield* addMessage(botThreadId, "bot-user", 5, { role: "user", text: "Thanks" });
+    yield* addMessage(plainThreadId, "plain-reply", 1, { role: "assistant", text: "Hidden" });
+
+    const expected = {
+      id: MessageId.make("bot-latest"),
+      role: "assistant",
+      text: "Deployed the fix. **Next:** watch the logs",
+    };
+    const preview = (shell: OrchestrationV2ThreadShell | null | undefined) =>
+      shell?.latestVisibleMessage == null
+        ? null
+        : {
+            id: shell.latestVisibleMessage.id,
+            role: shell.latestVisibleMessage.role,
+            text: shell.latestVisibleMessage.text,
+          };
+    assert.deepEqual(preview(yield* store.getThreadShell(botThreadId)), expected);
+    const snapshot = yield* store.getShellSnapshot();
+    const snapshotShell = (threadId: ThreadId) =>
+      [...snapshot.threads, ...snapshot.archivedThreads].find((thread) => thread.id === threadId);
+    assert.deepEqual(preview(snapshotShell(botThreadId)), expected);
+    assert.isNull(preview(yield* store.getThreadShell(plainThreadId)));
+    assert.isNull(preview(snapshotShell(plainThreadId)));
   }).pipe(Effect.provide(layerTest)),
 );
 
