@@ -2946,9 +2946,10 @@ code {
 }
 
 /* The phone layout fills exactly the screen. A taller document would let iOS scroll it when a
-   keyboard opens, sliding everything up before the frame can follow the visual viewport. */
-html:has([data-mobile-frame]),
-html:has([data-mobile-frame]) body {
+   keyboard opens, sliding everything up before the frame can follow the visual viewport. The frame
+   marks the root itself: a root :has() would re-check the whole document on every change. */
+html[data-phone-layout],
+html[data-phone-layout] body {
   height: 100%;
   min-height: 0;
   overflow: hidden;
