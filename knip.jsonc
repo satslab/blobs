@@ -104,7 +104,8 @@
       "ignore": ["src/components/settings/MobileAppSettingsRow.tsx"],
       // Worktree setup (scripts/setup-worktree.ts) runs this directly, and evidence
       // fixtures run under node.
-      "entry": ["scripts/warm-dep-cache.ts", "test/fixtures/**/*.mjs"],
+      // The browser loads the push service worker by URL (src/webPush.ts registers it).
+      "entry": ["scripts/warm-dep-cache.ts", "test/fixtures/**/*.mjs", "public/push-sw.js"],
       // UI component modules are copied and adapted as cohesive sets. Keep their
       // named subcomponents even before they have callers; the file audit still
       // reports an entire component module when nothing imports it.

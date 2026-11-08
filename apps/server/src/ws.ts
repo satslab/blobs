@@ -228,6 +228,7 @@ import * as ProjectCloneTracker from "./project/ProjectCloneTracker.ts";
 import * as RepositoryIdentityResolver from "./project/RepositoryIdentityResolver.ts";
 import * as WorktreeSetupTracker from "./project/WorktreeSetupTracker.ts";
 import * as ServerEnvironment from "./environment/ServerEnvironment.ts";
+import * as WebPush from "./notifications/WebPush.ts";
 import * as DirectEndpoints from "./environment/DirectEndpoints.ts";
 import * as RemoteOpenTargets from "./environment/RemoteOpenTargets.ts";
 import * as DefectReporter from "./observability/DefectReporter.ts";
@@ -1579,6 +1580,7 @@ export const layerWsRpc = (
       const workspaceEntries = yield* WorkspaceEntries.WorkspaceEntries;
       const workspaceFileSystem = yield* WorkspaceFileSystem.WorkspaceFileSystem;
       const serverEnvironment = yield* ServerEnvironment.ServerEnvironment;
+      const webPush = yield* WebPush.WebPush;
       const backgroundPolicy = yield* BackgroundPolicy.BackgroundPolicy;
       const rpcClientIds = yield* Ref.make(new Set<RpcClientId>());
       yield* Effect.addFinalizer(() =>
@@ -2539,6 +2541,12 @@ export const layerWsRpc = (
               }),
             ),
           ),
+        [WS_METHODS.serverWebPushDevices]: () => webPush.devices,
+        [WS_METHODS.serverWebPushSetEnabled]: (input) =>
+          webPush.setEnabled(input.deviceId, input.enabled),
+        [WS_METHODS.serverWebPushRegister]: (input) => webPush.register(input),
+        [WS_METHODS.serverWebPushUnregister]: (input) => webPush.unregister(input.deviceId),
+        [WS_METHODS.serverWebPushTest]: (input) => webPush.test(input.deviceId),
         [WS_METHODS.serverRefreshProviders]:
           /* Request instrumentation already owns the span; keep this helper in that context. */
           Effect.fnUntraced(function* (input) {

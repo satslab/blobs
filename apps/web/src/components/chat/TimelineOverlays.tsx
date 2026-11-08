@@ -1,5 +1,11 @@
 import { ChevronDownIcon, PaperclipIcon } from "lucide-react";
 
+import { use } from "react";
+
+import { createPortal } from "react-dom";
+
+import { cn } from "~/lib/utils";
+import { MobileShellContext, useScrollToEndSlot } from "../mobile/mobileLayout";
 import { Button } from "../ui/button";
 
 export function WorkspaceFileDropOverlay() {
@@ -28,28 +34,53 @@ export function ScrollToEndButton(props: {
   readonly summary: string | null;
   readonly onScrollToEnd: () => void;
 }) {
+  const inMobileShell = use(MobileShellContext);
+  const noticeSlot = useScrollToEndSlot();
+  // The phone layout's control is a round glass button, as on the mobile app. Beside a notice
+  // capsule it joins that row; alone it centers over the composer.
+  const mobileButton = (
+    <button
+      type="button"
+      data-scroll-to-end="true"
+      aria-label="Scroll to end"
+      onPointerDown={(event) => event.preventDefault()}
+      onClick={props.onScrollToEnd}
+      className="glass-float pointer-events-auto grid size-11 shrink-0 place-items-center rounded-full text-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+    >
+      <ChevronDownIcon className="size-5" />
+    </button>
+  );
+  if (inMobileShell && noticeSlot) return createPortal(mobileButton, noticeSlot);
   return (
     <div
-      className="chat-scroll-to-bottom pointer-events-none absolute z-30 flex justify-center py-1.5"
-      style={{ bottom: props.bottom }}
+      className={cn(
+        "chat-scroll-to-bottom pointer-events-none absolute z-30 flex justify-center",
+        !inMobileShell && "py-1.5",
+      )}
+      // The phone button sits 8px over the composer, as on the mobile app.
+      style={{ bottom: inMobileShell ? props.bottom - 10 : props.bottom }}
     >
-      <Button
-        data-scroll-to-end="true"
-        onPointerDown={(event) => event.preventDefault()}
-        onClick={props.onScrollToEnd}
-        className="pointer-events-auto"
-        size="xs"
-        variant="glass"
-      >
-        <ChevronDownIcon className="size-3.5" />
-        Scroll to end
-        {props.summary === null ? null : (
-          <span className="text-muted-foreground">
-            <span aria-hidden>· </span>
-            {props.summary}
-          </span>
-        )}
-      </Button>
+      {inMobileShell ? (
+        mobileButton
+      ) : (
+        <Button
+          data-scroll-to-end="true"
+          onPointerDown={(event) => event.preventDefault()}
+          onClick={props.onScrollToEnd}
+          className="pointer-events-auto"
+          size="xs"
+          variant="glass"
+        >
+          <ChevronDownIcon className="size-3.5" />
+          Scroll to end
+          {props.summary === null ? null : (
+            <span className="text-muted-foreground">
+              <span aria-hidden>· </span>
+              {props.summary}
+            </span>
+          )}
+        </Button>
+      )}
     </div>
   );
 }

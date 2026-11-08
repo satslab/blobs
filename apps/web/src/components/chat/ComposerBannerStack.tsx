@@ -1,10 +1,12 @@
 import { InfoIcon } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, use, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "../ui/button";
 import { Popover, PopoverPopup, PopoverTrigger } from "../ui/popover";
 import { ComposerBanner, type ComposerBannerVariant } from "./ComposerBanner";
+import { cn } from "~/lib/utils";
 import { observeResize } from "~/lib/observeResize";
+import { MobileShellContext, registerScrollToEndSlot } from "../mobile/mobileLayout";
 
 /**
  * Where a notice sits in the stack. The machine comes first, then what needs you; the
@@ -42,9 +44,40 @@ export function ComposerBannerStack({
   readonly items: ReadonlyArray<ComposerBannerStackItem>;
   readonly detached?: boolean;
 }) {
+  const inMobileShell = use(MobileShellContext);
   const ordered = GROUPS.flatMap((group) =>
     items.filter((item) => (item.group ?? "attention") === group),
   );
+  // The phone layout merges its notices into one floating glass capsule, as the mobile app does,
+  // with the scroll-to-end button beside it. A notice with extra content keeps its card.
+  if (inMobileShell && !detached) {
+    const capsuleItems = ordered.filter((item) => !item.children);
+    const cardItems = ordered.filter((item) => item.children);
+    return (
+      <div data-composer-banner-stack="true" data-mobile-notice="" className="pb-2">
+        {cardItems.map((item) => (
+          <div key={item.id} className={cn("pb-2", FADE_IN)}>
+            <NoticeCard item={item} detached />
+          </div>
+        ))}
+        {capsuleItems.length > 0 ? (
+          <div className={cn("flex items-center justify-center gap-3", FADE_IN)}>
+            <div className="glass-float flex h-11 max-w-full min-w-0 items-center rounded-full px-1">
+              {capsuleItems.map((item, index) => (
+                <Fragment key={item.id}>
+                  {index > 0 ? (
+                    <span aria-hidden className="h-4 w-px shrink-0 bg-border/80" />
+                  ) : null}
+                  <NoticeSegment item={item} />
+                </Fragment>
+              ))}
+            </div>
+            <div ref={registerScrollToEndSlot} className="contents" />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
   if (detached) {
     return ordered.map((item) => (
       <div key={item.id} data-composer-banner-stack="true" className={FADE_IN}>
@@ -160,6 +193,66 @@ export function NoticeText({
         </Popover>
       ) : null}
     </span>
+  );
+}
+
+const CAPSULE_ICON_TONE = {
+  default: "text-muted-foreground",
+  info: "text-info",
+  success: "text-success",
+  warning: "text-warning",
+  error: "text-destructive",
+} as const;
+
+/** One notice inside the phone's notice capsule: its icon and title, then its actions. */
+function NoticeSegment({ item }: { readonly item: ComposerBannerStackItem }) {
+  const title = (
+    <span className="flex min-w-0 items-center gap-2">
+      <span className={cn("flex shrink-0 [&_svg]:size-4", CAPSULE_ICON_TONE[item.variant])}>
+        {item.icon}
+      </span>
+      <span className="truncate text-sm font-medium text-foreground **:text-sm">{item.title}</span>
+    </span>
+  );
+  return (
+    <div
+      role={item.variant === "error" || item.variant === "warning" ? "alert" : undefined}
+      className="flex h-full min-w-0 items-center px-3"
+    >
+      {item.description ? (
+        <Popover>
+          <PopoverTrigger
+            render={<button type="button" className="flex min-w-0 items-center outline-hidden" />}
+          >
+            {title}
+          </PopoverTrigger>
+          <PopoverPopup
+            aria-label="Notice details"
+            tooltipStyle
+            side="top"
+            className="max-w-[min(30rem,calc(100vw-2rem))] whitespace-normal wrap-anywhere"
+          >
+            {item.description}
+          </PopoverPopup>
+        </Popover>
+      ) : (
+        title
+      )}
+      {item.actions || item.onDismiss ? (
+        <span
+          // Actions take the capsule's own type and height, not the cards' button sizes.
+          className="ms-2 flex shrink-0 items-center gap-1 border-s border-border/70 ps-2 **:data-[slot=button]:h-8 **:data-[slot=button]:px-2 **:data-[slot=button]:text-sm **:data-[slot=button]:font-medium"
+        >
+          {item.actions}
+          {item.onDismiss ? (
+            <ComposerBanner.Dismiss
+              aria-label={item.dismissLabel ?? "Dismiss warning"}
+              onClick={item.onDismiss}
+            />
+          ) : null}
+        </span>
+      ) : null}
+    </div>
   );
 }
 

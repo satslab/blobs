@@ -3,6 +3,7 @@ import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as BotCheckIns from "./bots/BotCheckIns.ts";
 import * as BotChat from "./bots/BotChat.ts";
 import * as DiscordIntegration from "@satslab/bot-discord/DiscordIntegration";
+import * as WebPush from "./notifications/WebPush.ts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import {
@@ -769,6 +770,7 @@ const layerUnusedConfigRpcServices = Layer.mergeAll(
   Layer.mock(DocumentText.DocumentText)({}),
   Layer.mock(BotChat.BotChat)({}),
   Layer.mock(DiscordIntegration.DiscordIntegration)({}),
+  Layer.mock(WebPush.WebPush)({}),
   Layer.mock(ServerSecretStore.ServerSecretStore)({}),
   Layer.mock(WorkspacePaths.WorkspacePaths)({}),
   Layer.mock(TraceDiagnostics.TraceDiagnostics)({}),

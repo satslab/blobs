@@ -1,6 +1,7 @@
 import { useAtomValue } from "@effect/atom-react";
 /* oxlint-disable blobs/no-low-value-comments -- Temporarily keep settings commented out at the user's request. */
 import { NotificationSettings } from "./NotificationSettings";
+import { WebPushSettings } from "../notifications/WebPush";
 // import { PRIVACY_POLICY_URL } from "../../legalLinks";
 import { CheckIcon } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -801,6 +802,7 @@ export function GeneralSettingsPanel() {
     <SettingsPageContainer>
       <SettingsSection id="notifications" title="Notifications">
         <NotificationSettings />
+        <WebPushSettings />
         <SettingsRow
           {...searchableSetting("in-app-notifications")}
           description="Show a toast when another thread finishes, fails, or needs input or approval while this app has focus."

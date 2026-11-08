@@ -20,7 +20,11 @@ import {
   type ServerProvider,
 } from "@satslab/contracts";
 import type { EffortDisplay } from "@satslab/contracts/settings";
+import { use } from "react";
+
 import { cn } from "~/lib/utils";
+import { MobileShellContext } from "../mobile/mobileLayout";
+import { MobileThreadSettings } from "../mobile/MobileThreadSettings";
 import { resolveComposerTraitsInput } from "./composerProviderState";
 import {
   ComposerEffortColumn,
@@ -137,6 +141,7 @@ export function ComposerControlsBar(props: {
     modelPickerIconClassName,
     getModelDisabledReason,
   } = props;
+  const inMobileShell = use(MobileShellContext);
   const accessMatchesDefault = compatibleRuntimeMode === defaultRuntimeMode;
   const {
     accessDisplay,
@@ -251,6 +256,39 @@ export function ComposerControlsBar(props: {
       onOpenProviderSetup={onOpenProviderSetup}
     />
   );
+  if (inMobileShell && !showProviderUnavailable)
+    return (
+      <MobileThreadSettings
+        environmentId={environmentId}
+        instanceEntries={providerInstanceEntries}
+        modelOptionsByInstance={modelOptionsByInstance}
+        activeInstanceId={
+          providerCatalogPending
+            ? (activeThreadModelSelection?.instanceId ?? selectedInstanceId)
+            : selectedInstanceId
+        }
+        model={
+          providerCatalogPending
+            ? (activeThreadModelSelection?.model ?? selectedModelForPickerWithCustomFallback)
+            : selectedModelForPickerWithCustomFallback
+        }
+        lockedProvider={lockedProvider}
+        lockedContinuationGroupKey={lockedContinuationGroupKey}
+        getModelDisabledReason={getModelDisabledReason}
+        onSelectModel={(instanceId, model) => {
+          onMultipleModelSelectionsChange(null);
+          onProviderModelSelect(instanceId, model, { focusComposer: false });
+        }}
+        traits={traitsInput}
+        traitsLabel={effort.detail}
+        runtimeMode={compatibleRuntimeMode}
+        runtimeModeOptions={compatibleRuntimeModeOptions}
+        onRuntimeModeChange={handleRuntimeModeChange}
+        disabled={providerCatalogPending || isSendBusy}
+        open={modelPickerOpen}
+        onOpenChange={onModelPickerOpenChange}
+      />
+    );
   return showProviderUnavailable ? (
     <ComposerControl
       type="button"

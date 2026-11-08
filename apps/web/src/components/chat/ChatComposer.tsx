@@ -66,6 +66,8 @@ import {
   useState,
 } from "react";
 import { flushSync } from "react-dom";
+
+import { MobileShellContext } from "../mobile/mobileLayout";
 import {
   clampCollapsedComposerCursor,
   type ComposerTrigger,
@@ -1040,6 +1042,8 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   const [isComposerPrimaryActionsCompact, setIsComposerPrimaryActionsCompact] = useState(false);
   const [isComposerModelPickerOpen, setIsComposerModelPickerOpen] = useState(false);
   const isMobileViewport = useMediaQuery("max-sm");
+  // The phone layout never collapses; a short prompt sits in one row with its controls.
+  const inMobileShell = use(MobileShellContext);
   const isSoftwareKeyboardOpen = useSoftwareKeyboardOpen();
   const [isComposerFocused, setIsComposerFocused] = useState(false);
   const [composerSubmissionError, setComposerSubmissionError] = useState<string | null>(null);
@@ -1049,9 +1053,15 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   const [composerMenuAnchor, setComposerMenuAnchor] = useState<HTMLDivElement | null>(null);
   const [hasWrappedPrompt, observeWrappedPrompt] = useComposerMultilinePrompt();
   const hasMultilinePrompt = prompt.includes("\n") || hasWrappedPrompt;
+  // Measured against the narrow one-row slot, so it holds until the prompt is cleared; otherwise
+  // the wider stacked editor would unwrap the text and flip the layout back.
+  const [mobilePromptStacked, setMobilePromptStacked] = useState(false);
+  if (inMobileShell && hasMultilinePrompt && !mobilePromptStacked) setMobilePromptStacked(true);
+  if (mobilePromptStacked && prompt.length === 0) setMobilePromptStacked(false);
   // A pending question stays expanded: its card moves into the banner dock,
   // so collapsing would leave the surface empty and squashed beneath it.
   const isComposerCollapsedMobile =
+    !inMobileShell &&
     isMobileViewport &&
     !forceExpandedOnMobile &&
     !isComposerFocused &&
@@ -2214,7 +2224,8 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
       const intent = composerSubmissionIntentForKey({
         event,
         keybindings,
-        isSoftwareKeyboardOpen,
+        // A phone keyboard's Enter adds a line; the send button sends.
+        isSoftwareKeyboardOpen: isSoftwareKeyboardOpen || inMobileShell,
         isDraftThread: routeKind === "draft",
         isRunning: phase === "running",
         sendShortcut: settings.sendShortcut,
@@ -2316,7 +2327,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
       phase,
       isCompacting,
       followUpBehavior,
-      isSoftwareKeyboardOpen,
+      isSoftwareKeyboardOpen: isSoftwareKeyboardOpen || inMobileShell,
       planModeUiEnabled,
       isLiteralPendingAnswer,
       pendingUserInputs,
@@ -3238,6 +3249,14 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         onRemoveFile={removeComposerFileFromDraft}
       />
     ) : null;
+  // One row like the mobile app: attach, prompt, model, voice and send.
+  const mobileSingleLine =
+    inMobileShell &&
+    !mobilePromptStacked &&
+    pendingUserInputs.length === 0 &&
+    composerAttachmentMediaRow === null &&
+    composerAttachmentFileList === null &&
+    !speechInput.preview;
   const composerAttachButton = showComposerAttachAction ? (
     <ComposerAttachButton
       addComposerAttachments={addComposerAttachments}
@@ -3347,8 +3366,10 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
             ref={composerSurfaceRef}
             data-chat-composer-surface="true"
             data-chat-composer-mobile-collapsed={isComposerCollapsedMobile ? "true" : "false"}
+            data-composer-single-line={mobileSingleLine || undefined}
             className={cn(
-              "rounded-2xl transition-[background-color] duration-200",
+              "rounded-2xl transition-[background-color] duration-200 in-data-[mobile-shell]:rounded-3xl",
+              mobileSingleLine && "flex items-center gap-1 rounded-full px-1.5 py-1.5",
               "in-data-[thread-context-over]:bg-accent/45 in-data-[thread-context-over]:ring-1 in-data-[thread-context-over]:ring-inset in-data-[thread-context-over]:ring-primary/70",
               isDragOverComposer ? "bg-accent/45 ring-1 ring-inset ring-primary/70" : null,
               projectSelectionRequired ? "opacity-75" : null,
@@ -3418,6 +3439,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                 "relative px-4 pb-2",
                 "pt-3.5 sm:pt-4",
                 isComposerCollapsedMobile && "hidden",
+                mobileSingleLine && "order-2 min-w-0 flex-1 px-1 py-0",
               )}
             >
               {isStashMenuOpen && !composerMenuOpen && (
@@ -3512,7 +3534,11 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                     buildContextClipboardFragment={buildContextClipboardFragmentStable}
                     importContextFragment={importContextFragmentStable}
                     skills={selectedProviderSkills}
-                    className={cn(showMobilePendingAnswerActions && "max-sm:pb-12")}
+                    className={cn(
+                      showMobilePendingAnswerActions && "max-sm:pb-12",
+                      mobileSingleLine && "min-h-0",
+                    )}
+                    {...(mobileSingleLine ? { placeholderClassName: "truncate" } : {})}
                     onChange={onPromptChangeStable}
                     onCommandKeyDown={onComposerCommandKeyStable}
                     onPageScrollKeyDown={onPageScrollKeyDown}
@@ -3598,19 +3624,28 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                 className={cn(
                   "flex min-w-0 flex-nowrap items-center overflow-visible px-2 pb-2",
                   pendingUserInputs.length > 0 && "pt-2",
+                  // Its pieces join the row around the prompt.
+                  mobileSingleLine && "contents",
                   showMobilePendingAnswerActions &&
                     speechInput.state.phase === "idle" &&
                     "hidden sm:flex",
                 )}
               >
-                {composerAttachButton ? <div className="me-2">{composerAttachButton}</div> : null}
+                {composerAttachButton ? (
+                  <div className={mobileSingleLine ? "order-1" : "me-2"}>
+                    {composerAttachButton}
+                  </div>
+                ) : null}
                 <div
                   data-chat-composer-actions="right"
                   data-chat-composer-transition-actions="true"
                   data-chat-composer-primary-actions-compact={
                     isComposerPrimaryActionsCompact ? "true" : "false"
                   }
-                  className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2"
+                  className={cn(
+                    "flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2",
+                    mobileSingleLine && "order-3 flex-none gap-1",
+                  )}
                 >
                   <div
                     ref={attachExpandedComposerControls}

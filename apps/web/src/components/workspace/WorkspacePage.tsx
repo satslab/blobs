@@ -140,7 +140,7 @@ type WorkspaceTarget =
   | { kind: "chat"; environmentId: EnvironmentId; threadId: ThreadId }
   | { kind: "computer"; environmentId: EnvironmentId; threadId: ThreadId };
 
-function parseWorkspacePath(pathname: string): WorkspaceTarget {
+export function parseWorkspacePath(pathname: string): WorkspaceTarget {
   const [first, second, third] = pathname.split("/").slice(2).map(decodeURIComponent);
   if (first === "new") return { kind: "new" };
   if ((first === "settings" || first === "overview") && second && third)
@@ -815,7 +815,7 @@ function useBotMenu({ bot, thread, pinned }: BotRow, onTogglePin: () => void) {
   };
 }
 
-function WorkspaceTargetPage({
+export function WorkspaceTargetPage({
   target,
   background,
   workBot,

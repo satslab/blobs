@@ -11,6 +11,7 @@ import { cn } from "~/lib/utils";
 import { Button } from "../ui/button";
 import { SidebarInput, SidebarMenuButton } from "../ui/sidebar";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
+import { useMobileSidebarPresentation } from "../mobile/mobileLayout";
 
 export interface SidebarThreadHeaderProps {
   searchFieldRef?: RefObject<HTMLDivElement | null> | undefined;
@@ -51,6 +52,8 @@ export function SidebarThreadHeader({
   activeSearchResultIndex,
   onClearSearch,
 }: SidebarThreadHeaderProps) {
+  // The phone drawer starts threads from its bottom bar.
+  const inDrawer = useMobileSidebarPresentation() === "drawer";
   const newThreadLabel = newThreadShortcutLabel
     ? `New thread (${newThreadShortcutLabel})`
     : "New thread";
@@ -77,26 +80,28 @@ export function SidebarThreadHeader({
             </SidebarHeaderIconButton>
           </>
         ) : null}
-        <SidebarHeaderIconButton
-          label="New thread"
-          tooltip={
-            showNewThreadInProjectHint ? (
-              <span className="flex flex-col gap-0.5">
-                <span>{newThreadLabel}</span>
-                <span className="text-muted-foreground">
-                  New thread in current project: Shift+click
-                  {newThreadInProjectShortcutLabel ? ` (${newThreadInProjectShortcutLabel})` : ""}
+        {inDrawer ? null : (
+          <SidebarHeaderIconButton
+            label="New thread"
+            tooltip={
+              showNewThreadInProjectHint ? (
+                <span className="flex flex-col gap-0.5">
+                  <span>{newThreadLabel}</span>
+                  <span className="text-muted-foreground">
+                    New thread in current project: Shift+click
+                    {newThreadInProjectShortcutLabel ? ` (${newThreadInProjectShortcutLabel})` : ""}
+                  </span>
                 </span>
-              </span>
-            ) : (
-              newThreadLabel
-            )
-          }
-          disabled={newThreadDisabled}
-          onClick={onNewThread}
-        >
-          <SquarePenIcon />
-        </SidebarHeaderIconButton>
+              ) : (
+                newThreadLabel
+              )
+            }
+            disabled={newThreadDisabled}
+            onClick={onNewThread}
+          >
+            <SquarePenIcon />
+          </SidebarHeaderIconButton>
+        )}
       </div>
     </div>
   );
@@ -131,6 +136,7 @@ export function SidebarHeaderSearch({
   label = "Search threads",
   clearLabel = "Clear thread search",
 }: SidebarHeaderSearchProps) {
+  const inDrawer = useMobileSidebarPresentation() === "drawer";
   const resultsVisible = isSearching && searchResultCount !== undefined && searchResultCount > 0;
   // Results shrink as the query narrows, so the active index can outrun the
   // list; pointing aria-activedescendant at a removed option strands the
@@ -142,7 +148,11 @@ export function SidebarHeaderSearch({
   return (
     <div
       ref={searchFieldRef}
-      className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-sidebar-muted-foreground hover:bg-sidebar-row-hover hover:text-sidebar-foreground"
+      className={cn(
+        "flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-sidebar-muted-foreground hover:bg-sidebar-row-hover hover:text-sidebar-foreground",
+        // The phone drawer's search is a pill, sized like its other controls.
+        inDrawer && "glass-float h-11 rounded-full px-4 text-base hover:bg-transparent",
+      )}
     >
       <SearchIcon className="size-4 shrink-0 text-(--sidebar-icon-color)" />
       <SidebarInput

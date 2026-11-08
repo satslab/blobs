@@ -279,6 +279,11 @@ function resolveBrowserChromeSurface(): HTMLElement {
 export function syncBrowserChromeTheme() {
   if (typeof document === "undefined" || typeof getComputedStyle === "undefined") return;
   const rootStyles = getComputedStyle(document.documentElement);
+  // The phone layout has no chrome of its own; its status bar matches the page under it.
+  const mobileFrame = document.querySelector<HTMLElement>("[data-mobile-frame]");
+  const mobileFrameColor = mobileFrame
+    ? normalizeThemeColor(getComputedStyle(mobileFrame).backgroundColor)
+    : null;
   const themeChromeColor = document.documentElement.dataset.themeId
     ? normalizeThemeColor(rootStyles.getPropertyValue("--app-chrome-background"))
     : null;
@@ -286,7 +291,7 @@ export function syncBrowserChromeTheme() {
     getComputedStyle(resolveBrowserChromeSurface()).backgroundColor,
   );
   const fallbackColor = normalizeThemeColor(getComputedStyle(document.body).backgroundColor);
-  const backgroundColor = themeChromeColor ?? surfaceColor ?? fallbackColor;
+  const backgroundColor = mobileFrameColor ?? themeChromeColor ?? surfaceColor ?? fallbackColor;
   if (!backgroundColor) return;
 
   document.documentElement.style.backgroundColor = backgroundColor;
