@@ -1,7 +1,13 @@
 import { scopeThreadRef } from "@satslab/client-runtime/environment";
 import type { ScopedThreadRef } from "@satslab/contracts";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { BotIcon, MenuIcon, MessagesSquareIcon, SquarePenIcon } from "lucide-react";
+import {
+  BotIcon,
+  ChevronLeftIcon,
+  MenuIcon,
+  MessagesSquareIcon,
+  SquarePenIcon,
+} from "lucide-react";
 import { useRef, useState, type ReactNode, type TouchEvent } from "react";
 
 import { openCommandPalette } from "../../commandPaletteBus";
@@ -18,12 +24,18 @@ import { BotAvatar } from "../bots/BotAvatar";
 import { BotActionsProvider } from "../bots/BotActions";
 import { BotSidebar } from "../bots/BotSidebar";
 import { SidebarModeContext, type SidebarMode } from "../sidebar/SidebarChrome";
-import { isAppModalPage, workspaceFramePathname } from "../sidebar/mainAppLocation";
+import {
+  isAppModalPage,
+  useCloseAppModal,
+  workspaceFramePathname,
+} from "../sidebar/mainAppLocation";
 import type { SidebarRouteReveal } from "../sidebar/routeReveal";
 import { SidebarProvider, useSidebar } from "../ui/sidebar";
 import { parseWorkspacePath, WorkspaceTargetPage } from "../workspace/WorkspacePage";
 import { MobileContextMenuSheet } from "./MobileContextMenuSheet";
+import { MobileSegmented } from "./MobileSegmented";
 import { MobileThreadPill } from "./MobileThreadPill";
+import { MobileUsageGauge } from "./MobileUsageGauge";
 import {
   followVisualViewport,
   MobileShellContext,
@@ -174,7 +186,16 @@ function MobileFrame({ children }: { children: ReactNode }) {
           </MobileSidebarPresentationContext>
         </SidebarModeContext>
         <div className="flex shrink-0 items-center gap-2 p-3">
-          <ListModeToggle mode={listMode} onChange={setListMode} />
+          <MobileSegmented
+            label="List"
+            size="lg"
+            iconOnly
+            options={LIST_MODES}
+            value={listMode}
+            onChange={setListMode}
+            className="flex-1"
+          />
+          <MobileUsageGauge />
           <NewButton mode={listMode} onStart={() => setDrawerOpen(false)} />
         </div>
       </aside>
@@ -198,11 +219,16 @@ function MobileFrame({ children }: { children: ReactNode }) {
           (drawerOpen || closing) && "rounded-l-display slide-lift",
         )}
       >
-        <MobileHeader framePathname={framePathname} onOpenDrawer={() => setDrawerOpen(true)} />
+        <MobileHeader
+          framePathname={framePathname}
+          appModalPage={isAppModalPage(pathname)}
+          onOpenDrawer={() => setDrawerOpen(true)}
+        />
         <div
           inert={drawerOpen}
           className={cn(
-            "flex min-h-0 flex-1 flex-col",
+            // Its own layer, so pages and the chat behind them stay under the floating header.
+            "isolate flex min-h-0 flex-1 flex-col",
             // Chats scroll under the floating header; other pages start below it.
             !floatsUnderHeader(pathname, framePathname) && "pt-(--mobile-header-height)",
           )}
@@ -294,53 +320,22 @@ function hasHorizontalScroll(target: EventTarget) {
   return false;
 }
 
-function ListModeToggle({
-  mode,
-  onChange,
-}: {
-  mode: SidebarMode;
-  onChange: (mode: SidebarMode) => void;
-}) {
-  const options = [
-    { mode: "bots", label: "Bots", Icon: BotIcon },
-    { mode: "threads", label: "Threads", Icon: MessagesSquareIcon },
-  ] as const;
-  return (
-    <div
-      role="radiogroup"
-      aria-label="List"
-      className="glass-float flex h-13 min-w-0 flex-1 items-center gap-0.5 rounded-full p-1"
-    >
-      {options.map((option) => (
-        <button
-          key={option.mode}
-          type="button"
-          role="radio"
-          aria-checked={mode === option.mode}
-          onClick={() => onChange(option.mode)}
-          className={cn(
-            "flex h-full min-w-0 flex-1 items-center justify-center gap-2 rounded-full text-base font-medium outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-            mode === option.mode
-              ? "bg-foreground/8 text-foreground"
-              : "text-sidebar-muted-foreground",
-          )}
-        >
-          <option.Icon className="size-5" />
-          {option.label}
-        </button>
-      ))}
-    </div>
-  );
-}
+const LIST_MODES = [
+  { value: "bots", label: "Bots", Icon: BotIcon },
+  { value: "threads", label: "Threads", Icon: MessagesSquareIcon },
+] as const;
 
-/** Menu on the left, what's open on the right. */
+/** Menu on the left, what's open on the right. Pages like Usage go back instead. */
 function MobileHeader({
   framePathname,
+  appModalPage,
   onOpenDrawer,
 }: {
   framePathname: string | null;
+  appModalPage: boolean;
   onOpenDrawer: () => void;
 }) {
+  const closeAppModal = useCloseAppModal();
   const routeTarget = useThreadRouteTarget();
   const workspaceTarget = framePathname === null ? null : parseWorkspacePath(framePathname);
   const botThreadRef =
@@ -366,11 +361,15 @@ function MobileHeader({
       <div className="flex h-15 items-center justify-between gap-3">
         <button
           type="button"
-          aria-label="Open menu"
-          onClick={onOpenDrawer}
+          aria-label={appModalPage ? "Back" : "Open menu"}
+          onClick={appModalPage ? () => void closeAppModal() : onOpenDrawer}
           className="glass-float grid size-12 shrink-0 place-items-center rounded-full text-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         >
-          <MenuIcon className="size-5" />
+          {appModalPage ? (
+            <ChevronLeftIcon className="size-5.5" />
+          ) : (
+            <MenuIcon className="size-5" />
+          )}
         </button>
         {thread && !bot ? (
           <MobileThreadPill thread={thread} />
