@@ -10,8 +10,14 @@ import {
   type UsageProviderKind,
   type UsageSummaryInput,
 } from "@satslab/contracts";
-import { CircleAlertIcon, ChevronDownIcon, InfoIcon, SlidersHorizontalIcon } from "lucide-react";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import {
+  CircleAlertIcon,
+  ChevronDownIcon,
+  InfoIcon,
+  ListFilterIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
+import { use, useEffect, useEffectEvent, useRef, useState } from "react";
 import { settlePromise } from "@satslab/client-runtime/state/runtime";
 import * as AsyncResult from "effect/reactivity/AsyncResult";
 import * as Cause from "effect/Cause";
@@ -82,6 +88,8 @@ import {
   WorkspaceBreadcrumbText,
 } from "../WorkspaceBreadcrumb";
 import { WorkspacePageContainer } from "../WorkspacePageContainer";
+import { MobileShellContext } from "../mobile/mobileLayout";
+import { MobileSegmented } from "../mobile/MobileSegmented";
 import { UsageLimitsSection } from "./UsageLimits";
 import { UsagePriceOverrides } from "./UsagePriceOverrides";
 import { UsageProviderChart } from "./UsageProviderChart";
@@ -150,6 +158,9 @@ function selectUsageModel(key: string | null): void {
   appAtomRegistry.set(selectedUsageModelKeyAtom, key);
 }
 
+const GLASS_BUTTON =
+  "glass-float relative grid size-12 shrink-0 place-items-center rounded-full text-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-50";
+
 function UsageModelDialogHost({
   models,
   onSetPrice,
@@ -199,6 +210,7 @@ export function UsagePage() {
       preferences.windowDays === 1 ? "hour" : "day",
     ),
   }));
+  const inMobileShell = use(MobileShellContext);
   const metric = preferences.metric;
   const showingLimits = metric === "limits";
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -509,74 +521,64 @@ export function UsagePage() {
     </div>
   );
 
-  return (
-    <AppRouteModal label="Usage">
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="@container/usage-header flex min-h-12 shrink-0 items-center gap-1 border-b ps-5 pe-2">
-          {topbarContent}
-          <AppRouteModalClose />
-        </header>
-
-        <ScrollArea className="min-h-0 flex-1">
-          <WorkspacePageContainer width="wide">
-            {selectedEnvironments.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                {environments.length === 0
-                  ? `Connect an environment to see ${showingLimits ? "limits" : "usage"}.`
-                  : `Select an environment to see ${showingLimits ? "limits" : "usage"}.`}
-              </p>
-            ) : showingLimits ? (
-              <UsageLimitsSection
-                selectedEnvironmentIds={selectedEnvironmentIds}
-                hiddenProviders={hiddenProviders}
-                now={limitsNow}
-                cursorPrompt={
-                  cursorAccessEnvironments.length > 0 ? (
-                    <CursorEnableLimits
-                      environments={cursorAccessEnvironments}
-                      onEnabled={() => {
-                        void refresh();
-                        void refreshLimits(false, true);
-                      }}
-                    />
-                  ) : null
-                }
-              />
-            ) : shown === null ? (
-              <UsageSkeleton />
-            ) : !canReadDiagnostics ? (
-              <div className="space-y-2 py-12 text-center text-sm text-muted-foreground">
-                {selectedEnvironments.map((environment) => (
-                  <p key={environment.environmentId}>
-                    {selectedEnvironments.length > 1 ? `${environment.label}: ` : null}
-                    {environment.error}
-                  </p>
-                ))}
-              </div>
-            ) : (
-              <UsageOverview
-                merged={merged}
-                shownWindow={shownWindow}
-                hour12={hour12}
-                days={days}
-                hours={hours}
-                showingKept={showingKept}
-                metric={metric === "tokens" ? "tokens" : "cost"}
-                selectedEnvironments={selectedEnvironments}
-                hiddenProviders={hiddenProviders}
-                refreshingUsage={refreshingUsage}
-                cursorAccessEnvironments={cursorAccessEnvironments}
-                showChatGptSharing={showChatGptSharing}
-                onCursorEnabled={() => {
-                  void refresh();
-                  void refreshLimits(false, true);
-                }}
-                onSelectModel={selectUsageModel}
-              />
-            )}
-          </WorkspacePageContainer>
-        </ScrollArea>
+  const content =
+    selectedEnvironments.length === 0 ? (
+      <p className="text-sm text-muted-foreground">
+        {environments.length === 0
+          ? `Connect an environment to see ${showingLimits ? "limits" : "usage"}.`
+          : `Select an environment to see ${showingLimits ? "limits" : "usage"}.`}
+      </p>
+    ) : showingLimits ? (
+      <UsageLimitsSection
+        selectedEnvironmentIds={selectedEnvironmentIds}
+        hiddenProviders={hiddenProviders}
+        now={limitsNow}
+        cursorPrompt={
+          cursorAccessEnvironments.length > 0 ? (
+            <CursorEnableLimits
+              environments={cursorAccessEnvironments}
+              onEnabled={() => {
+                void refresh();
+                void refreshLimits(false, true);
+              }}
+            />
+          ) : null
+        }
+      />
+    ) : shown === null ? (
+      <UsageSkeleton />
+    ) : !canReadDiagnostics ? (
+      <div className="space-y-2 py-12 text-center text-sm text-muted-foreground">
+        {selectedEnvironments.map((environment) => (
+          <p key={environment.environmentId}>
+            {selectedEnvironments.length > 1 ? `${environment.label}: ` : null}
+            {environment.error}
+          </p>
+        ))}
       </div>
+    ) : (
+      <UsageOverview
+        merged={merged}
+        shownWindow={shownWindow}
+        hour12={hour12}
+        days={days}
+        hours={hours}
+        showingKept={showingKept}
+        metric={metric === "tokens" ? "tokens" : "cost"}
+        selectedEnvironments={selectedEnvironments}
+        hiddenProviders={hiddenProviders}
+        refreshingUsage={refreshingUsage}
+        cursorAccessEnvironments={cursorAccessEnvironments}
+        showChatGptSharing={showChatGptSharing}
+        onCursorEnabled={() => {
+          void refresh();
+          void refreshLimits(false, true);
+        }}
+        onSelectModel={selectUsageModel}
+      />
+    );
+  const dialogs = (
+    <>
       {showingLimits ? null : (
         <UsageModelDialogHost
           models={merged.models}
@@ -603,6 +605,87 @@ export function UsagePage() {
           }}
         />
       ) : null}
+    </>
+  );
+  const refreshButtonProps = {
+    onClick: refreshWindow,
+    "aria-label": showingLimits ? "Refresh limits" : "Refresh usage",
+    "aria-busy": isRefreshing,
+    disabled: isRefreshing || (!showingLimits && !canReadDiagnostics),
+  };
+
+  // The phone layout follows the native app: a large title, segmented controls, and the filters
+  // as floating buttons beside the shell's menu button. It covers the chat that opened it,
+  // composer included.
+  if (inMobileShell) {
+    return (
+      <div className="absolute inset-0 z-40 flex flex-col bg-background">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 px-3 pt-safe">
+          <div className="flex h-15 items-center justify-end gap-2 *:pointer-events-auto">
+            <UsageEnvironmentFilter
+              glass
+              environments={environments}
+              selectedEnvironments={selectedEnvironments}
+              selectedEnvironmentIds={selectedEnvironmentIds}
+              onSelectionChange={setSelectedEnvironmentIds}
+              showUsageStatus={!showingLimits}
+              refreshing={refreshingUsage}
+              isPartial={isPartial}
+              duplicateSources={merged.duplicateSources}
+              contractMismatches={merged.contractMismatches}
+              onOpenModelPrices={() => setPriceDialog({})}
+            />
+            <UsageProviderFilter
+              glass
+              hiddenProviders={hiddenProviders}
+              onChange={(next) => updatePreferences({ hiddenProviders: next })}
+            />
+            <button type="button" {...refreshButtonProps} className={GLASS_BUTTON}>
+              <RefreshIcon refreshing={isRefreshing} />
+            </button>
+          </div>
+        </div>
+        <div className="header-chrome-fade min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="flex flex-col gap-3 px-4 pt-(--mobile-header-height) pb-safe">
+            <h1 className="px-1 pt-1 pb-1 text-3xl font-bold">Usage</h1>
+            <MobileSegmented
+              label="Usage metric"
+              options={METRIC_OPTIONS}
+              value={metric}
+              onChange={selectMetric}
+            />
+            {showingLimits ? null : (
+              <MobileSegmented
+                label="Usage period"
+                options={WINDOW_OPTIONS.map((option) => ({
+                  value: String(option.days),
+                  label: option.days === 1 ? "24h" : `${option.days}d`,
+                }))}
+                value={String(windowDays)}
+                onChange={(value) => selectWindow(Number(value))}
+              />
+            )}
+            <div className="pt-3 pb-6">{content}</div>
+          </div>
+        </div>
+        {dialogs}
+      </div>
+    );
+  }
+
+  return (
+    <AppRouteModal label="Usage">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="@container/usage-header flex min-h-12 shrink-0 items-center gap-1 border-b ps-5 pe-2">
+          {topbarContent}
+          <AppRouteModalClose />
+        </header>
+
+        <ScrollArea className="min-h-0 flex-1">
+          <WorkspacePageContainer width="wide">{content}</WorkspacePageContainer>
+        </ScrollArea>
+      </div>
+      {dialogs}
     </AppRouteModal>
   );
 }
@@ -1303,7 +1386,9 @@ function UsageEnvironmentFilter({
   duplicateSources,
   contractMismatches,
   onOpenModelPrices,
+  glass = false,
 }: {
+  readonly glass?: boolean;
   readonly environments: readonly EnvironmentUsageStatus[];
   readonly selectedEnvironments: readonly EnvironmentUsageStatus[];
   readonly selectedEnvironmentIds: ReadonlySet<EnvironmentId> | null;
@@ -1327,22 +1412,38 @@ function UsageEnvironmentFilter({
 
   return (
     <Menu>
-      <MenuTrigger render={<InlineButton />} className="group/usage-environment min-w-0 max-w-full">
-        <WorkspaceBreadcrumbText>{label}</WorkspaceBreadcrumbText>
-        <span className="flex size-3.5 shrink-0 items-center justify-center text-muted-foreground">
+      {glass ? (
+        <MenuTrigger
+          render={
+            <button type="button" aria-label={`Environments: ${label}`} className={GLASS_BUTTON} />
+          }
+        >
+          <ListFilterIcon className="size-5" />
           {showUsageStatus && hasIssue ? (
-            <CircleAlertIcon
-              className="size-3.5 text-warning-foreground"
-              aria-label="Some environments could not report usage"
-            />
-          ) : (
-            <ChevronDownIcon
-              className="size-3.5 opacity-60 transition-opacity group-hover/usage-environment:opacity-100 group-focus-visible/usage-environment:opacity-100 group-data-popup-open/usage-environment:opacity-100"
-              aria-hidden
-            />
-          )}
-        </span>
-      </MenuTrigger>
+            <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-warning" />
+          ) : null}
+        </MenuTrigger>
+      ) : (
+        <MenuTrigger
+          render={<InlineButton />}
+          className="group/usage-environment min-w-0 max-w-full"
+        >
+          <WorkspaceBreadcrumbText>{label}</WorkspaceBreadcrumbText>
+          <span className="flex size-3.5 shrink-0 items-center justify-center text-muted-foreground">
+            {showUsageStatus && hasIssue ? (
+              <CircleAlertIcon
+                className="size-3.5 text-warning-foreground"
+                aria-label="Some environments could not report usage"
+              />
+            ) : (
+              <ChevronDownIcon
+                className="size-3.5 opacity-60 transition-opacity group-hover/usage-environment:opacity-100 group-focus-visible/usage-environment:opacity-100 group-data-popup-open/usage-environment:opacity-100"
+                aria-hidden
+              />
+            )}
+          </span>
+        </MenuTrigger>
+      )}
       <MenuPopup align="start">
         <MenuCheckboxItem
           checked={allSelected}
@@ -1431,7 +1532,9 @@ function UsageEnvironmentFilter({
 function UsageProviderFilter({
   hiddenProviders,
   onChange,
+  glass = false,
 }: {
+  readonly glass?: boolean;
   readonly hiddenProviders: ReadonlySet<UsageProviderKind>;
   readonly onChange: (hiddenProviders: readonly UsageProviderKind[]) => void;
 }) {
@@ -1447,13 +1550,23 @@ function UsageProviderFilter({
 
   return (
     <Menu>
-      <MenuTrigger render={<InlineButton />} className="group/usage-provider min-w-0 max-w-full">
-        <span className="min-w-0 truncate">{label}</span>
-        <ChevronDownIcon
-          className="size-3.5 shrink-0 text-muted-foreground opacity-60 transition-opacity group-hover/usage-provider:opacity-100 group-focus-visible/usage-provider:opacity-100 group-data-popup-open/usage-provider:opacity-100"
-          aria-hidden
-        />
-      </MenuTrigger>
+      {glass ? (
+        <MenuTrigger
+          render={
+            <button type="button" aria-label={`Providers: ${label}`} className={GLASS_BUTTON} />
+          }
+        >
+          <SlidersHorizontalIcon className="size-5" />
+        </MenuTrigger>
+      ) : (
+        <MenuTrigger render={<InlineButton />} className="group/usage-provider min-w-0 max-w-full">
+          <span className="min-w-0 truncate">{label}</span>
+          <ChevronDownIcon
+            className="size-3.5 shrink-0 text-muted-foreground opacity-60 transition-opacity group-hover/usage-provider:opacity-100 group-focus-visible/usage-provider:opacity-100 group-data-popup-open/usage-provider:opacity-100"
+            aria-hidden
+          />
+        </MenuTrigger>
+      )}
       <MenuPopup align="start">
         <MenuCheckboxItem
           checked={hiddenProviders.size === 0}

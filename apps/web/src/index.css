@@ -419,6 +419,12 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   mask-image: linear-gradient(to bottom, black calc(100% - 5.5rem), transparent);
 }
 
+/* A phone page scrolling under the floating header fades out beneath it. */
+@utility header-chrome-fade {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black var(--mobile-header-height));
+  mask-image: linear-gradient(to bottom, transparent, black var(--mobile-header-height));
+}
+
 /* A bottom sheet with no top border casts its shadow upward onto the page. */
 @utility sheet-lift {
   box-shadow:
