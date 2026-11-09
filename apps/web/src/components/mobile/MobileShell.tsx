@@ -35,7 +35,7 @@ import { parseWorkspacePath, WorkspaceTargetPage } from "../workspace/WorkspaceP
 import { MobileContextMenuSheet } from "./MobileContextMenuSheet";
 import { MobileSegmented } from "./MobileSegmented";
 import { MobileThreadPill } from "./MobileThreadPill";
-import { MobileUsageGauge } from "./MobileUsageGauge";
+import { MobileUsageLink } from "./MobileUsageLink";
 import {
   followVisualViewport,
   publishVisualViewport,
@@ -199,7 +199,7 @@ function MobileFrame({ children }: { children: ReactNode }) {
             onChange={setListMode}
             className="flex-1"
           />
-          <MobileUsageGauge />
+          <MobileUsageLink />
           <NewButton mode={listMode} onStart={() => setDrawerOpen(false)} />
         </div>
       </aside>

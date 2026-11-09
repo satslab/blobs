@@ -57,6 +57,8 @@ export interface SettingsSearchItem {
   readonly searchTerms?: ReadonlyArray<string>;
   readonly scope?: SettingsSearchScope;
   readonly desktopOnly?: boolean;
+  /** Hidden in the desktop app, which has no equivalent. */
+  readonly webOnly?: boolean;
   readonly macOnly?: boolean;
   readonly windowsOnly?: boolean;
   readonly releaseChannelOnly?: boolean;
@@ -679,6 +681,8 @@ export const SETTINGS_SEARCH_ITEMS = [
     title: "Push notifications",
     to: "/settings/general",
     searchTerms: ["notification push web pwa phone background closed environment"],
+    // The desktop app notifies natively and has no push service to register.
+    webOnly: true,
   },
   {
     id: "in-app-notifications",
@@ -1529,6 +1533,7 @@ export function settingsForThisPlatform(
   return items.filter(
     (item) =>
       (isElectron || item.desktopOnly !== true) &&
+      (!isElectron || item.webOnly !== true) &&
       (!item.releaseChannelOnly || isElectron || HOSTED_APP_CHANNEL !== null) &&
       (!item.secretsFeatureOnly || isSecretsFeatureEnabled) &&
       (!item.macOnly || isMacPlatform(platform)) &&

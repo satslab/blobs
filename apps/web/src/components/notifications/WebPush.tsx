@@ -7,6 +7,7 @@ import { useRouter } from "@tanstack/react-router";
 import { BellIcon, XIcon } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 
+import { isElectron } from "../../env";
 import { useAtomCommand } from "../../state/use-atom-command";
 import { useEnvironmentQuery } from "../../state/query";
 import {
@@ -83,6 +84,8 @@ function useWebPush(environmentId: EnvironmentId | null) {
     devices,
     /** Whether this browser is registered here; null while unknown or when it cannot receive push. */
     registered: devices && deviceId ? devices.some((device) => device.deviceId === deviceId) : null,
+    /** Why the device list could not load, such as a server too old to have it. */
+    error: query.error,
     deviceId,
     busy,
     /** Subscribes this browser. Asks for notification permission. */
@@ -208,6 +211,12 @@ function PromptContent(props: {
 
 /** Settings: each connected environment's notification devices, manageable from any client. */
 export function WebPushSettings() {
+  // The desktop app notifies natively and cannot receive web push; see the setting above.
+  if (isElectron) return null;
+  return <WebPushSettingsRow />;
+}
+
+function WebPushSettingsRow() {
   const { environments } = useEnvironments();
   const support = webPushSupport();
   const connected = environments.filter(
@@ -247,7 +256,11 @@ function WebPushEnvironment(props: { environmentId: EnvironmentId; label: string
           </Button>
         ) : null}
       </div>
-      {webPush.devices?.length === 0 ? (
+      {webPush.error !== null ? (
+        <p className="px-3 py-2 text-sm text-muted-foreground">
+          Couldn't load devices. This environment may need the latest Blobs. ({webPush.error})
+        </p>
+      ) : webPush.devices?.length === 0 ? (
         <p className="px-3 py-2 text-sm text-muted-foreground">No devices</p>
       ) : null}
       {webPush.devices?.map((device) => (
