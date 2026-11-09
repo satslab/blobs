@@ -1,6 +1,12 @@
 import { createMemoryHistory } from "@tanstack/react-router";
 import { scopeProjectRef } from "@satslab/client-runtime/environment";
-import { ThreadId } from "@satslab/contracts";
+import {
+  BotId,
+  ThreadId,
+  ORCHESTRATION_V2_WS_METHODS,
+  type OrchestrationV2Command,
+} from "@satslab/contracts";
+import * as Effect from "effect/Effect";
 import { DEFAULT_CLIENT_SETTINGS } from "@satslab/contracts/settings";
 import type * as Context from "effect/Context";
 import { expect, it, vi } from "vite-plus/test";
@@ -19,6 +25,7 @@ import {
   ENVIRONMENT_ID,
   PROJECT_ID,
   installFakeEnvironment,
+  threadWithHistory,
   type FakeDriver,
 } from "../../test/fakeEnvironment";
 import { act, render } from "../../test/render";
@@ -30,7 +37,56 @@ vi.mock("../../../../packages/client-runtime/src/connection/driver.ts", async (i
     import("../../test/fakeEnvironment"),
     import("effect/Layer"),
   ]);
-  return { ...actual, layer: Layer.succeed(actual.ConnectionDriver, fakeDriver) };
+  return {
+    ...actual,
+    layer: Layer.succeed(actual.ConnectionDriver, {
+      ...fakeDriver,
+      connect: (entry: Parameters<FakeDriver["connect"]>[0]) =>
+        fakeDriver.connect(entry).pipe(
+          Effect.map((lease) => ({
+            ...lease,
+            session: {
+              ...lease.session,
+              client: new Proxy(lease.session.client, {
+                get: (target, key) =>
+                  key === ORCHESTRATION_V2_WS_METHODS.dispatchCommand
+                    ? (command: OrchestrationV2Command) =>
+                        Effect.sync(() => {
+                          sendState.commands.push(command);
+                          return { sequence: sendState.commands.length };
+                        })
+                    : Reflect.get(target, key),
+              }),
+            },
+          })),
+        ),
+    }),
+  };
+});
+
+const sendState = vi.hoisted(() => ({
+  forceBusy: false,
+  commands: [] as OrchestrationV2Command[],
+}));
+vi.mock(import("./chat/useLocalDispatchState"), async (original) => {
+  const actual = await original();
+  return {
+    useLocalDispatchState: (input: Parameters<typeof actual.useLocalDispatchState>[0]) => {
+      const result = actual.useLocalDispatchState(input);
+      return { ...result, isSendBusy: sendState.forceBusy || result.isSendBusy };
+    },
+  };
+});
+
+vi.mock(import("~/composerHandleContext"), async (original) => {
+  const actual = await original();
+  return {
+    ...actual,
+    useComposerHandleContext: () => {
+      const ref = actual.useComposerHandleContext();
+      return sendState.forceBusy ? null : ref;
+    },
+  };
 });
 
 vi.mock(import("~/rpc/requestLatencyState"), async (original) => ({
@@ -103,4 +159,59 @@ it("clears a wrapped phone prompt without crashing", async () => {
   await expect.element(editor).toHaveTextContent("");
   await act(() => useComposerDraftStore.getState().setPrompt(draftId, "Next message"));
   await expect.element(editor).toHaveTextContent("Next message");
+});
+
+it.each(["steer", "queue"] as const)("accepts %s while bot memory is preparing", async (mode) => {
+  const fixture = threadWithHistory(`bot-preparing-${mode}`, 1);
+  const running = fixture.runs[0]!;
+  using _environment = installFakeEnvironment([
+    {
+      ...fixture,
+      botId: BotId.make("preparing-memory"),
+      runs: [{ ...running, status: "starting", startedAt: null, completedAt: null }],
+    },
+  ]);
+  const commands: OrchestrationV2Command[] = [];
+  sendState.commands = commands;
+  sendState.forceBusy = true;
+  using _busy = {
+    [Symbol.dispose]: () => {
+      sendState.forceBusy = false;
+    },
+  };
+  __setClientSettingsForTests({
+    ...DEFAULT_CLIENT_SETTINGS,
+    onboardingCompletedAt: "2026-01-01T00:00:00.000Z",
+    followUpBehavior: mode,
+  });
+  const ref = { environmentId: ENVIRONMENT_ID, threadId: fixture.id };
+  useComposerDraftStore.getState().setPrompt(ref, "Use the new requirement");
+  const router = getRouter(
+    createMemoryHistory({ initialEntries: [`/${ENVIRONMENT_ID}/${fixture.id}`] }),
+  );
+  await router.load();
+  await using screen = await render(<AppRoot router={router} />, {
+    // AppRoot brings its own router.
+    router: false,
+  });
+  const editor = screen.getByTestId("composer-editor");
+  await expect.element(editor).toHaveTextContent("Use the new requirement");
+  await screen
+    .getByRole("button", {
+      name: mode === "steer" ? "Steer message" : "Queue message",
+      exact: true,
+    })
+    .click();
+  await vi.waitFor(() =>
+    expect(commands).toContainEqual(
+      expect.objectContaining({
+        type: "message.dispatch",
+        text: "Use the new requirement",
+        ...(mode === "queue"
+          ? { dispatchMode: { type: "queue_after_active" } }
+          : { deliveryIntent: "steer" }),
+      }),
+    ),
+  );
+  await expect.element(editor).toHaveTextContent("");
 });

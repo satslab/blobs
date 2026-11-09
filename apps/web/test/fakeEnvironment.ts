@@ -3,6 +3,7 @@
 // stay pending so nothing retries on timers. Everything above the wire is the app's own.
 import {
   AuthStandardClientScopes,
+  type BotId,
   EnvironmentId,
   EventId,
   ExecutionEnvironmentDescriptor,
@@ -187,6 +188,7 @@ function run(threadId: ThreadId, id: RunId, ordinal: number, userMessageId: stri
 }
 
 export interface FakeThread {
+  readonly botId?: BotId;
   /** Makes this a side chat of that thread. */
   readonly sideChatOf?: ThreadId;
   readonly id: ThreadId;
@@ -222,6 +224,7 @@ function shellOf(thread: FakeThread): OrchestrationV2ThreadShell {
   const latest = thread.runs.at(-1);
   return {
     id: thread.id,
+    ...(thread.botId === undefined ? {} : { botId: thread.botId }),
     projectId: PROJECT_ID,
     title: thread.title,
     providerInstanceId: CODEX,
@@ -274,6 +277,7 @@ function projectionOf(thread: FakeThread): OrchestrationV2ThreadProjection {
   return {
     thread: {
       id: shell.id,
+      ...(shell.botId === undefined ? {} : { botId: shell.botId }),
       projectId: shell.projectId,
       title: shell.title,
       providerInstanceId: shell.providerInstanceId,
