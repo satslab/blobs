@@ -6,6 +6,8 @@ import type * as Context from "effect/Context";
 import { expect, it, vi } from "vite-plus/test";
 import { page } from "vite-plus/test/browser";
 
+import "~/index.css";
+
 import { AppRoot } from "~/AppRoot";
 // The route loads ChatView lazily, and its first transform (React Compiler over ~4k lines)
 // takes 6-11s; importing it here keeps that out of the test's timeout.
@@ -19,7 +21,7 @@ import {
   installFakeEnvironment,
   type FakeDriver,
 } from "../../test/fakeEnvironment";
-import { render } from "../../test/render";
+import { act, render } from "../../test/render";
 
 // The socket is the only fake layer; see test/appScenarios.renders.tsx.
 vi.mock("../../../../packages/client-runtime/src/connection/driver.ts", async (importOriginal) => {
@@ -57,11 +59,48 @@ it("a new draft does not load its reserved thread before the server lists it", a
   });
   await expect.element(page.getByTestId("composer-editor")).toBeVisible();
   // The shell snapshot has arrived once the sidebar lists the project, so the connection is up.
-  await expect.element(page.getByText("render", { exact: true }).first()).toBeVisible();
+  await expect.element(page.getByText("render", { exact: true }).first()).toBeInTheDocument();
 
   const threadRequests = fetchSpy.mock.calls
     .map(([input]) => String(input instanceof Request ? input.url : input))
     .filter((url) => url.includes(`/api/orchestration/threads/${threadId}/`));
   // A 404 here marks the thread deleted, and the view never loads it once the send creates it.
   expect(threadRequests).toEqual([]);
+});
+
+it("clears a wrapped phone prompt without crashing", async () => {
+  using _environment = installFakeEnvironment([]);
+  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(390, 844);
+  await using _viewport = {
+    [Symbol.asyncDispose]: () => page.viewport(viewport.width, viewport.height),
+  };
+  __setClientSettingsForTests({
+    ...DEFAULT_CLIENT_SETTINGS,
+    onboardingCompletedAt: "2026-01-01T00:00:00.000Z",
+  });
+  const draftId = DraftId.make("draft-clear-wrapped-phone");
+  useComposerDraftStore
+    .getState()
+    .setProjectDraftThreadId(scopeProjectRef(ENVIRONMENT_ID, PROJECT_ID), draftId, {
+      threadId: ThreadId.make("thread-clear-wrapped-phone"),
+    });
+  const prompt = "This phone message wraps across several lines before it is sent. ".repeat(8);
+  useComposerDraftStore.getState().setPrompt(draftId, prompt);
+  const router = getRouter(createMemoryHistory({ initialEntries: [`/draft/${draftId}`] }));
+  await router.load();
+  await using screen = await render(<AppRoot router={router} />, {
+    // AppRoot brings its own router.
+    router: false,
+  });
+  const editor = screen.getByTestId("composer-editor");
+  await expect.element(editor).toHaveTextContent(prompt.trim());
+  await vi.waitFor(() =>
+    expect(editor.element().closest("[data-composer-single-line]")).toBeNull(),
+  );
+  await act(() => useComposerDraftStore.getState().setPrompt(draftId, ""));
+  await expect.element(editor).toBeVisible();
+  await expect.element(editor).toHaveTextContent("");
+  await act(() => useComposerDraftStore.getState().setPrompt(draftId, "Next message"));
+  await expect.element(editor).toHaveTextContent("Next message");
 });

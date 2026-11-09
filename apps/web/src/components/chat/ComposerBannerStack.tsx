@@ -61,8 +61,8 @@ export function ComposerBannerStack({
           </div>
         ))}
         {capsuleItems.length > 0 ? (
-          <div className={cn("flex items-center justify-center gap-3", FADE_IN)}>
-            <div className="glass-float flex h-11 max-w-full min-w-0 items-center rounded-full px-1">
+          <div className={cn("flex items-center justify-center gap-2", FADE_IN)}>
+            <div className="glass-float flex h-9 max-w-full min-w-0 items-center rounded-full px-1">
               {capsuleItems.map((item, index) => (
                 <Fragment key={item.id}>
                   {index > 0 ? (
@@ -207,19 +207,19 @@ const CAPSULE_ICON_TONE = {
 /** One notice inside the phone's notice capsule: its icon and title, then its actions. */
 function NoticeSegment({ item }: { readonly item: ComposerBannerStackItem }) {
   const title = (
-    <span className="flex min-w-0 items-center gap-2">
+    <span className="flex min-w-0 items-center gap-1.5">
       {item.icon ? (
-        <span className={cn("flex shrink-0 [&_svg]:size-4", CAPSULE_ICON_TONE[item.variant])}>
+        <span className={cn("flex shrink-0 [&_svg]:size-3.5", CAPSULE_ICON_TONE[item.variant])}>
           {item.icon}
         </span>
       ) : null}
-      <span className="truncate text-sm font-medium text-foreground **:text-sm">{item.title}</span>
+      <span className="truncate text-xs font-medium text-foreground **:text-xs">{item.title}</span>
     </span>
   );
   return (
     <div
       role={item.variant === "error" || item.variant === "warning" ? "alert" : undefined}
-      className="flex h-full min-w-0 items-center px-3"
+      className="flex h-full min-w-0 items-center px-2.5"
     >
       {item.description ? (
         <Popover>
@@ -243,7 +243,7 @@ function NoticeSegment({ item }: { readonly item: ComposerBannerStackItem }) {
       {item.actions || item.onDismiss ? (
         <span
           // Actions take the capsule's own type and height, not the cards' button sizes.
-          className="ms-2 flex shrink-0 items-center gap-1 border-s border-border/70 ps-2 **:data-[slot=button]:h-8 **:data-[slot=button]:px-2 **:data-[slot=button]:text-sm **:data-[slot=button]:font-medium"
+          className="ms-2 flex shrink-0 items-center gap-1 border-s border-border/70 ps-2 **:data-[slot=button]:h-7 **:data-[slot=button]:px-1.5 **:data-[slot=button]:text-xs **:data-[slot=button]:font-medium"
         >
           {item.actions}
           {item.onDismiss ? (

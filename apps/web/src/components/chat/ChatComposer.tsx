@@ -1002,7 +1002,9 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   // Measured against the narrow one-row slot, so it holds until the prompt is cleared; otherwise
   // the wider stacked editor would unwrap the text and flip the layout back.
   const [mobilePromptStacked, setMobilePromptStacked] = useState(false);
-  if (inMobileShell && hasMultilinePrompt && !mobilePromptStacked) setMobilePromptStacked(true);
+  if (inMobileShell && prompt.length > 0 && hasMultilinePrompt && !mobilePromptStacked) {
+    setMobilePromptStacked(true);
+  }
   if (mobilePromptStacked && prompt.length === 0) setMobilePromptStacked(false);
   // A pending question stays expanded: its card moves into the banner dock,
   // so collapsing would leave the surface empty and squashed beneath it.

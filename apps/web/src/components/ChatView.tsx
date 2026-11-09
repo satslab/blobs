@@ -3092,9 +3092,7 @@ export default function ChatView(props: ChatViewProps) {
             icon: <span aria-hidden className="size-1.5 rounded-full bg-success" />,
             title: runningWorkAction,
           };
-  // The phone layout shows what the thread is doing as one pill in its notice capsule, picked in
-  // the mobile app's order: a connection notice outranks all of it, and an approval or question
-  // waiting on you hides it.
+  // Phone status stays above the composer; subagent details and actions stay in the timeline.
   const mobileStatusItem = ((): ComposerBannerStackItem | null => {
     if (!inMobileShell || isDraftHeroState) return null;
     if (composerBannerItems.some((item) => item.id.startsWith("environment-unavailable:"))) {
@@ -3116,7 +3114,6 @@ export default function ChatView(props: ChatViewProps) {
     if (isPreparingWorktree) return label("preparing", "Setting up worktree…");
     if (activeRunPreparing) return label("preparing", "Starting…");
     if (shownThreadSyncPhase !== null) return label("sync", threadSyncLabel(shownThreadSyncPhase));
-    if (childInputNow) return pill(childInputNow);
     if (isCompacting) return label("compacting", "Compacting…");
     if (activeWorkStartedAt !== null) {
       return label(
@@ -3127,16 +3124,16 @@ export default function ChatView(props: ChatViewProps) {
       );
     }
     if (isWorking) return label("working", "Working…");
-    if (workNow?.id.startsWith("background-work:")) return pill(workNow);
     if (goalNow) return pill(goalNow);
     return null;
   })();
+  const timelineAttention = inMobileShell ? childInputNow : shownAttentionNow;
+  const timelineWork =
+    inMobileShell && !workNow?.id.startsWith("background-work:") ? null : workNow;
   const hasThreadNow =
-    !inMobileShell &&
-    (shownAttentionNow !== null ||
-      workNow !== null ||
-      goalNow !== null ||
-      shownThreadSyncPhase !== null);
+    timelineAttention !== null ||
+    timelineWork !== null ||
+    (!inMobileShell && (goalNow !== null || shownThreadSyncPhase !== null));
   const queuedRunCount = serverProjection ? getUserQueuedThreadRuns(serverProjection).length : 0;
   // The queue control is mounted for every server thread but joins the footer only while it shows
   // something, by its own rule: an optimistic message stops counting once the server has it.
@@ -3173,10 +3170,10 @@ export default function ChatView(props: ChatViewProps) {
         {hasThreadNow ? (
           <ThreadNow
             key={routeThreadKey}
-            attention={shownAttentionNow}
-            work={workNow}
-            syncPhase={shownThreadSyncPhase}
-            goal={goalNow}
+            attention={timelineAttention}
+            work={timelineWork}
+            syncPhase={inMobileShell ? null : shownThreadSyncPhase}
+            goal={inMobileShell ? null : goalNow}
           />
         ) : null}
         {threadStatusLine}
