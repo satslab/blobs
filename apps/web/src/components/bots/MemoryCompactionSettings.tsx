@@ -25,7 +25,6 @@ import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "../
 import {
   getCustomModelOptionsByInstance,
   resolveAppModelSelectionState,
-  selectsPlanAgent,
 } from "../../modelSelection";
 import { providerInstanceEntriesFor } from "../../providerInstances";
 import { useEnvironmentProviders } from "../../state/environments";
@@ -160,9 +159,6 @@ export function MemoryCompactionSettings() {
                   model={memoryModelSelection.model}
                   modelOptions={memoryModelSelection.options}
                   allowPromptInjectedEffort={false}
-                  planModeEnabled={
-                    settings.planModeEnabled || selectsPlanAgent(memoryModelSelection.options)
-                  }
                   triggerClassName={SETTINGS_PICKER_TRIGGER_CLASSNAME}
                   onModelOptionsChange={(options) =>
                     updateSettings({

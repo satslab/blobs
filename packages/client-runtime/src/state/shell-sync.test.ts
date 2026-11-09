@@ -1150,6 +1150,7 @@ describe("environment shell cold start", () => {
     databaseMigration: null,
     omitIdleSubagents: false,
     omitOlderSettled: false,
+    separateBotThreads: false,
   };
   const RECENT_ORIGIN = { ...CURRENT_ORIGIN, snapshotAt: NOW - HOUR };
 

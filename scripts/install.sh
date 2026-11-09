@@ -32,7 +32,7 @@ case "$blobs_home" in
 esac
 bin_dir="${BLOBS_INSTALL_BIN_DIR:-$HOME/.local/bin}"
 # Trailing slashes would put `//` in the paths the blobs command guard compares.
-while [ "${t3_home%/}" != "$t3_home" ] && [ "$t3_home" != / ]; do t3_home="${t3_home%/}"; done
+while [ "${blobs_home%/}" != "$blobs_home" ] && [ "$blobs_home" != / ]; do blobs_home="${blobs_home%/}"; done
 while [ "${bin_dir%/}" != "$bin_dir" ] && [ "$bin_dir" != / ]; do bin_dir="${bin_dir%/}"; done
 # Absolute, so the PATH hint never adds a folder that changes with the working directory.
 case "$bin_dir" in /*) ;; *) bin_dir="$PWD/$bin_dir" ;; esac
@@ -262,7 +262,7 @@ if [ -e "${bin_dir}/blobs" ] || [ -L "${bin_dir}/blobs" ]; then
       */./* | */../* | */. | */..) ;;
       *)
         if version_t3 "$existing" "$versions_dir" || version_t3 "$existing" "$real_versions_dir" ||
-          [ "$existing" = "${t3_home}/bin/blobs" ]; then owned=true; fi
+          [ "$existing" = "${blobs_home}/bin/blobs" ]; then owned=true; fi
         ;;
     esac
     if [ -n "$existing_dir" ] && version_t3 "${existing_dir}/${existing##*/}" "$real_versions_dir"; then

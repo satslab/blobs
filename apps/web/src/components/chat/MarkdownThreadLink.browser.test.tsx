@@ -1,5 +1,5 @@
 import { RegistryContext } from "@effect/atom-react";
-import { EnvironmentId, ProjectId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ProjectId, ThreadId } from "@satslab/contracts";
 import * as Cause from "effect/Cause";
 import { AsyncResult, Atom, AtomRegistry } from "effect/reactivity";
 import { expect, it, vi } from "vite-plus/test";
@@ -10,6 +10,9 @@ import { MarkdownThreadLink } from "./MarkdownThreadLink";
 const state = vi.hoisted(() => ({
   reply: null as unknown,
   remote: null as unknown,
+}));
+vi.mock(import("../../state/bots"), () => ({
+  useBotAwareThreadRoute: () => "/$environmentId/$threadId",
 }));
 vi.mock(import("../../state/entities"), () => ({
   useThreadShell: ((ref: { environmentId: string } | null) =>

@@ -534,6 +534,7 @@ describe("mobile SQLite environment cache store", () => {
         databaseMigration: 70,
         omitIdleSubagents: true,
         omitOlderSettled: false,
+        separateBotThreads: false,
         snapshotAt: 1_800_000_000_000,
       };
       yield* store.saveShell(ENVIRONMENT_ID, SHELL_SNAPSHOT, origin);

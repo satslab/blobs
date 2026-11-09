@@ -1,4 +1,4 @@
-import type { EnvironmentId, OrchestrationV2Run, RunId } from "@t3tools/contracts";
+import type { EnvironmentId, OrchestrationV2Run, RunId } from "@satslab/contracts";
 import { useSyncExternalStore } from "react";
 
 import type { Thread } from "../../types";

@@ -114,7 +114,7 @@ describe("thread links", () => {
         local,
         title,
       ),
-    ).toBe("[There](t3-thread://v2/there/t1) and [Here](t3-thread://v2/local/t1)");
+    ).toBe("[There](blobs-thread://v2/there/t1) and [Here](blobs-thread://v2/local/t1)");
     expect(
       relabelThreadLinks("[Kept label](<t3-thread://v2/local/t1>)", local, () => undefined),
     ).toBe("Kept label");

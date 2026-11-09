@@ -1,5 +1,6 @@
 import { botSettingsSearchDestination } from "../bots/botSettings.logic";
 import { useSelectedSettingsBot } from "../bots/useSelectedSettingsBot";
+import { validateSettingsScopeSearch } from "./settingsScope";
 import {
   lazy,
   Suspense,
