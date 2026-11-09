@@ -681,8 +681,6 @@ export const SETTINGS_SEARCH_ITEMS = [
     title: "Push notifications",
     to: "/settings/general",
     searchTerms: ["notification push web pwa phone background closed environment"],
-    // The desktop app notifies natively and has no push service to register.
-    webOnly: true,
   },
   {
     id: "in-app-notifications",

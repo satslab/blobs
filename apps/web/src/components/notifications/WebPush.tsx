@@ -7,7 +7,6 @@ import { useRouter } from "@tanstack/react-router";
 import { BellIcon, XIcon } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 
-import { isElectron } from "../../env";
 import { useAtomCommand } from "../../state/use-atom-command";
 import { useEnvironmentQuery } from "../../state/query";
 import {
@@ -211,12 +210,6 @@ function PromptContent(props: {
 
 /** Settings: each connected environment's notification devices, manageable from any client. */
 export function WebPushSettings() {
-  // The desktop app notifies natively and cannot receive web push; see the setting above.
-  if (isElectron) return null;
-  return <WebPushSettingsRow />;
-}
-
-function WebPushSettingsRow() {
   const { environments } = useEnvironments();
   const support = webPushSupport();
   const connected = environments.filter(

@@ -87,6 +87,7 @@ export function useComposerStash(input: {
   readonly attachmentTargetKey: string;
   readonly isComposerDraftTargetOpen: (targetKey: string) => boolean;
   readonly composerEditorRef: RefObject<ComposerPromptEditorHandle | null>;
+  readonly composerFormRef: RefObject<HTMLFormElement | null>;
   readonly isRevertingCheckpoint: () => boolean;
   readonly pendingThreadImportsRef: RefObject<Map<string, number>>;
   readonly setComposerCursor: Dispatch<SetStateAction<number>>;
@@ -117,6 +118,7 @@ export function useComposerStash(input: {
     attachmentTargetKey,
     isComposerDraftTargetOpen,
     composerEditorRef,
+    composerFormRef,
     isRevertingCheckpoint,
     pendingThreadImportsRef,
     setComposerCursor,
@@ -703,10 +705,13 @@ export function useComposerStash(input: {
       {
         capture: true,
         context: readShortcutContext,
-        when: (event) => !isInSideChatPane(event.target),
+        when: (event) =>
+          !isInSideChatPane(event.target) ||
+          (event.target instanceof Node &&
+            composerFormRef.current?.contains(event.target) === true),
       },
     );
-  }, [backgroundThread, handleStashShortcut, readShortcutContext]);
+  }, [backgroundThread, composerFormRef, handleStashShortcut, readShortcutContext]);
 
   return {
     stashQueue,

@@ -19,6 +19,7 @@ import { AppRoot } from "~/AppRoot";
 // takes 6-11s; importing it here keeps that out of the test's timeout.
 import "~/components/ChatView";
 import { DraftId, useComposerDraftStore } from "~/composerDraftStore";
+import { usePromptStashStore } from "~/promptStashStore";
 import { __setClientSettingsForTests } from "~/hooks/useSettings";
 import { getRouter } from "~/router";
 import {
@@ -214,4 +215,43 @@ it.each(["steer", "queue"] as const)("accepts %s while bot memory is preparing",
     ),
   );
   await expect.element(editor).toHaveTextContent("");
+});
+
+it("stashes and restores a prompt in the bot workspace", async () => {
+  const fixture = threadWithHistory("bot-stash", 1);
+  using _environment = installFakeEnvironment([{ ...fixture, botId: BotId.make("stash-bot") }]);
+  __setClientSettingsForTests({
+    ...DEFAULT_CLIENT_SETTINGS,
+    onboardingCompletedAt: "2026-01-01T00:00:00.000Z",
+  });
+  const ref = { environmentId: ENVIRONMENT_ID, threadId: fixture.id };
+  useComposerDraftStore.getState().setPrompt(ref, "Save this bot prompt for later");
+  const router = getRouter(
+    createMemoryHistory({ initialEntries: [`/bots/${ENVIRONMENT_ID}/${fixture.id}`] }),
+  );
+  await router.load();
+  await using screen = await render(<AppRoot router={router} />, {
+    // AppRoot brings its own router.
+    router: false,
+  });
+  const editor = screen.getByTestId("composer-editor");
+  await expect.element(editor).toHaveTextContent("Save this bot prompt for later");
+  const stash = () =>
+    act(() => {
+      editor.element().dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "s",
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+  await stash();
+  await expect.element(editor).toHaveTextContent("");
+  expect(usePromptStashStore.getState().entries).toEqual(
+    expect.arrayContaining([expect.objectContaining({ prompt: "Save this bot prompt for later" })]),
+  );
+  await stash();
+  await expect.element(editor).toHaveTextContent("Save this bot prompt for later");
 });
