@@ -1299,7 +1299,7 @@ describe("AcpRegistryAdapterV2", () => {
                   spawn: {
                     command: process.execPath,
                     args: [mockAgentPath],
-                    env: { T3_ACP_SESSION_LIFECYCLE: "1" },
+                    env: { BLOBS_ACP_SESSION_LIFECYCLE: "1" },
                   },
                 }),
             }),
@@ -1322,7 +1322,7 @@ describe("AcpRegistryAdapterV2", () => {
       );
       yield* withCapturedSpawns(runtime.ensureThread({ threadId, modelSelection, runtimePolicy }));
       const agentEnvironment = spawnEnvironments.find(
-        (environment) => environment?.T3_ACP_SESSION_LIFECYCLE === "1",
+        (environment) => environment?.BLOBS_ACP_SESSION_LIFECYCLE === "1",
       );
       assert.isDefined(agentEnvironment, "the agent itself must have been spawned");
       assert.equal(agentEnvironment?.T3CODE_THREAD_ID, "thread-acp-registry-thread-env");

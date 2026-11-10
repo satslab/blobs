@@ -1,11 +1,12 @@
 // @effect-diagnostics nodeBuiltinImport:off - Runs the generated runner in a real shell.
 import * as NodeChildProcess from "node:child_process";
+import * as NodeCrypto from "node:crypto";
 import * as NodeFS from "node:fs";
 import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
 import { assert, describe, it } from "@effect/vitest";
-import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
+import * as EffectNodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import * as NetService from "@satslab/shared/Net";
 import * as Clock from "effect/Clock";
@@ -118,6 +119,8 @@ describe("ssh tunnel scripts", () => {
   it.each([
     { host: "Darwin x86_64", system: "Darwin", machine: "x86_64", downloads: false },
     { host: "Darwin arm64", system: "Darwin", machine: "arm64", downloads: true },
+    { host: "Linux arm64", system: "Linux", machine: "aarch64", downloads: false },
+    { host: "Linux x86_64", system: "Linux", machine: "x86_64", downloads: true },
   ])(
     "only downloads a release archive the host can run: $host",
     ({ system, machine, downloads }) => {
@@ -133,7 +136,7 @@ describe("ssh tunnel scripts", () => {
         );
         NodeFS.writeFileSync(
           NodePath.join(bin, "curl"),
-          "#!/bin/sh\necho 'download attempt' >&2\nexit 22\n",
+          '#!/bin/sh\nfor arg in "$@"; do case "$arg" in */SHA256SUMS) exit 0 ;; *.tar.gz) echo "download attempt: $arg" >&2; exit 22 ;; esac; done\nexit 1\n',
           { mode: 0o755 },
         );
         const runner = NodePath.join(root, "run-t3.sh");
@@ -145,15 +148,69 @@ describe("ssh tunnel scripts", () => {
         assert.notEqual(result.status, 0);
         if (downloads) {
           assert.include(result.stderr, "download attempt");
+          const platform = system === "Darwin" ? "darwin-arm64" : "linux-x64";
+          assert.include(result.stderr, `blobs-1.2.3-preview.20260911.4-${platform}.tar.gz`);
         } else {
           assert.notInclude(result.stderr, "download attempt");
-          assert.include(result.stderr, "has no t3 release archive.");
+          assert.include(result.stderr, "has no blobs release archive.");
         }
       } finally {
         NodeFS.rmSync(root, { recursive: true, force: true });
       }
     },
   );
+
+  it("installs and reuses a Blobs release archive", () => {
+    const root = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "blobs-ssh-archive-"));
+    try {
+      const bin = NodePath.join(root, "bin");
+      const home = NodePath.join(root, "home");
+      const payload = NodePath.join(root, "payload");
+      NodeFS.mkdirSync(bin);
+      NodeFS.mkdirSync(home);
+      NodeFS.mkdirSync(payload);
+      NodeFS.writeFileSync(
+        NodePath.join(payload, "blobs"),
+        '#!/bin/sh\necho "blobs runtime $*"\n',
+        {
+          mode: 0o755,
+        },
+      );
+      const archive = "blobs-1.2.3-preview.20260911.4-linux-x64.tar.gz";
+      const archivePath = NodePath.join(root, archive);
+      const tar = NodeChildProcess.spawnSync("tar", ["-czf", archivePath, "-C", root, "payload"]);
+      assert.equal(tar.status, 0);
+      const checksum = NodeCrypto.createHash("sha256")
+        .update(NodeFS.readFileSync(archivePath))
+        .digest("hex");
+      NodeFS.writeFileSync(NodePath.join(root, "SHA256SUMS"), `${checksum}  ${archive}\n`);
+      NodeFS.writeFileSync(
+        NodePath.join(bin, "uname"),
+        '#!/bin/sh\ncase "$1" in -s) echo Linux ;; -m) echo x86_64 ;; esac\n',
+        { mode: 0o755 },
+      );
+      NodeFS.writeFileSync(
+        NodePath.join(bin, "curl"),
+        '#!/bin/sh\nfor arg in "$@"; do case "$arg" in https://*) url="$arg" ;; esac; if [ "${prev:-}" = -o ]; then out="$arg"; fi; prev="$arg"; done\ncp "$BLOBS_TEST_ARCHIVE_DIR/${url##*/}" "$out"\n',
+        { mode: 0o755 },
+      );
+      const runner = NodePath.join(root, "runner.sh");
+      NodeFS.writeFileSync(runner, SshTunnel.buildRemoteT3RunnerScript(ARCHIVE));
+      const options = {
+        encoding: "utf8" as const,
+        env: { HOME: home, PATH: `${bin}:${process.env.PATH ?? ""}`, BLOBS_TEST_ARCHIVE_DIR: root },
+      };
+      const first = NodeChildProcess.spawnSync("sh", [runner, "serve"], options);
+      assert.equal(first.status, 0, first.stderr);
+      assert.include(first.stdout, "blobs runtime serve");
+      NodeFS.rmSync(archivePath);
+      const second = NodeChildProcess.spawnSync("sh", [runner, "status"], options);
+      assert.equal(second.status, 0, second.stderr);
+      assert.include(second.stdout, "blobs runtime status");
+    } finally {
+      NodeFS.rmSync(root, { recursive: true, force: true });
+    }
+  });
 
   it.effect("accepts launch JSON after remote shell startup noise", () => {
     const target = {
@@ -171,7 +228,7 @@ describe("ssh tunnel scripts", () => {
     );
     const layerSpawner = Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner);
     const layerProcess = Layer.merge(
-      Layer.mergeAll(NodeServices.layer, NodeCrypto.layer),
+      Layer.mergeAll(NodeServices.layer, EffectNodeCrypto.layer),
       layerSpawner,
     );
 
@@ -204,7 +261,7 @@ describe("ssh tunnel scripts", () => {
     );
     const layerSpawner = Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner);
     const layerProcess = Layer.merge(
-      Layer.mergeAll(NodeServices.layer, NodeCrypto.layer),
+      Layer.mergeAll(NodeServices.layer, EffectNodeCrypto.layer),
       layerSpawner,
     );
     return Effect.gen(function* () {
@@ -232,7 +289,7 @@ describe("ssh tunnel scripts", () => {
       );
       const layer = Layer.mergeAll(
         NodeServices.layer,
-        NodeCrypto.layer,
+        EffectNodeCrypto.layer,
         Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Layer.succeed(HttpClient.HttpClient, hangingHttpClient),
         Layer.succeed(NetService.NetService, testNetService),
@@ -290,7 +347,7 @@ describe("ssh tunnel scripts", () => {
       );
       const layer = Layer.mergeAll(
         NodeServices.layer,
-        NodeCrypto.layer,
+        EffectNodeCrypto.layer,
         Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Layer.succeed(HttpClient.HttpClient, hangingHttpClient),
         Layer.succeed(NetService.NetService, testNetService),
@@ -368,7 +425,7 @@ describe("ssh tunnel scripts", () => {
       });
       const layer = Layer.mergeAll(
         NodeServices.layer,
-        NodeCrypto.layer,
+        EffectNodeCrypto.layer,
         Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Layer.succeed(HttpClient.HttpClient, httpClient),
         Layer.succeed(NetService.NetService, net),
@@ -410,7 +467,7 @@ describe("ssh tunnel scripts", () => {
       );
       const layer = Layer.mergeAll(
         NodeServices.layer,
-        NodeCrypto.layer,
+        EffectNodeCrypto.layer,
         Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Layer.succeed(HttpClient.HttpClient, hangingHttpClient),
         Layer.succeed(
@@ -484,7 +541,7 @@ describe("ssh tunnel scripts", () => {
       );
       const layer = Layer.mergeAll(
         NodeServices.layer,
-        NodeCrypto.layer,
+        EffectNodeCrypto.layer,
         Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Layer.succeed(HttpClient.HttpClient, testHttpClient),
         Layer.succeed(NetService.NetService, testNetService),
@@ -589,7 +646,7 @@ describe("ssh tunnel scripts", () => {
         );
         const layer = Layer.mergeAll(
           NodeServices.layer,
-          NodeCrypto.layer,
+          EffectNodeCrypto.layer,
           Layer.succeed(ChildProcessSpawner.ChildProcessSpawner, spawner),
           Layer.succeed(HttpClient.HttpClient, testHttpClient),
           Layer.succeed(NetService.NetService, testNetService),

@@ -62,6 +62,9 @@ try {
   try {
     step = `finding "${THREAD_TITLE}" in the sidebar`;
     const thread = page.locator("li[data-thread-item]", { hasText: THREAD_TITLE });
+    const sidebarToggle = page.getByRole("button", { name: "Toggle main sidebar" });
+    await sidebarToggle.waitFor({ timeout: STEP_TIMEOUT_MS });
+    if ((await sidebarToggle.getAttribute("aria-pressed")) === "false") await sidebarToggle.click();
     await thread.waitFor({ timeout: STEP_TIMEOUT_MS });
     step = "opening the thread";
     await thread.click();

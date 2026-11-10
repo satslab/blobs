@@ -788,9 +788,9 @@ const runFormElicitation = (input: {
           childProcessSpawner,
           mockAgentPath,
           environment: {
-            T3_ACP_EMIT_ELICITATION: "1",
-            T3_ACP_ELICITATION_SCHEMA: JSON.stringify(input.requestedSchema),
-            T3_ACP_ELICITATION_RESPONSE_LOG_PATH: responseLog,
+            BLOBS_ACP_EMIT_ELICITATION: "1",
+            BLOBS_ACP_ELICITATION_SCHEMA: JSON.stringify(input.requestedSchema),
+            BLOBS_ACP_ELICITATION_RESPONSE_LOG_PATH: responseLog,
           },
         }),
       },
@@ -3654,7 +3654,7 @@ describe("AcpAdapterV2", () => {
       assert.deepEqual(webItem("grok-web-search", "completed"), {
         title: "Web search: blobs code",
         patterns: ["blobs code"],
-        results: [{ url: "https://t3.codes" }, { url: "https://github.com/pingdotgg/t3code" }],
+        results: [{ url: "https://t3.codes" }, { url: "https://github.com/satslab/blobs" }],
       });
       assert.deepEqual(webItem("grok-web-fetch", "completed")?.results, [
         { url: "https://t3.codes", snippet: "Blobs page" },
