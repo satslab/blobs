@@ -22,7 +22,7 @@ import type { ProviderInstance } from "@satslab/provider-core/server/driver";
 import * as SourceControlProviderRegistry from "../sourceControl/SourceControlProviderRegistry.ts";
 import * as ThreadTitleLinks from "./ThreadTitleLinks.ts";
 import * as TextGenerators from "./TextGenerators.ts";
-import * as TextGenerationOperations from "@t3tools/provider-core/server/textGenerationOperations";
+import * as TextGenerationOperations from "@satslab/provider-core/server/textGenerationOperations";
 
 export type {
   BranchNameGenerationInput,

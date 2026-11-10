@@ -122,10 +122,10 @@ describe("thread links", () => {
     for (const threadId of ["mcp:launch:qa(1)", "mcp:launch:qa)"]) {
       const thread = ref("there", threadId);
       const link = formatThreadLink(thread, "Original");
-      expect(link).toBe(`[Original](<t3-thread://v2/there/${threadId}>)`);
+      expect(link).toBe(`[Original](<blobs-thread://v2/there/${threadId}>)`);
       expect(threadLinkRefs(link, local)).toEqual([thread]);
       expect(relabelThreadLinks(link, local, () => "Renamed")).toBe(
-        `[Renamed](<t3-thread://v2/there/${threadId}>)`,
+        `[Renamed](<blobs-thread://v2/there/${threadId}>)`,
       );
       expect(relabelThreadLinks(link, local, () => undefined)).toBe("Original");
     }

@@ -196,7 +196,7 @@ export function Inspector(props: {
  */
 function useStableActions(actions: Required<AdaptiveWorkspaceActions>): AdaptiveWorkspaceActions {
   const latest = useRef(actions);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- points the stable actions at the handlers this commit rendered
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- points the stable actions at the handlers this commit rendered
   useLayoutEffect(() => {
     latest.current = actions;
   });

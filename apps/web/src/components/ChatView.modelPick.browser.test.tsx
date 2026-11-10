@@ -1,8 +1,10 @@
 import { createMemoryHistory } from "@tanstack/react-router";
-import { DEFAULT_CLIENT_SETTINGS } from "@t3tools/contracts/settings";
+import { DEFAULT_CLIENT_SETTINGS } from "@satslab/contracts/settings";
 import type * as Context from "effect/Context";
 import { expect, it, vi } from "vite-plus/test";
 import { page } from "vite-plus/test/browser";
+
+import "~/index.css";
 
 import { AppRoot } from "~/AppRoot";
 // The route loads ChatView lazily, and its first transform (React Compiler over ~4k lines)
@@ -36,6 +38,7 @@ vi.mock(import("~/rpc/requestLatencyState"), async (original) => ({
 
 // Its own file: the app's shell subscription outlives a test, and it must list this thread.
 it("a model picked for an existing thread reaches the server before any message is sent", async () => {
+  await page.viewport(1280, 800);
   const thread = threadWithHistory("thread-model-pick", 1);
   using _environment = installFakeEnvironment([thread], { acceptCommands: true });
   __setClientSettingsForTests({

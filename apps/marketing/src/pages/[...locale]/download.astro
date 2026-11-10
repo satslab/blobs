@@ -1,6 +1,9 @@
 ---
-import { localeStaticPaths } from "../../i18n/locales";
+import { localeStaticPaths, templateParts } from "../../i18n/locales";
+import { messagesFor } from "../../i18n";
 export const getStaticPaths = localeStaticPaths;
+const { locale } = Astro.props;
+const t = messagesFor(locale).download;
 import type { ComponentProps } from "astro/types";
 import { Image } from "astro:assets";
 import iconStable from "../../assets/icon.webp";

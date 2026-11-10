@@ -1,9 +1,9 @@
 import {
   type ConnectMcpApprovalCall,
   createConnectMcpApprovalCommand,
-} from "@t3tools/client-runtime/state/connectMcpApproval";
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentId } from "@t3tools/contracts";
+} from "@satslab/client-runtime/state/connectMcpApproval";
+import { squashAtomCommandFailure } from "@satslab/client-runtime/state/runtime";
+import type { EnvironmentId } from "@satslab/contracts";
 import * as Result from "effect/Result";
 
 import { connectionAtomRuntime } from "../connection/runtime";

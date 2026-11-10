@@ -1,4 +1,4 @@
-import { OrchestrationV2ThreadProjectionJson } from "@t3tools/contracts";
+import { OrchestrationV2ThreadProjectionJson } from "@satslab/contracts";
 import {
   omitLocalVisibleTurnItems,
   restoreLocalVisibleTurnItems,

@@ -2,8 +2,8 @@ import type {
   EnvironmentId,
   OrchestrationV2PendingBackgroundTask,
   ThreadId,
-} from "@t3tools/contracts";
-import type { ThreadStructure } from "@t3tools/client-runtime/state/shell";
+} from "@satslab/contracts";
+import type { ThreadStructure } from "@satslab/client-runtime/state/shell";
 import { useState } from "react";
 
 import { InlineButton } from "../ui/button";

@@ -346,33 +346,35 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       }).pipe(Effect.scoped),
   );
 
-  it.effect("does not treat its own launcher as another blobs when its folder is first on PATH", () =>
-    Effect.gen(function* () {
-      const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
-      const fs = yield* FileSystem.FileSystem;
-      const path = yield* Path.Path;
-      const home = yield* fs.makeTempDirectoryScoped();
-      const launcher = path.join(home, ".blobs", "bin", "blobs");
-      env.PATH = [path.dirname(launcher), path.join(home, ".local", "bin")].join(":");
+  it.effect(
+    "does not treat its own launcher as another blobs when its folder is first on PATH",
+    () =>
+      Effect.gen(function* () {
+        const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
+        const fs = yield* FileSystem.FileSystem;
+        const path = yield* Path.Path;
+        const home = yield* fs.makeTempDirectoryScoped();
+        const launcher = path.join(home, ".blobs", "bin", "blobs");
+        env.PATH = [path.dirname(launcher), path.join(home, ".local", "bin")].join(":");
 
-      const command = yield* commandIn({ home, env });
-      const installed = yield* command.install;
+        const command = yield* commandIn({ home, env });
+        const installed = yield* command.install;
 
-      expect(yield* fs.exists(launcher)).toBe(true);
-      expect(installed).toMatchObject({
-        onPath: true,
-        installedPath: path.join(home, ".local", "bin", "blobs"),
-      });
-      expect(installed.shadowedBy).toBeUndefined();
-      expect(yield* command.state).toEqual(installed);
+        expect(yield* fs.exists(launcher)).toBe(true);
+        expect(installed).toMatchObject({
+          onPath: true,
+          installedPath: path.join(home, ".local", "bin", "blobs"),
+        });
+        expect(installed.shadowedBy).toBeUndefined();
+        expect(yield* command.state).toEqual(installed);
 
-      const removed = yield* command.uninstall;
-      expect(removed.installedPath).toBeNull();
-      expect(removed.onPath).toBe(true);
-      expect(yield* command.state).toEqual(removed);
-      expect(yield* fs.exists(installed.installedPath!)).toBe(false);
-      expect(yield* fs.exists(launcher)).toBe(true);
-    }).pipe(Effect.scoped),
+        const removed = yield* command.uninstall;
+        expect(removed.installedPath).toBeNull();
+        expect(removed.onPath).toBe(true);
+        expect(yield* command.state).toEqual(removed);
+        expect(yield* fs.exists(installed.installedPath!)).toBe(false);
+        expect(yield* fs.exists(launcher)).toBe(true);
+      }).pipe(Effect.scoped),
   );
 
   it.effect("leaves the Windows PATH alone when it cannot be read", () =>
@@ -436,7 +438,10 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       // PATH alone.
       const besideHome = yield* fs.makeTempDirectoryScoped();
       yield* fs.makeDirectory(path.join(besideHome, ".local", "bin"), { recursive: true });
-      yield* fs.writeFileString(path.join(besideHome, ".local", "bin", "blobs.cmd"), "@echo off\r\n");
+      yield* fs.writeFileString(
+        path.join(besideHome, ".local", "bin", "blobs.cmd"),
+        "@echo off\r\n",
+      );
       const beside = fakePowerShell("C:\\Tools");
       yield* (yield* commandIn({ home: besideHome, platform: "win32" }, beside.spawner))
         .installOnFirstLaunch;

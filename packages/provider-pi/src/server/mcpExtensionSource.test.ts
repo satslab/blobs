@@ -6,7 +6,10 @@ import * as NodeModule from "node:module";
 import * as NodeVM from "node:vm";
 import { assert, describe, it } from "@effect/vitest";
 
-import { PI_BLOBS_MCP_EXTENSION_SOURCE, PI_BLOBS_SERVICE_TIER_COMMAND } from "./mcpExtensionSource.ts";
+import {
+  PI_BLOBS_MCP_EXTENSION_SOURCE,
+  PI_BLOBS_SERVICE_TIER_COMMAND,
+} from "./mcpExtensionSource.ts";
 import { loadMcpBridge } from "./mcpBridge.testkit.ts";
 
 type RequestHook = (
@@ -428,7 +431,7 @@ async function loadRequestHook() {
     },
   });
   const hook = handlers.get("before_provider_request");
-  const setServiceTier = commands.get(PI_T3_SERVICE_TIER_COMMAND);
+  const setServiceTier = commands.get(PI_BLOBS_SERVICE_TIER_COMMAND);
   assert.isDefined(hook);
   assert.isDefined(setServiceTier);
   return Object.assign(hook!, { setServiceTier: setServiceTier! });

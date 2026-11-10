@@ -613,7 +613,7 @@ function ThreadWorkGroupList(props: {
   const initialScrollIndex = resolveThreadWorkGroupInitialScroll(props.activities, initialPosition);
   const listRef = useRef<LegendListRef>(null);
   const previousTextSize = useRef(props.rowSizing.textSizeKey);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- clears the list's cached row sizes when the text size changes
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- clears the list's cached row sizes when the text size changes
   useLayoutEffect(() => {
     if (previousTextSize.current === props.rowSizing.textSizeKey) return;
     previousTextSize.current = props.rowSizing.textSizeKey;

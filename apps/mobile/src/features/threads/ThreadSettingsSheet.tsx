@@ -922,7 +922,7 @@ function ThreadSettingsMainContent(props: {
     if (config?.environment.capabilities.modelCatalogRefresh !== true) return;
     void refreshProvidersCommand({ environmentId, input: { modelCatalogOnly: true } });
   });
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- asks the server for newly released models when the model list opens
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- asks the server for newly released models when the model list opens
   useEffect(() => {
     refreshModelCatalog();
   }, []);

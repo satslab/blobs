@@ -372,7 +372,13 @@ function SidebarControl({ showSidebar }: { readonly showSidebar: boolean }) {
   );
 }
 
-export function AppSidebarLayout({ children, showSidebar = true }: { children: ReactNode; showSidebar?: boolean }) {
+export function AppSidebarLayout({
+  children,
+  showSidebar = true,
+}: {
+  children: ReactNode;
+  showSidebar?: boolean;
+}) {
   const pathname = useLocation({ select: (location) => location.pathname });
   const pageMode: SidebarMode | null = pathname.startsWith("/bots")
     ? "bots"
@@ -425,30 +431,32 @@ export function AppSidebarLayout({ children, showSidebar = true }: { children: R
           storageKey="chat_thread_sidebar_open"
           style={sidebarProviderStyle}
         >
-          {showSidebar ? <>
-          <SidebarBrandWidthProbe isElectron={isElectron} onWidthChange={setBrandWidth} />
-          <Sidebar
-            side="left"
-            collapsible="offcanvas"
-            data-app-sidebar=""
-            {...sidebarArea}
-            role="navigation"
-            aria-label={isOnBots ? "Bots" : "Threads"}
-            resizable={{
-              maxWidth: sidebarMaximumWidth,
-              minWidth: sidebarMinimumWidth,
-              shouldAcceptWidth: ({ currentWidth, nextWidth, wrapper }) =>
-                nextWidth <= currentWidth ||
-                wrapper.clientWidth - nextWidth >= THREAD_MAIN_CONTENT_MIN_WIDTH,
-              storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
-              onResize: setSidebarWidth,
-            }}
-            style={windowControlsInsetStyle}
-          >
-            {isOnBots ? <BotSidebar /> : <ThreadSidebar routeReveal={sidebarRouteReveal} />}
-            <SidebarRail onDoubleClick={resetSidebarWidth} />
-          </Sidebar>
-          </> : null}
+          {showSidebar ? (
+            <>
+              <SidebarBrandWidthProbe isElectron={isElectron} onWidthChange={setBrandWidth} />
+              <Sidebar
+                side="left"
+                collapsible="offcanvas"
+                data-app-sidebar=""
+                {...sidebarArea}
+                role="navigation"
+                aria-label={isOnBots ? "Bots" : "Threads"}
+                resizable={{
+                  maxWidth: sidebarMaximumWidth,
+                  minWidth: sidebarMinimumWidth,
+                  shouldAcceptWidth: ({ currentWidth, nextWidth, wrapper }) =>
+                    nextWidth <= currentWidth ||
+                    wrapper.clientWidth - nextWidth >= THREAD_MAIN_CONTENT_MIN_WIDTH,
+                  storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
+                  onResize: setSidebarWidth,
+                }}
+                style={windowControlsInsetStyle}
+              >
+                {isOnBots ? <BotSidebar /> : <ThreadSidebar routeReveal={sidebarRouteReveal} />}
+                <SidebarRail onDoubleClick={resetSidebarWidth} />
+              </Sidebar>
+            </>
+          ) : null}
           {children}
           <BackgroundThreadAnnouncer />
           <SidebarControl showSidebar={showSidebar} />

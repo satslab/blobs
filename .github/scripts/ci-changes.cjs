@@ -176,7 +176,8 @@ function decide(files, packages, full) {
     affected: [...affected].sort(),
     outputs: {
       typecheck: affected.size > 0,
-      build: has("@satslab/desktop") || has("@satslab/blobs") || has("@satslab/web") || desktopLaunch,
+      build:
+        has("@satslab/desktop") || has("@satslab/blobs") || has("@satslab/web") || desktopLaunch,
       desktop_launch: desktopLaunch,
       test: tested.length > 0,
       // Empty means every package the Test job covers.

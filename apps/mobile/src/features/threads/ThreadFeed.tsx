@@ -3205,7 +3205,7 @@ export const ThreadFeed = memo(function ThreadFeed(props: ThreadFeedProps) {
     reportHeaderMaterialVisibility(event.nativeEvent.contentOffset.y + anchorTopInset > 6);
     handleMetricsChange();
   };
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- subscribes to the list's end state to report it to the parent
+  // oxlint-disable-next-line blobs/no-unreasoned-state-sync -- subscribes to the list's end state to report it to the parent
   useLayoutEffect(() => {
     const state = listRef.current?.getState();
     if (!state) return;

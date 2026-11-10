@@ -4,8 +4,8 @@ import * as NodeCrypto from "node:crypto";
 
 import { vi } from "vite-plus/test";
 import { describe, expect, it } from "@effect/vitest";
-import { DpopProof } from "@t3tools/client-runtime/relay";
-import { verifyDpopProof } from "@t3tools/shared/dpop";
+import { DpopProof } from "@satslab/client-runtime/relay";
+import { verifyDpopProof } from "@satslab/shared/dpop";
 import * as Digest from "effect/crypto/Digest";
 import * as Effect from "effect/Effect";
 
@@ -84,7 +84,7 @@ describe("mobile DPoP", () => {
       secureStore.clear();
       const other = yield* loadOrCreateDpopProofKeyPair();
       secureStore.set(
-        "t3code.cloud.dpop-proof-key",
+        "blobs.cloud.dpop-proof-key",
         JSON.stringify({ ...privateJwk, x: other.publicJwk.x, y: other.publicJwk.y }),
       );
 
@@ -110,7 +110,7 @@ describe("mobile DPoP", () => {
   ])("rejects a persisted key with a $length coordinate", ({ x }) =>
     Effect.gen(function* () {
       secureStore.set(
-        "t3code.cloud.dpop-proof-key",
+        "blobs.cloud.dpop-proof-key",
         JSON.stringify({ ...privateJwkWithZeroEndedX, x: x.toString("base64url") }),
       );
 

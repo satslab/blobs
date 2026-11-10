@@ -14,8 +14,8 @@ import { Route as PairRouteImport } from './routes/pair'
 import { Route as GuestRouteImport } from './routes/guest'
 import { Route as ConnectAgentRouteImport } from './routes/connect-agent'
 import { Route as ConnectRouteImport } from './routes/connect'
-import { Route as ApproveAgentRouteImport } from './routes/approve-agent'
 import { Route as BotsRouteImport } from './routes/bots'
+import { Route as ApproveAgentRouteImport } from './routes/approve-agent'
 import { Route as ChatRouteImport } from './routes/_chat'
 import { Route as BotsIndexRouteImport } from './routes/bots.index'
 import { Route as ChatIndexRouteImport } from './routes/_chat.index'
@@ -86,14 +86,14 @@ const ConnectRoute = ConnectRouteImport.update({
   path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApproveAgentRoute = ApproveAgentRouteImport.update({
-  id: '/approve-agent',
-  path: '/approve-agent',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const BotsRoute = BotsRouteImport.update({
   id: '/bots',
   path: '/bots',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApproveAgentRoute = ApproveAgentRouteImport.update({
+  id: '/approve-agent',
+  path: '/approve-agent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -692,18 +692,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/approve-agent': {
-      id: '/approve-agent'
-      path: '/approve-agent'
-      fullPath: '/approve-agent'
-      preLoaderRoute: typeof ApproveAgentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/bots': {
       id: '/bots'
       path: '/bots'
       fullPath: '/bots'
       preLoaderRoute: typeof BotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/approve-agent': {
+      id: '/approve-agent'
+      path: '/approve-agent'
+      fullPath: '/approve-agent'
+      preLoaderRoute: typeof ApproveAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_chat': {

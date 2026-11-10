@@ -34,7 +34,7 @@ import {
   resolveModelPickerSelectedModel,
   shouldIncludeModelPickerOption,
 } from "../chat/ModelPickerContent";
-import { rankModelPickerSearch } from "../chat/modelPickerSearch";
+import { rankModelPickerSearch } from "@satslab/client-runtime/model-search";
 import { ProviderInstanceIcon } from "../chat/ProviderInstanceIcon";
 import { getDisplayModelName, type ModelEsque } from "../chat/providerIconUtils";
 import { type TraitsSelectionInput, useTraitsSelection } from "../chat/TraitsPicker";
